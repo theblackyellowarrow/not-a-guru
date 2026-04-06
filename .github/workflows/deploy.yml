@@ -1,9 +1,6 @@
-name: Deploy to GitHub Pages
+name: Manual GitHub Pages Preview
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
@@ -12,7 +9,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: pages-preview
   cancel-in-progress: true
 
 jobs:
@@ -25,7 +22,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24.14.1
           cache: npm
 
       - name: Install dependencies

@@ -8,11 +8,11 @@ A Vite + React app for project framing, process review, and design critique.
 - Local thread persistence with `localStorage`
 - PDF, DOCX, and image ingestion
 - A server-side Gemini proxy at `api/gemini.js`
-- GitHub Actions for CI and an optional GitHub Pages static demo workflow
+- GitHub Actions for CI
 
 ## Runtime setup
 
-Use Node `20.19.0` or newer. The repo includes `.nvmrc` for that version.
+Use Node `24.14.1` for local work. The repo includes `.nvmrc`, and the app also builds on Vercel within the supported `>=20.19.0 <25` range.
 
 ```bash
 nvm use
@@ -49,7 +49,6 @@ The production files are generated in `dist/`.
 This repo includes:
 
 - `.github/workflows/ci.yml` to install and build on pushes and pull requests
-- `.github/workflows/deploy.yml` for a static GitHub Pages demo build
 - `.nvmrc` so collaborators land on a working Node version faster
 
 ## Deployment options
@@ -73,19 +72,9 @@ For this setup:
 
 `vercel.json` is included for SPA routing.
 
-### GitHub Pages
-
-GitHub Pages can still host the frontend as a static demo, but it cannot run the secure proxy.
-
-That means:
-
-- You would need to enable browser-side Gemini access to make AI features work there.
-- Any browser-side Gemini key can still be extracted by users.
-- GitHub Pages is fine for a non-sensitive demo, not for a secure public production deployment.
-
 ## Remaining recommended cleanup
 
-1. Reinstall dependencies cleanly on Node `20.19+` and re-run the build.
+1. Reinstall dependencies cleanly on a supported Node version and re-run the build.
 2. Add tests for onboarding, uploads, and tool actions.
 3. Add upload size limits and clearer file validation rules.
-4. Decide whether committed `dist/` and `node_modules/` content should be removed from version control.
+4. Add `GEMINI_API_KEY` to the Vercel project before going live.
