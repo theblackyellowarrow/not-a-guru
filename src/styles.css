@@ -1,0 +1,84 @@
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: #000;
+}
+
+.font-mono {
+  font-family: 'VT323', monospace;
+}
+
+.blinking-cursor::after {
+  content: '▋';
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  from,
+  to {
+    color: transparent;
+  }
+  50% {
+    color: #d946ef;
+  }
+}
+
+.prose-styles {
+  color: #d1d5db;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.prose-styles strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+.prose-styles em {
+  color: #e5e7eb;
+  font-style: italic;
+}
+
+.prose-styles ul {
+  list-style-position: inside;
+  padding-left: 0;
+}
+
+.prose-styles li {
+  margin-bottom: 0.25em;
+}
+
+.prose-styles p {
+  margin-bottom: 0.75em;
+}
+
+.blinking-cursor::after {
+  content: '|';
+}
+
+.prose-styles ol {
+  list-style-position: inside;
+  padding-left: 0;
+}
+
+.prose-heading {
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.prose-styles code {
+  color: #f5d0fe;
+  font-family: 'VT323', monospace;
+  font-size: 1rem;
+}
