@@ -45,6 +45,9 @@ export default function App() {
   const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
   const chatEndRef = useRef(null);
+  const handledMessageIdsRef = useRef(new Set());
+  const inFlightRef = useRef(false);
+  const lastMessageCountRef = useRef(0);
 
   const currentThread = useMemo(
     () => threads.find((thread) => thread.id === currentThreadId),
@@ -88,14 +91,19 @@ export default function App() {
   }, [threads]);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [threads, currentThreadId]);
+    const currentCount = currentThread?.messages?.length || 0;
+    if (currentCount > lastMessageCountRef.current) {
+      chatEndRef.current?.scrollIntoView({ behavior: 'auto' });
+    }
+    lastMessageCountRef.current = currentCount;
+  }, [currentThreadId, currentThread?.messages?.length]);
 
   useEffect(() => {
-    if (!currentThread || isLoading) return;
+    if (!currentThread || isLoading || inFlightRef.current) return;
 
     const lastMessage = currentThread.messages[currentThread.messages.length - 1];
     if (lastMessage?.type !== 'user') return;
+    if (handledMessageIdsRef.current.has(lastMessage.id)) return;
 
     const fetchGuruResponse = async () => {
       const activeThreadId = currentThread.id;
@@ -105,6 +113,8 @@ export default function App() {
         return;
       }
 
+      handledMessageIdsRef.current.add(lastMessage.id);
+      inFlightRef.current = true;
       setIsLoading(true);
       setError(null);
 
@@ -167,6 +177,7 @@ export default function App() {
         );
       } finally {
         setIsLoading(false);
+        inFlightRef.current = false;
       }
     };
 
