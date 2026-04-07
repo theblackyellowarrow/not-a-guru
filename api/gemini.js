@@ -23,7 +23,8 @@ export default async function handler(req, res) {
 
   try {
     const mode = stream ? 'streamGenerateContent' : 'generateContent';
-    const upstream = await fetch(`${API_BASE}/${model}:${mode}?key=${apiKey}`, {
+    const query = stream ? `alt=sse&key=${apiKey}` : `key=${apiKey}`;
+    const upstream = await fetch(`${API_BASE}/${model}:${mode}?${query}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),

@@ -257,45 +257,64 @@ export default function App() {
 
         const decoder = new TextDecoder();
         let buffer = '';
+        let receivedText = false;
+
+        const processStreamLine = (line) => {
+          if (!line.trim()) return;
+
+          try {
+            const json = parseStreamChunk(line);
+            if (!json) return;
+            if (json.error) {
+              throw new Error(json.error.message);
+            }
+            const textChunk = json.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!textChunk) return;
+
+            receivedText = true;
+
+            setThreads((prevThreads) =>
+              prevThreads.map((thread) => {
+                if (thread.id !== activeThreadId) return thread;
+                const newMessages = [...thread.messages];
+                const targetIndex = newMessages.findIndex((message) => message.id === guruMessageId);
+                if (targetIndex !== -1) {
+                  newMessages[targetIndex] = {
+                    ...newMessages[targetIndex],
+                    text: newMessages[targetIndex].text + textChunk,
+                  };
+                }
+                return { ...thread, messages: newMessages };
+              })
+            );
+          } catch (streamError) {
+            console.warn('Could not parse stream part as JSON:', line, streamError);
+          }
+        };
 
         while (true) {
           const { value, done } = await reader.read();
-          if (done) break;
+          if (done) {
+            buffer += decoder.decode();
+            break;
+          }
 
           buffer += decoder.decode(value, { stream: true });
           const lines = buffer.split('\n');
           buffer = lines.pop() || '';
 
-          for (const line of lines) {
-            if (!line.trim()) continue;
+          lines.forEach(processStreamLine);
+        }
 
-            try {
-              const json = parseStreamChunk(line);
-              if (!json) continue;
-              if (json.error) {
-                throw new Error(json.error.message);
-              }
-              const textChunk = json.candidates?.[0]?.content?.parts?.[0]?.text;
-              if (!textChunk) continue;
+        buffer
+          .split('\n')
+          .filter(Boolean)
+          .forEach(processStreamLine);
 
-              setThreads((prevThreads) =>
-                prevThreads.map((thread) => {
-                  if (thread.id !== activeThreadId) return thread;
-                  const newMessages = [...thread.messages];
-                  const targetIndex = newMessages.findIndex((message) => message.id === guruMessageId);
-                  if (targetIndex !== -1) {
-                    newMessages[targetIndex] = {
-                      ...newMessages[targetIndex],
-                      text: newMessages[targetIndex].text + textChunk,
-                    };
-                  }
-                  return { ...thread, messages: newMessages };
-                })
-              );
-            } catch (streamError) {
-              console.warn('Could not parse stream part as JSON:', line, streamError);
-            }
-          }
+        if (!receivedText) {
+          throw new Error(
+            'The model returned no readable text. If this keeps happening, the Gemini API key may be out of quota.'
+          );
         }
       } catch (requestError) {
         console.error('Error fetching streaming response:', requestError);

@@ -17,7 +17,7 @@ export async function callGeminiAPI(payload, { stream = false } = {}) {
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Gemini request failed: ${response.status} ${errorText}`);
+    throw new Error(`Gemini request failed: ${response.status} ${extractErrorMessage(errorText)}`);
   }
 
   return response;
@@ -37,11 +37,26 @@ async function callGeminiViaProxy(payload, { stream }) {
 
 async function callGeminiFromBrowser(payload, { apiKey, stream }) {
   const mode = stream ? 'streamGenerateContent' : 'generateContent';
-  const url = `${API_BASE}/${GEMINI_MODEL}:${mode}?key=${apiKey}`;
+  const query = stream ? `alt=sse&key=${apiKey}` : `key=${apiKey}`;
+  const url = `${API_BASE}/${GEMINI_MODEL}:${mode}?${query}`;
 
   return fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
+}
+
+function extractErrorMessage(errorText) {
+  try {
+    const parsed = JSON.parse(errorText);
+
+    if (Array.isArray(parsed)) {
+      return parsed[0]?.error?.message || errorText;
+    }
+
+    return parsed?.error?.message || parsed?.message || errorText;
+  } catch {
+    return errorText;
+  }
 }
