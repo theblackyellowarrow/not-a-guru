@@ -21,6 +21,10 @@ export default async function handler(req, res) {
     return;
   }
 
+  const controller = new AbortController();
+  const timeoutMs = 20000;
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
   try {
     const requestBody = {
       model,
@@ -30,6 +34,10 @@ export default async function handler(req, res) {
         format: { type: 'text' },
       },
     };
+
+    if (payload.instructions) {
+      requestBody.instructions = payload.instructions;
+    }
 
     const textFormat = translateStructuredOutput(payload.generationConfig);
     if (textFormat) {
@@ -49,6 +57,7 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify(requestBody),
+      signal: controller.signal,
     });
 
     if (!upstream.ok) {
@@ -74,9 +83,16 @@ export default async function handler(req, res) {
     const responseJson = await upstream.json();
     res.status(200).json(responseJson);
   } catch (error) {
+    if (error?.name === 'AbortError') {
+      res.status(504).json({ error: `OpenAI request timed out after ${timeoutMs / 1000}s.` });
+      return;
+    }
+
     res.status(500).json({
       error: error instanceof Error ? error.message : 'Unknown OpenAI proxy error.',
     });
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
