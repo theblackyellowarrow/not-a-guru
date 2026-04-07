@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { payload, stream = false, model = 'gpt-5.4-mini' } = req.body || {};
+  const { payload, stream = false, model = 'gpt-4.1-mini' } = req.body || {};
   if (!payload) {
     res.status(400).json({ error: 'Missing OpenAI payload.' });
     return;
@@ -25,11 +25,17 @@ export default async function handler(req, res) {
     const requestBody = {
       model,
       input: translateContentsToResponsesInput(payload.contents || []),
+      max_output_tokens: payload.maxOutputTokens || 220,
+      text: {
+        format: { type: 'text' },
+      },
     };
 
     const textFormat = translateStructuredOutput(payload.generationConfig);
     if (textFormat) {
-      requestBody.text = { format: textFormat };
+      requestBody.text = {
+        format: textFormat,
+      };
     }
 
     if (stream) {

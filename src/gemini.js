@@ -1,4 +1,4 @@
-const OPENAI_MODEL = import.meta.env.VITE_OPENAI_MODEL || 'gpt-5.4-mini';
+const OPENAI_MODEL = import.meta.env.VITE_OPENAI_MODEL || 'gpt-4.1-mini';
 const PROXY_URL = import.meta.env.VITE_OPENAI_PROXY_URL || '/api/openai';
 
 export async function callGeminiAPI(payload, { stream = false } = {}) {

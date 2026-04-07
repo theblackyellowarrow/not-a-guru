@@ -123,6 +123,10 @@ function buildContextHistory(messages) {
     .filter(Boolean);
 }
 
+function getRecentContextHistory(messages, limit = 8) {
+  return buildContextHistory(messages.slice(-limit));
+}
+
 function parseStreamChunk(part) {
   if (!part.startsWith('data:')) {
     return null;
@@ -284,6 +288,7 @@ export default function App() {
 
       try {
         const payload = {
+          maxOutputTokens: 160,
           contents: [
             {
               role: 'user',
@@ -293,7 +298,7 @@ export default function App() {
               role: 'model',
               parts: [{ text: "Understood. I'll trace the why and stay with the tensions in the work." }],
             },
-            ...buildContextHistory(currentThread.messages.slice(0, -1)),
+            ...getRecentContextHistory(currentThread.messages.slice(0, -1)),
             { role: 'user', parts: userParts },
           ],
         };
@@ -470,8 +475,9 @@ export default function App() {
 
     if (toolType === 'personas') {
       payload = {
+        maxOutputTokens: 320,
         contents: [
-          ...buildContextHistory(currentThread.messages),
+          ...getRecentContextHistory(currentThread.messages),
           {
             role: 'user',
             parts: [
@@ -505,8 +511,9 @@ Then, generate 3 distinct user persona skeletons based on the user's project. Pr
       };
     } else {
       payload = {
+        maxOutputTokens: 220,
         contents: [
-          ...buildContextHistory(currentThread.messages),
+          ...getRecentContextHistory(currentThread.messages),
           {
             role: 'user',
             parts: [

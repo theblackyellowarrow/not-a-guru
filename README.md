@@ -32,7 +32,7 @@ Copy `.env.example` and set the values you need:
 - `VITE_OPENAI_PROXY_URL`
   Defaults to `/api/openai`.
 - `VITE_OPENAI_MODEL`
-  Defaults to `gpt-5.4-mini`.
+  Defaults to `gpt-4.1-mini`.
 
 ## Local build
 
@@ -66,7 +66,7 @@ For this setup:
 1. Import the GitHub repo into Vercel.
 2. Set `OPENAI_API_KEY` in the Vercel project environment.
 3. Optionally set `VITE_OPENAI_PROXY_URL=/api/openai`.
-4. Optionally set `VITE_OPENAI_MODEL=gpt-5.4-mini`.
+4. Optionally set `VITE_OPENAI_MODEL=gpt-4.1-mini`.
 
 `vercel.json` is included for SPA routing.
 
