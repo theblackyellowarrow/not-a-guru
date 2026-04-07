@@ -267,7 +267,12 @@ export default function App() {
       setError(null);
 
       const guruMessageId = Date.now();
-      const placeholderMessage = { id: guruMessageId, type: 'guru', text: '', timestamp: new Date().toISOString() };
+      const placeholderMessage = {
+        id: guruMessageId,
+        type: 'guru',
+        text: 'Thinking...',
+        timestamp: new Date().toISOString(),
+      };
 
       setThreads((prevThreads) =>
         prevThreads.map((thread) =>
@@ -293,68 +298,28 @@ export default function App() {
           ],
         };
 
-        const response = await callGeminiAPI(payload, { stream: true });
-        const reader = response.body?.getReader();
-        if (!reader) {
-          throw new Error('Streaming is unavailable for this response.');
-        }
+        const response = await callGeminiAPI(payload);
+        const result = await response.json();
+        const finalText = extractTextFromResponse(result);
 
-        const decoder = new TextDecoder();
-        let buffer = '';
-        let receivedText = false;
-
-        const processStreamLine = (line) => {
-          if (!line.trim()) return;
-
-          try {
-            const json = parseStreamChunk(line);
-            if (!json) return;
-            const textChunk = extractTextChunkFromStreamEvent(json);
-            if (!textChunk) return;
-
-            receivedText = true;
-
-            setThreads((prevThreads) =>
-              prevThreads.map((thread) => {
-                if (thread.id !== activeThreadId) return thread;
-                const newMessages = [...thread.messages];
-                const targetIndex = newMessages.findIndex((message) => message.id === guruMessageId);
-                if (targetIndex !== -1) {
-                  newMessages[targetIndex] = {
-                    ...newMessages[targetIndex],
-                    text: newMessages[targetIndex].text + textChunk,
-                  };
-                }
-                return { ...thread, messages: newMessages };
-              })
-            );
-          } catch (streamError) {
-            console.warn('Could not parse stream part as JSON:', line, streamError);
-          }
-        };
-
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) {
-            buffer += decoder.decode();
-            break;
-          }
-
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
-
-          lines.forEach(processStreamLine);
-        }
-
-        buffer
-          .split('\n')
-          .filter(Boolean)
-          .forEach(processStreamLine);
-
-        if (!receivedText) {
+        if (!finalText) {
           throw new Error('The model returned no readable text.');
         }
+
+        setThreads((prevThreads) =>
+          prevThreads.map((thread) => {
+            if (thread.id !== activeThreadId) return thread;
+            const newMessages = [...thread.messages];
+            const targetIndex = newMessages.findIndex((message) => message.id === guruMessageId);
+            if (targetIndex !== -1) {
+              newMessages[targetIndex] = {
+                ...newMessages[targetIndex],
+                text: finalText,
+              };
+            }
+            return { ...thread, messages: newMessages };
+          })
+        );
       } catch (requestError) {
         console.error('Error fetching streaming response:', requestError);
         setError(requestError.message);
