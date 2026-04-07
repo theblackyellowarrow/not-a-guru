@@ -6,9 +6,16 @@ import { ErrorMessage, LoadingIndicator, MessageRenderer } from './components/Me
 import Onboarding from './components/Onboarding';
 import ProjectContextScreen from './components/ProjectContextScreen';
 import Toolbelt from './components/ToolbeltClean';
+import { callAI } from './aiClient';
+import {
+  createChatPayload,
+  createToolPayload,
+  extractTextFromResponse,
+  getMessageParts,
+  getThreadTitlePreview,
+} from './chatRuntime';
 import { parseUploadedFile } from './fileUtils';
-import { callGeminiAPI } from './gemini';
-import { getDynamicPersona } from './personaPrompt';
+import { getRequiredFiles, getReviewPrompt } from './reviewConfig';
 
 const STORAGE_KEY = 'guru_threads';
 
@@ -23,175 +30,6 @@ const TITLES = {
   start_project: 'Vibe Check a New Idea',
   venting_mode: 'Just Venting',
 };
-
-const PROCESS_REVIEW_FILES = [
-  { key: 'problem_statement', label: 'Problem Statement', compulsory: true },
-  { key: 'solution_statement', label: 'Solution Statement', compulsory: true },
-  { key: 'stakeholder_map', label: 'Stakeholder Mapping' },
-  { key: 'research_findings', label: 'Research Findings' },
-  { key: 'primary_research', label: 'Primary Research Data' },
-  { key: 'personas', label: 'Personas' },
-  { key: 'empathy_map', label: 'Empathy Map' },
-];
-
-const FINAL_REVIEW_FILES = [
-  { key: 'problem_statement', label: 'Problem Statement', compulsory: true },
-  { key: 'solution_statement', label: 'Solution Statement', compulsory: true },
-  { key: 'persona', label: 'Persona', compulsory: true },
-  { key: 'ideations', label: 'Ideations (Image)', isImage: true, compulsory: true },
-  { key: 'final_output', label: 'Final Output (Image)', isImage: true, compulsory: true },
-];
-
-const BLINDSPOT_PROMPT = `Based on the preceding conversation, surface potential blindspots. Never offer solutions. Just name what's missing. Let discomfort do the work.
-Surface:
-- Ethical contradictions
-- Cultural erasures
-- Material assumptions
-- Ecological costs
-- Long-term exclusions`;
-
-function getThreadTitlePreview(messageText, attachments = []) {
-  if (messageText) {
-    return `${messageText.substring(0, 40)}${messageText.length > 40 ? '...' : ''}`;
-  }
-
-  if (attachments.length > 0) {
-    return attachments[0].name;
-  }
-
-  return 'New Thread';
-}
-
-function buildAttachmentParts(attachment) {
-  const attachmentLabel = attachment.label ? `${attachment.label} (${attachment.name})` : attachment.name;
-
-  if (attachment.base64) {
-    return [
-      { text: `Attached file: ${attachmentLabel}. Critically analyse it in context.` },
-      {
-        inlineData: {
-          mimeType: attachment.type,
-          data: attachment.base64,
-        },
-      },
-    ];
-  }
-
-  if (attachment.content) {
-    return [
-      {
-        text: `Attached file: ${attachmentLabel}. The extracted text is:\n\n---\n\n${attachment.content.trim()}`,
-      },
-    ];
-  }
-
-  return [{ text: `Attached file: ${attachmentLabel}.` }];
-}
-
-function getMessageParts(message) {
-  const parts = [];
-
-  if (typeof message.text === 'string' && message.text.trim()) {
-    parts.push({ text: message.text.trim() });
-  }
-
-  const attachments = message.attachments || (message.file ? [message.file] : []);
-  attachments.forEach((attachment) => {
-    parts.push(...buildAttachmentParts(attachment));
-  });
-
-  if (message.type === 'tool_personas' && Array.isArray(message.personas)) {
-    parts.push({
-      text: `Draft personas JSON:\n${JSON.stringify(message.personas, null, 2)}`,
-    });
-  }
-
-  return parts;
-}
-
-function buildContextHistory(messages) {
-  return messages
-    .map((message) => {
-      const parts = getMessageParts(message);
-      if (parts.length === 0) return null;
-
-      return {
-        role: message.type === 'user' ? 'user' : 'model',
-        parts,
-      };
-    })
-    .filter(Boolean);
-}
-
-function getRecentContextHistory(messages, limit = 8) {
-  return buildContextHistory(messages.slice(-limit));
-}
-
-function parseStreamChunk(part) {
-  if (!part.startsWith('data:')) {
-    return null;
-  }
-
-  const jsonString = part.replace(/^data:\s*/, '').trim();
-  if (!jsonString || jsonString === '[DONE]') {
-    return null;
-  }
-
-  return JSON.parse(jsonString);
-}
-
-function extractTextChunkFromStreamEvent(event) {
-  if (!event || typeof event !== 'object') {
-    return '';
-  }
-
-  if (event.error?.message) {
-    throw new Error(event.error.message);
-  }
-
-  if (event.type === 'response.output_text.delta') {
-    return event.delta || '';
-  }
-
-  if (event.type === 'error') {
-    throw new Error(event.message || 'OpenAI streaming request failed.');
-  }
-
-  return '';
-}
-
-function extractTextFromResponse(result) {
-  if (!result || typeof result !== 'object') {
-    return '';
-  }
-
-  if (typeof result.output_text === 'string' && result.output_text.trim()) {
-    return result.output_text;
-  }
-
-  if (!Array.isArray(result.output)) {
-    return '';
-  }
-
-  return result.output
-    .flatMap((item) => item.content || [])
-    .map((contentItem) => contentItem.text || contentItem.value || '')
-    .join('')
-    .trim();
-}
-
-function getReviewPrompt(flow, stagedFiles) {
-  const intro = `Right, you've submitted files for a ${flow.replace('_', ' ')}. I'll be looking at these documents:`;
-  const fileList = Object.entries(stagedFiles)
-    .map(([, file]) => `- ${file.label}: ${file.name}`)
-    .join('\n');
-
-  if (flow === 'final_review') {
-    return `${intro}\n${fileList}\n\nI've attached the material. Trace the alignment between the framing, the persona, the ideation, and the final output before you critique the finish.`;
-  }
-
-  return `${intro}\n${fileList}\n\nI've attached the material. Let's start by tracing the why. How did your research findings directly shape the problem statement you've defined?`;
-}
 
 export default function App() {
   const [appState, setAppState] = useState('onboarding');
@@ -259,7 +97,7 @@ export default function App() {
     const lastMessage = currentThread.messages[currentThread.messages.length - 1];
     if (lastMessage?.type !== 'user') return;
 
-    const streamGuruResponse = async () => {
+    const fetchGuruResponse = async () => {
       const activeThreadId = currentThread.id;
       const userParts = getMessageParts(lastMessage);
 
@@ -287,23 +125,12 @@ export default function App() {
       );
 
       try {
-        const payload = {
-          maxOutputTokens: 160,
-          contents: [
-            {
-              role: 'user',
-              parts: [{ text: getDynamicPersona(currentThread.flow, currentThread.projectContext) }],
-            },
-            {
-              role: 'model',
-              parts: [{ text: "Understood. I'll trace the why and stay with the tensions in the work." }],
-            },
-            ...getRecentContextHistory(currentThread.messages.slice(0, -1)),
-            { role: 'user', parts: userParts },
-          ],
-        };
-
-        const response = await callGeminiAPI(payload);
+        const payload = createChatPayload(
+          currentThread,
+          currentThread.messages.slice(0, -1),
+          userParts
+        );
+        const response = await callAI(payload);
         const result = await response.json();
         const finalText = extractTextFromResponse(result);
 
@@ -326,7 +153,7 @@ export default function App() {
           })
         );
       } catch (requestError) {
-        console.error('Error fetching streaming response:', requestError);
+        console.error('Error fetching response:', requestError);
         setError(requestError.message);
         setThreads((prevThreads) =>
           prevThreads.map((thread) =>
@@ -343,7 +170,7 @@ export default function App() {
       }
     };
 
-    streamGuruResponse();
+    fetchGuruResponse();
   }, [currentThread, isLoading]);
 
   function resetToOnboarding() {
@@ -471,79 +298,9 @@ export default function App() {
     setIsLoading(true);
     setError(null);
 
-    let payload;
-
-    if (toolType === 'personas') {
-      payload = {
-        maxOutputTokens: 320,
-        contents: [
-          ...getRecentContextHistory(currentThread.messages),
-          {
-            role: 'user',
-            parts: [
-              {
-                text: `Based on the preceding conversation, ask these questions about the user's personas:
-- Are these personas constructed from lived realities or from marketing shorthand?
-- Do they reflect linguistic, geographic, caste/class plurality?
-- Do the frustrations reflect systemic barriers or just convenience issues?
-Then, generate 3 distinct user persona skeletons based on the user's project. Provide the output as a valid JSON array. Each object in the array must follow this exact schema: { "name": "string", "demographic": "string (age, location, occupation)", "needs": ["string", "string"], "frustrations": ["string", "string"], "quote": "string" }.`,
-              },
-            ],
-          },
-        ],
-        generationConfig: {
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: 'ARRAY',
-            items: {
-              type: 'OBJECT',
-              properties: {
-                name: { type: 'STRING' },
-                demographic: { type: 'STRING' },
-                needs: { type: 'ARRAY', items: { type: 'STRING' } },
-                frustrations: { type: 'ARRAY', items: { type: 'STRING' } },
-                quote: { type: 'STRING' },
-              },
-              required: ['name', 'demographic', 'needs', 'frustrations', 'quote'],
-            },
-          },
-        },
-      };
-    } else {
-      payload = {
-        maxOutputTokens: 220,
-        contents: [
-          ...getRecentContextHistory(currentThread.messages),
-          {
-            role: 'user',
-            parts: [
-              {
-                text: `Based on the preceding conversation, surface potential blindspots. Never offer solutions. Just name what’s missing. Let discomfort do the work.
-Surface:
-- Ethical contradictions
-- Cultural erasures
-- Material assumptions
-- Ecological costs
-- Long-term exclusions`,
-              },
-            ],
-          },
-        ],
-      };
-    }
-
-    if (toolType !== 'personas') {
-      payload.contents[payload.contents.length - 1].parts[0].text = `Based on the preceding conversation, surface potential blindspots. Never offer solutions. Just name what's missing. Let discomfort do the work.
-Surface:
-- Ethical contradictions
-- Cultural erasures
-- Material assumptions
-- Ecological costs
-- Long-term exclusions`;
-    }
-
     try {
-      const response = await callGeminiAPI(payload);
+      const payload = createToolPayload(toolType, currentThread);
+      const response = await callAI(payload);
       const result = await response.json();
       const content = extractTextFromResponse(result);
 
@@ -575,7 +332,7 @@ Surface:
     setIsLoading(true);
     setError(null);
 
-    const definitions = flow === 'final_review' ? FINAL_REVIEW_FILES : PROCESS_REVIEW_FILES;
+    const definitions = getRequiredFiles(flow);
 
     try {
       const parsedAttachments = await Promise.all(
@@ -646,7 +403,7 @@ Surface:
       <FileStagingScreen
         title="Process Review"
         description="To get a solid process review, upload the two required docs plus at least three more. Show the working."
-        requiredFiles={PROCESS_REVIEW_FILES}
+        requiredFiles={getRequiredFiles('process_review')}
         minOptional={3}
         onSubmit={(files) => handleReviewSubmit(files, 'process_review')}
         onBack={resetToOnboarding}
@@ -659,7 +416,7 @@ Surface:
       <FileStagingScreen
         title="Roast My Final Design"
         description="For a proper final critique, upload all of the following."
-        requiredFiles={FINAL_REVIEW_FILES}
+        requiredFiles={getRequiredFiles('final_review')}
         minOptional={0}
         onSubmit={(files) => handleReviewSubmit(files, 'final_review')}
         onBack={resetToOnboarding}
