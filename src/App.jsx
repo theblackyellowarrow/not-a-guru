@@ -124,12 +124,56 @@ function buildContextHistory(messages) {
 }
 
 function parseStreamChunk(part) {
+  if (!part.startsWith('data:')) {
+    return null;
+  }
+
   const jsonString = part.replace(/^data:\s*/, '').trim();
   if (!jsonString || jsonString === '[DONE]') {
     return null;
   }
 
   return JSON.parse(jsonString);
+}
+
+function extractTextChunkFromStreamEvent(event) {
+  if (!event || typeof event !== 'object') {
+    return '';
+  }
+
+  if (event.error?.message) {
+    throw new Error(event.error.message);
+  }
+
+  if (event.type === 'response.output_text.delta') {
+    return event.delta || '';
+  }
+
+  if (event.type === 'error') {
+    throw new Error(event.message || 'OpenAI streaming request failed.');
+  }
+
+  return '';
+}
+
+function extractTextFromResponse(result) {
+  if (!result || typeof result !== 'object') {
+    return '';
+  }
+
+  if (typeof result.output_text === 'string' && result.output_text.trim()) {
+    return result.output_text;
+  }
+
+  if (!Array.isArray(result.output)) {
+    return '';
+  }
+
+  return result.output
+    .flatMap((item) => item.content || [])
+    .map((contentItem) => contentItem.text || contentItem.value || '')
+    .join('')
+    .trim();
 }
 
 function getReviewPrompt(flow, stagedFiles) {
@@ -265,10 +309,7 @@ export default function App() {
           try {
             const json = parseStreamChunk(line);
             if (!json) return;
-            if (json.error) {
-              throw new Error(json.error.message);
-            }
-            const textChunk = json.candidates?.[0]?.content?.parts?.[0]?.text;
+            const textChunk = extractTextChunkFromStreamEvent(json);
             if (!textChunk) return;
 
             receivedText = true;
@@ -312,9 +353,7 @@ export default function App() {
           .forEach(processStreamLine);
 
         if (!receivedText) {
-          throw new Error(
-            'The model returned no readable text. If this keeps happening, the Gemini API key may be out of quota.'
-          );
+          throw new Error('The model returned no readable text.');
         }
       } catch (requestError) {
         console.error('Error fetching streaming response:', requestError);
@@ -534,10 +573,10 @@ Surface:
     try {
       const response = await callGeminiAPI(payload);
       const result = await response.json();
-      const content = result.candidates?.[0]?.content?.parts?.[0]?.text;
+      const content = extractTextFromResponse(result);
 
       if (!content) {
-        throw new Error('Received an empty or invalid response from Gemini.');
+        throw new Error('Received an empty or invalid response from OpenAI.');
       }
 
       const newToolMessage =

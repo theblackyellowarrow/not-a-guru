@@ -7,7 +7,7 @@ A Vite + React app for project framing, process review, and design critique.
 - A React UI split into focused components
 - Local thread persistence with `localStorage`
 - PDF, DOCX, and image ingestion
-- A server-side Gemini proxy at `api/gemini.js`
+- A server-side OpenAI proxy at `api/openai.js`
 - GitHub Actions for CI
 
 ## Runtime setup
@@ -27,14 +27,12 @@ The app runs on `http://localhost:3000`.
 
 Copy `.env.example` and set the values you need:
 
-- `GEMINI_API_KEY`
+- `OPENAI_API_KEY`
   Use this on the server or hosting platform for the secure proxy.
-- `VITE_GEMINI_PROXY_URL`
-  Defaults to `/api/gemini`.
-- `VITE_ALLOW_BROWSER_GEMINI`
-  Leave this as `false` for public deployments.
-- `VITE_GEMINI_API_KEY`
-  Optional local-only fallback. Do not use this for public deployments.
+- `VITE_OPENAI_PROXY_URL`
+  Defaults to `/api/openai`.
+- `VITE_OPENAI_MODEL`
+  Defaults to `gpt-5.4-mini`.
 
 ## Local build
 
@@ -55,20 +53,20 @@ This repo includes:
 
 ### Recommended public deployment
 
-Use a platform that can host both the static frontend and the `api/gemini.js` serverless function from this GitHub repo, such as Vercel.
+Use a platform that can host both the static frontend and the `api/openai.js` serverless function from this GitHub repo, such as Vercel.
 
 Why this is the recommended path:
 
-- The Gemini key stays server-side as `GEMINI_API_KEY`
-- The frontend talks to `/api/gemini`
+- The OpenAI key stays server-side as `OPENAI_API_KEY`
+- The frontend talks to `/api/openai`
 - The app can be publicly accessible without shipping the real key to the browser
 
 For this setup:
 
 1. Import the GitHub repo into Vercel.
-2. Set `GEMINI_API_KEY` in the Vercel project environment.
-3. Optionally set `VITE_GEMINI_PROXY_URL=/api/gemini`.
-4. Leave `VITE_ALLOW_BROWSER_GEMINI=false`.
+2. Set `OPENAI_API_KEY` in the Vercel project environment.
+3. Optionally set `VITE_OPENAI_PROXY_URL=/api/openai`.
+4. Optionally set `VITE_OPENAI_MODEL=gpt-5.4-mini`.
 
 `vercel.json` is included for SPA routing.
 
@@ -77,4 +75,4 @@ For this setup:
 1. Reinstall dependencies cleanly on a supported Node version and re-run the build.
 2. Add tests for onboarding, uploads, and tool actions.
 3. Add upload size limits and clearer file validation rules.
-4. Add `GEMINI_API_KEY` to the Vercel project before going live.
+4. Add `OPENAI_API_KEY` to the Vercel project before going live.
