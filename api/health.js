@@ -38,7 +38,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: process.env.OPENAI_HEALTH_MODEL || 'gpt-4.1-mini',
         input: [{ role: 'user', content: [{ type: 'input_text', text: 'ping' }] }],
-        max_output_tokens: 1,
+        max_output_tokens: 16,
         text: { format: { type: 'text' } },
       }),
       signal: controller.signal,
