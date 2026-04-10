@@ -96,7 +96,7 @@ export default async function handler(req, res) {
 function translateContentsToResponsesInput(contents) {
   return contents.map((message) => ({
     role: translateRole(message.role),
-    content: translatePartsToContent(message.parts || []),
+    content: translatePartsToContent(message.parts || [], translateRole(message.role)),
   }));
 }
 
@@ -105,13 +105,19 @@ function translateRole(role) {
   return role || 'user';
 }
 
-function translatePartsToContent(parts) {
+function translatePartsToContent(parts, role) {
+  const textType = role === 'assistant' ? 'output_text' : 'input_text';
+
   return parts.flatMap((part) => {
     if (part.text) {
-      return [{ type: 'input_text', text: part.text }];
+      return [{ type: textType, text: part.text }];
     }
 
     if (part.inlineData) {
+      if (role === 'assistant') {
+        return [];
+      }
+
       const { mimeType, data } = part.inlineData;
       if (mimeType?.startsWith('image/')) {
         return [
