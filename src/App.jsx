@@ -1,6 +1,7 @@
-import { Book, Send, Upload, X } from 'lucide-react';
+import { Book, HelpCircle, Send, Upload, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import FileStagingScreen from './components/FileStagingScreen';
+import HelpModal from './components/HelpModal';
 import HistoryPanel from './components/HistoryPanel';
 import { ErrorMessage, LoadingIndicator, MessageRenderer } from './components/Messages';
 import Onboarding from './components/Onboarding';
@@ -38,6 +39,7 @@ export default function App() {
   const [tempFlow, setTempFlow] = useState(null);
   const [selectedProjectContext, setSelectedProjectContext] = useState(null);
   const [isHistoryPanelOpen, setIsHistoryPanelOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [input, setInput] = useState('');
   const [uploadedFile, setUploadedFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -397,7 +399,12 @@ export default function App() {
   }
 
   if (appState === 'onboarding') {
-    return <Onboarding onSelect={handleOnboardingSelect} isLoading={isLoading} />;
+    return (
+      <>
+        <Onboarding onSelect={handleOnboardingSelect} onOpenHelp={() => setIsHelpOpen(true)} isLoading={isLoading} />
+        <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+      </>
+    );
   }
 
   if (appState === 'project_context') {
@@ -437,6 +444,7 @@ export default function App() {
 
   return (
     <div className="bg-black text-gray-200 font-sans flex h-screen antialiased overflow-hidden">
+      <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
       <HistoryPanel
         threads={threads}
         currentThreadId={currentThreadId}
@@ -454,12 +462,22 @@ export default function App() {
           <h1 className="text-2xl font-bold tracking-wider text-gray-300 mx-auto uppercase font-mono">
             {currentThread?.title || 'Not a Guru'}
           </h1>
-          <button
-            onClick={() => setIsHistoryPanelOpen((prev) => !prev)}
-            className="p-2 text-gray-400 hover:text-white hidden lg:block"
-          >
-            <Book size={20} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsHelpOpen(true)}
+              className="p-2 text-gray-400 hover:text-white"
+              aria-label="Open help"
+            >
+              <HelpCircle size={20} />
+            </button>
+            <button
+              onClick={() => setIsHistoryPanelOpen((prev) => !prev)}
+              className="p-2 text-gray-400 hover:text-white hidden lg:block"
+              aria-label="Toggle history"
+            >
+              <Book size={20} />
+            </button>
+          </div>
         </header>
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">

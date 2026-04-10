@@ -1,4 +1,4 @@
-import { BrainCircuit, FilePlus, MessageSquareQuote, SearchCheck, Wrench } from 'lucide-react';
+import { BrainCircuit, FilePlus, HelpCircle, MessageSquareQuote, SearchCheck, Wrench } from 'lucide-react';
 
 const options = [
   {
@@ -27,15 +27,22 @@ const options = [
   },
 ];
 
-export default function Onboarding({ onSelect, isLoading }) {
+export default function Onboarding({ onSelect, onOpenHelp, isLoading }) {
   return (
     <div className="bg-black text-gray-200 font-sans flex flex-col h-screen antialiased items-center justify-center p-4">
       <div className="text-center max-w-5xl">
         <BrainCircuit size={48} className="mx-auto text-gray-600 mb-4" />
         <h1 className="text-4xl font-bold text-gray-200 mb-2 uppercase font-mono">Not a Guru</h1>
-        <p className="text-fuchsia-500 text-lg mb-10">The design peer who keeps it real. Attention over fluff.</p>
+        <p className="text-fuchsia-500 text-lg mb-6">The design peer who keeps it real. Attention over fluff.</p>
+        <button
+          onClick={onOpenHelp}
+          className="inline-flex items-center gap-2 border border-gray-800 px-4 py-2 text-sm font-semibold uppercase font-mono text-gray-300 hover:border-fuchsia-500 hover:text-white"
+        >
+          <HelpCircle size={16} />
+          How to Use
+        </button>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {options.map((opt) => {
             const Icon = opt.icon;
 

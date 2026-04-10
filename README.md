@@ -10,6 +10,15 @@ A Vite + React app for project framing, process review, and design critique.
 - A server-side OpenAI proxy at `api/openai.js`
 - GitHub Actions for CI
 
+## How to use
+
+1. Start a New Vibe: talk through a raw idea and sharpen it into a clear problem and solution.
+2. Process Check: upload research/process documents and get a critique tied to the evidence.
+3. Final Roast: upload final assets plus framing docs for a direct critique of the final output.
+4. Just Venting / FAQ: short support and quick directional questions.
+
+Use the in-app **How to Use** button to see the same guidance.
+
 ## Runtime setup
 
 Use Node `24.14.1` for local work. The repo includes `.nvmrc`, and the app also builds on Vercel within the supported `>=20.19.0 <25` range.
