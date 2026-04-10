@@ -6,4 +6,17 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+  build: {
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom'],
+          ui: ['lucide-react', 'marked'],
+          docs: ['mammoth'],
+          pdf: ['pdfjs-dist'],
+        },
+      },
+    },
+  },
 });
