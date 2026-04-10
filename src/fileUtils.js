@@ -1,9 +1,3 @@
-import mammoth from 'mammoth';
-import * as pdfjsLib from 'pdfjs-dist';
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
-
 export async function parseUploadedFile(file) {
   const supportedImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
 
@@ -17,6 +11,7 @@ export async function parseUploadedFile(file) {
   }
 
   if (file.type === 'application/pdf') {
+    const pdfjsLib = await loadPdfJs();
     const arrayBuffer = await readFileAsArrayBuffer(file);
     const typedArray = new Uint8Array(arrayBuffer);
     const pdf = await pdfjsLib.getDocument({ data: typedArray }).promise;
@@ -39,6 +34,7 @@ export async function parseUploadedFile(file) {
     file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
     file.name.toLowerCase().endsWith('.docx')
   ) {
+    const mammoth = await loadMammoth();
     const arrayBuffer = await readFileAsArrayBuffer(file);
     const result = await mammoth.extractRawText({ arrayBuffer });
 
@@ -50,6 +46,33 @@ export async function parseUploadedFile(file) {
   }
 
   throw new Error(`Unsupported file type: ${file.type || 'unknown'}. Please use images, PDFs, or .docx files.`);
+}
+
+let pdfJsCache;
+async function loadPdfJs() {
+  if (pdfJsCache) {
+    return pdfJsCache;
+  }
+
+  const [pdfjsLib, workerModule] = await Promise.all([
+    import('pdfjs-dist'),
+    import('pdfjs-dist/build/pdf.worker.min.mjs?url'),
+  ]);
+
+  pdfjsLib.GlobalWorkerOptions.workerSrc = workerModule.default;
+  pdfJsCache = pdfjsLib;
+  return pdfJsCache;
+}
+
+let mammothCache;
+async function loadMammoth() {
+  if (mammothCache) {
+    return mammothCache;
+  }
+
+  const mammothModule = await import('mammoth');
+  mammothCache = mammothModule.default;
+  return mammothCache;
 }
 
 function readFileAsArrayBuffer(file) {
