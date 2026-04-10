@@ -79,6 +79,18 @@ For this setup:
 
 `vercel.json` is included for SPA routing.
 
+## Embed in Wix
+
+Use the embed-optimized URL to keep the UI clean inside an iframe:
+
+`https://not-a-guru.vercel.app/?embed=1`
+
+In Wix:
+
+1. Add → Embed → HTML iframe.
+2. Set the iframe URL to the embed link above.
+3. Set width to 100% and height to 800–1000px.
+
 ## Remaining recommended cleanup
 
 1. Reinstall dependencies cleanly on a supported Node version and re-run the build.

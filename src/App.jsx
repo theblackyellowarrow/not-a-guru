@@ -40,6 +40,7 @@ export default function App() {
   const [selectedProjectContext, setSelectedProjectContext] = useState(null);
   const [isHistoryPanelOpen, setIsHistoryPanelOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isEmbed, setIsEmbed] = useState(false);
   const [input, setInput] = useState('');
   const [uploadedFile, setUploadedFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -77,6 +78,19 @@ export default function App() {
       console.error('Failed to load threads from localStorage', loadError);
       setAppState('onboarding');
     }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const isEmbedMode = new URLSearchParams(window.location.search).get('embed') === '1';
+    setIsEmbed(isEmbedMode);
+    if (isEmbedMode) {
+      setIsHistoryPanelOpen(false);
+      document.body.classList.add('embed-mode');
+    }
+    return () => {
+      document.body.classList.remove('embed-mode');
+    };
   }, []);
 
   useEffect(() => {
@@ -443,26 +457,32 @@ export default function App() {
   }
 
   return (
-    <div className="bg-black text-gray-200 font-sans flex h-screen antialiased overflow-hidden">
+    <div className={`bg-black text-gray-200 font-sans flex h-screen antialiased overflow-hidden ${isEmbed ? 'embed-shell' : ''}`}>
       <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
-      <HistoryPanel
-        threads={threads}
-        currentThreadId={currentThreadId}
-        onSelectThread={selectThread}
-        onNewChat={resetToOnboarding}
-        isOpen={isHistoryPanelOpen}
-        setIsOpen={setIsHistoryPanelOpen}
-      />
+      {!isEmbed && (
+        <HistoryPanel
+          threads={threads}
+          currentThreadId={currentThreadId}
+          onSelectThread={selectThread}
+          onNewChat={resetToOnboarding}
+          isOpen={isHistoryPanelOpen}
+          setIsOpen={setIsHistoryPanelOpen}
+        />
+      )}
 
       <div className="flex-1 flex flex-col transition-all duration-300">
         <header className="border-b-2 border-gray-800 p-4 flex items-center justify-between text-center shrink-0">
-          <button onClick={() => setIsHistoryPanelOpen(true)} className="p-2 text-gray-400 hover:text-white lg:hidden">
-            <Book size={20} />
-          </button>
+          {isEmbed ? (
+            <div className="w-10" />
+          ) : (
+            <button onClick={() => setIsHistoryPanelOpen(true)} className="p-2 text-gray-400 hover:text-white lg:hidden">
+              <Book size={20} />
+            </button>
+          )}
           <h1 className="text-2xl font-bold tracking-wider text-gray-300 mx-auto uppercase font-mono">
             {currentThread?.title || 'Not a Guru'}
           </h1>
-          <div className="flex items-center gap-2">
+          {isEmbed ? (
             <button
               onClick={() => setIsHelpOpen(true)}
               className="p-2 text-gray-400 hover:text-white"
@@ -470,17 +490,27 @@ export default function App() {
             >
               <HelpCircle size={20} />
             </button>
-            <button
-              onClick={() => setIsHistoryPanelOpen((prev) => !prev)}
-              className="p-2 text-gray-400 hover:text-white hidden lg:block"
-              aria-label="Toggle history"
-            >
-              <Book size={20} />
-            </button>
-          </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsHelpOpen(true)}
+                className="p-2 text-gray-400 hover:text-white"
+                aria-label="Open help"
+              >
+                <HelpCircle size={20} />
+              </button>
+              <button
+                onClick={() => setIsHistoryPanelOpen((prev) => !prev)}
+                className="p-2 text-gray-400 hover:text-white hidden lg:block"
+                aria-label="Toggle history"
+              >
+                <Book size={20} />
+              </button>
+            </div>
+          )}
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+        <main className={`flex-1 overflow-y-auto ${isEmbed ? 'p-4' : 'p-4 md:p-6 lg:p-8'}`}>
           <div className="max-w-3xl mx-auto space-y-6">
             {currentThread?.messages.map((message, index) => (
               <MessageRenderer

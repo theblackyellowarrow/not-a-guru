@@ -14,6 +14,14 @@ body {
   background: #000;
 }
 
+body.embed-mode {
+  background: #000;
+}
+
+body.embed-mode #root {
+  height: 100vh;
+}
+
 .font-mono {
   font-family: 'VT323', monospace;
 }
