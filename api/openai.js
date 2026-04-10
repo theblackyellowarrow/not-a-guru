@@ -30,9 +30,6 @@ export default async function handler(req, res) {
       model,
       input: translateContentsToResponsesInput(payload.contents || []),
       max_output_tokens: payload.maxOutputTokens || 220,
-      text: {
-        format: { type: 'text' },
-      },
     };
 
     if (payload.instructions) {
