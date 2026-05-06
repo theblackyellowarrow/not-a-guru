@@ -1,6 +1,7 @@
 import { Book, HelpCircle, Send, Upload, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import FileStagingScreen from './components/FileStagingScreen';
+import FirstRunTour from './components/FirstRunTour';
 import HelpModal from './components/HelpModal';
 import HistoryPanel from './components/HistoryPanel';
 import { ErrorMessage, LoadingIndicator, MessageRenderer } from './components/Messages';
@@ -19,6 +20,7 @@ import { parseUploadedFile } from './fileUtils';
 import { getRequiredFiles, getReviewPrompt } from './reviewConfig';
 
 const STORAGE_KEY = 'guru_threads';
+const TOUR_KEY = 'guru_seen_tour';
 
 const INITIAL_MESSAGES = {
   start_project:
@@ -41,6 +43,8 @@ export default function App() {
   const [isHistoryPanelOpen, setIsHistoryPanelOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isEmbed, setIsEmbed] = useState(false);
+  const [isTourOpen, setIsTourOpen] = useState(false);
+  const embedShellRef = useRef(null);
   const [input, setInput] = useState('');
   const [uploadedFile, setUploadedFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -92,6 +96,42 @@ export default function App() {
       document.body.classList.remove('embed-mode');
     };
   }, []);
+
+  useEffect(() => {
+    if (!isEmbed) return;
+    if (typeof window === 'undefined') return;
+
+    const target = document.body;
+    const postSize = () => {
+      const height = Math.ceil(document.documentElement.scrollHeight || target.scrollHeight || 0);
+      window.parent?.postMessage({ type: 'not-a-guru:resize', height }, '*');
+    };
+
+    postSize();
+
+    const observer = new ResizeObserver(() => postSize());
+    observer.observe(target);
+
+    const intervalId = window.setInterval(postSize, 1000);
+
+    return () => {
+      observer.disconnect();
+      window.clearInterval(intervalId);
+    };
+  }, [isEmbed]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      if (isEmbed) return;
+      const hasSeenTour = localStorage.getItem(TOUR_KEY) === '1';
+      if (!hasSeenTour) {
+        setIsTourOpen(true);
+      }
+    } catch {
+      // Ignore storage failures; the tour is optional.
+    }
+  }, [isEmbed]);
 
   useEffect(() => {
     try {
@@ -417,6 +457,17 @@ export default function App() {
       <>
         <Onboarding onSelect={handleOnboardingSelect} onOpenHelp={() => setIsHelpOpen(true)} isLoading={isLoading} />
         <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+        <FirstRunTour
+          isOpen={isTourOpen}
+          onClose={() => {
+            setIsTourOpen(false);
+            try {
+              localStorage.setItem(TOUR_KEY, '1');
+            } catch {
+              // ignore
+            }
+          }}
+        />
       </>
     );
   }
@@ -457,7 +508,10 @@ export default function App() {
   }
 
   return (
-    <div className={`bg-black text-gray-200 font-sans flex h-screen antialiased overflow-hidden ${isEmbed ? 'embed-shell' : ''}`}>
+    <div
+      ref={embedShellRef}
+      className={`bg-black text-gray-200 font-sans flex h-screen antialiased overflow-hidden ${isEmbed ? 'embed-shell' : ''}`}
+    >
       <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
       {!isEmbed && (
         <HistoryPanel
