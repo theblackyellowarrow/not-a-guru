@@ -21,7 +21,7 @@ export default function ToolbeltClean({ messages, flow, onToolUse, isLoading }) 
           <button
             disabled={isLoading}
             onClick={() => onToolUse('personas')}
-            className="flex items-center gap-2 text-sm bg-fuchsia-900/50 text-fuchsia-300 px-4 py-2 border-2 border-fuchsia-700 hover:bg-fuchsia-900 transition-colors disabled:opacity-50 uppercase font-mono"
+            className="flex items-center gap-2 text-sm bg-cyan-900/20 text-cyan-200 px-4 py-2 border-2 border-cyan-700 hover:bg-cyan-900/30 transition-colors disabled:opacity-50 uppercase font-mono"
           >
             <Users size={16} /> Draft Personas
           </button>

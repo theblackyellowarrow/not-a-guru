@@ -31,7 +31,7 @@ export default function HistoryPanel({
               key={thread.id}
               onClick={() => onSelectThread(thread.id)}
               className={`w-full text-left text-base p-2 truncate ${
-                thread.id === currentThreadId ? 'bg-fuchsia-900/50 text-fuchsia-300' : 'hover:bg-gray-800'
+                thread.id === currentThreadId ? 'bg-cyan-900/20 text-cyan-200' : 'hover:bg-gray-800'
               }`}
             >
               {thread.title}

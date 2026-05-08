@@ -514,9 +514,12 @@ export default function App() {
               <Book size={20} />
             </button>
           )}
-          <h1 className="text-2xl font-bold tracking-wider text-gray-300 mx-auto uppercase font-mono">
-            {currentThread?.title || 'Not a Guru'}
-          </h1>
+          <div className="mx-auto flex items-center gap-3">
+            <img src="/brand/dotai-logo.png" alt="DotAI" className="h-6 w-auto opacity-90" />
+            <h1 className="text-2xl font-bold tracking-wider text-gray-300 uppercase font-mono">
+              {currentThread?.title || 'Not a Guru'}
+            </h1>
+          </div>
           {isEmbed ? (
             <button
               onClick={() => setIsHelpOpen(true)}
@@ -581,7 +584,7 @@ export default function App() {
                 </button>
               </div>
             )}
-            <div className="flex items-center bg-gray-900 p-2 border-2 border-gray-700 focus-within:border-fuchsia-500">
+            <div className="flex items-center bg-gray-900 p-2 border-2 border-gray-700 focus-within:border-cyan-400">
               <input
                 type="file"
                 ref={fileInputRef}

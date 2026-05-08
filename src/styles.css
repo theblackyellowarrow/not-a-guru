@@ -1,5 +1,7 @@
 :root {
   color-scheme: dark;
+  --accent: #00f5d4;
+  --accent-soft: rgba(0, 245, 212, 0.35);
 }
 
 html,
@@ -11,7 +13,9 @@ body,
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
-  background: #000;
+  background: radial-gradient(1200px 800px at 70% 20%, rgba(0, 245, 212, 0.08), transparent 60%),
+    radial-gradient(900px 700px at 10% 80%, rgba(0, 245, 212, 0.05), transparent 55%),
+    #000;
 }
 
 body.embed-mode {
@@ -22,12 +26,25 @@ body.embed-mode #root {
   height: 100vh;
 }
 
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.08;
+  background-image: url('/brand/dotai-dots.png');
+  background-repeat: no-repeat;
+  background-position: 70% 70%;
+  background-size: 900px auto;
+  filter: saturate(1.2) contrast(1.15);
+}
+
 .font-mono {
   font-family: 'VT323', monospace;
 }
 
 .blinking-cursor::after {
-  content: '▋';
+  content: '|';
   animation: blink 1s step-end infinite;
 }
 
@@ -37,7 +54,7 @@ body.embed-mode #root {
     color: transparent;
   }
   50% {
-    color: #d946ef;
+    color: var(--accent);
   }
 }
 
@@ -70,10 +87,6 @@ body.embed-mode #root {
   margin-bottom: 0.75em;
 }
 
-.blinking-cursor::after {
-  content: '|';
-}
-
 .prose-styles ol {
   list-style-position: inside;
   padding-left: 0;
@@ -86,7 +99,7 @@ body.embed-mode #root {
 }
 
 .prose-styles code {
-  color: #f5d0fe;
+  color: rgba(0, 245, 212, 0.85);
   font-family: 'VT323', monospace;
   font-size: 1rem;
 }

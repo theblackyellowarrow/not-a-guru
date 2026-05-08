@@ -1,4 +1,4 @@
-import { BrainCircuit, FilePlus, HelpCircle, MessageSquareQuote, SearchCheck, Wrench } from 'lucide-react';
+import { FilePlus, HelpCircle, MessageSquareQuote, SearchCheck, Wrench } from 'lucide-react';
 
 const options = [
   {
@@ -31,12 +31,17 @@ export default function Onboarding({ onSelect, onOpenHelp, isLoading }) {
   return (
     <div className="bg-black text-gray-200 font-sans flex flex-col h-screen antialiased items-center justify-center p-4">
       <div className="text-center max-w-5xl">
-        <BrainCircuit size={48} className="mx-auto text-gray-600 mb-4" />
+        <img
+          src="/brand/dotai-logo.png"
+          alt="DotAI"
+          className="mx-auto mb-4 h-12 w-auto opacity-95"
+          loading="eager"
+        />
         <h1 className="text-4xl font-bold text-gray-200 mb-2 uppercase font-mono">Not a Guru</h1>
-        <p className="text-fuchsia-500 text-lg mb-6">The design peer who keeps it real. Attention over fluff.</p>
+        <p className="text-cyan-400 text-lg mb-6">The design peer who keeps it real. Attention over fluff.</p>
         <button
           onClick={onOpenHelp}
-          className="inline-flex items-center gap-2 border border-gray-800 px-4 py-2 text-sm font-semibold uppercase font-mono text-gray-300 hover:border-fuchsia-500 hover:text-white"
+          className="inline-flex items-center gap-2 border border-gray-800 px-4 py-2 text-sm font-semibold uppercase font-mono text-gray-300 hover:border-cyan-400 hover:text-white"
         >
           <HelpCircle size={16} />
           How to Use
@@ -51,7 +56,7 @@ export default function Onboarding({ onSelect, onOpenHelp, isLoading }) {
                 key={opt.key}
                 onClick={() => onSelect(opt.key)}
                 disabled={isLoading}
-                className="bg-gray-900 group border-2 border-gray-800 p-8 text-left hover:bg-fuchsia-900/50 hover:border-fuchsia-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-wait"
+                className="bg-gray-900/70 group border-2 border-gray-800 p-8 text-left hover:bg-cyan-900/20 hover:border-cyan-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-wait"
               >
                 <div className="mb-4">
                   <Icon size={32} className="text-gray-400 group-hover:text-white transition-colors" />
@@ -63,7 +68,7 @@ export default function Onboarding({ onSelect, onOpenHelp, isLoading }) {
           })}
         </div>
 
-        {isLoading && <div className="mt-8 text-fuchsia-500">Loading session...</div>}
+        {isLoading && <div className="mt-8 text-cyan-400">Loading session...</div>}
       </div>
     </div>
   );
