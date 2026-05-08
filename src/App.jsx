@@ -515,7 +515,7 @@ export default function App() {
             </button>
           )}
           <div className="mx-auto flex items-center gap-3">
-            <img src="/brand/dotai-logo.png" alt="DotAI" className="h-6 w-auto opacity-90" />
+            <img src="/brand/dotai-logo-mark.png" alt="DotAI" className="h-6 w-auto opacity-90" />
             <h1 className="text-2xl font-bold tracking-wider text-gray-300 uppercase font-mono">
               {currentThread?.title || 'Not a Guru'}
             </h1>

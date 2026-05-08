@@ -32,7 +32,7 @@ export default function Onboarding({ onSelect, onOpenHelp, isLoading }) {
     <div className="bg-black text-gray-200 font-sans flex flex-col h-screen antialiased items-center justify-center p-4">
       <div className="text-center max-w-5xl">
         <img
-          src="/brand/dotai-logo.png"
+          src="/brand/dotai-logo-mark.png"
           alt="DotAI"
           className="mx-auto mb-4 h-12 w-auto opacity-95"
           loading="eager"

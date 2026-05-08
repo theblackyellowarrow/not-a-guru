@@ -10,6 +10,11 @@ body,
   height: 100%;
 }
 
+#root {
+  position: relative;
+  z-index: 1;
+}
+
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
@@ -31,12 +36,14 @@ body::before {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  opacity: 0.08;
+  z-index: 0;
+  opacity: 0.14;
   background-image: url('/brand/dotai-dots.png');
   background-repeat: no-repeat;
-  background-position: 70% 70%;
-  background-size: 900px auto;
-  filter: saturate(1.2) contrast(1.15);
+  background-position: 50% 35%;
+  background-size: min(1100px, 120vw) auto;
+  mix-blend-mode: screen;
+  filter: saturate(1.4) contrast(1.1);
 }
 
 .font-mono {
