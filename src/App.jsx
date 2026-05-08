@@ -6,7 +6,6 @@ import HelpModal from './components/HelpModal';
 import HistoryPanel from './components/HistoryPanel';
 import { ErrorMessage, LoadingIndicator, MessageRenderer } from './components/Messages';
 import Onboarding from './components/Onboarding';
-import ProjectContextScreen from './components/ProjectContextScreen';
 import Toolbelt from './components/ToolbeltClean';
 import { callAI } from './aiClient';
 import {
@@ -38,7 +37,6 @@ export default function App() {
   const [appState, setAppState] = useState('onboarding');
   const [threads, setThreads] = useState([]);
   const [currentThreadId, setCurrentThreadId] = useState(null);
-  const [tempFlow, setTempFlow] = useState(null);
   const [selectedProjectContext, setSelectedProjectContext] = useState(null);
   const [isHistoryPanelOpen, setIsHistoryPanelOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
@@ -243,7 +241,6 @@ export default function App() {
   function resetToOnboarding() {
     setAppState('onboarding');
     setCurrentThreadId(null);
-    setTempFlow(null);
     setSelectedProjectContext(null);
     setInput('');
     setUploadedFile(null);
@@ -252,18 +249,11 @@ export default function App() {
 
   function handleOnboardingSelect(selectedFlow) {
     setIsLoading(true);
-    setTempFlow(selectedFlow);
-
-    if (selectedFlow === 'venting_mode') {
-      handleContextSelect('n/a', selectedFlow);
-      return;
-    }
-
-    setAppState('project_context');
-    setIsLoading(false);
+    // Default context keeps flow moving; users can refine context later in the conversation.
+    handleContextSelect('default', selectedFlow);
   }
 
-  function handleContextSelect(projectContext, explicitFlow = tempFlow) {
+  function handleContextSelect(projectContext, explicitFlow) {
     setIsLoading(true);
     setSelectedProjectContext(projectContext);
 
@@ -469,15 +459,6 @@ export default function App() {
           }}
         />
       </>
-    );
-  }
-
-  if (appState === 'project_context') {
-    return (
-      <ProjectContextScreen
-        onSelectContext={(context) => handleContextSelect(context, tempFlow)}
-        onBack={resetToOnboarding}
-      />
     );
   }
 
