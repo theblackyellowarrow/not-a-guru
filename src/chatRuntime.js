@@ -1,4 +1,4 @@
-import { getChatInstructions, getToolInstructions, getToolPrompt } from './personaPrompt';
+import { getChatInstructions, getToolInstructions, getToolPrompt } from './personaPrompt.js';
 
 export function getThreadTitlePreview(messageText, attachments = []) {
   if (messageText) {
