@@ -620,6 +620,9 @@ export default function App() {
                 <Send size={20} />
               </button>
             </div>
+            <div className="mt-3 text-center text-xs text-gray-600 font-mono uppercase tracking-widest">
+              powered by dotai
+            </div>
           </div>
         </footer>
       </div>
