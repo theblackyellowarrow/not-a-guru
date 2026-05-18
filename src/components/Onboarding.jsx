@@ -29,7 +29,7 @@ const options = [
 
 export default function Onboarding({ onSelect, onOpenHelp, isLoading }) {
   return (
-    <div className="bg-main text-primary font-sans flex flex-col h-screen antialiased items-center justify-center p-4">
+    <div className="bg-black text-gray-200 font-sans flex flex-col h-screen antialiased items-center justify-center p-4">
       <div className="text-center max-w-5xl">
         <img
           src="/brand/dotai-logo-mark.png"
@@ -37,11 +37,11 @@ export default function Onboarding({ onSelect, onOpenHelp, isLoading }) {
           className="mx-auto mb-4 h-12 w-auto opacity-95"
           loading="eager"
         />
-        <h1 className="text-4xl font-bold text-primary mb-2 uppercase font-mono">Not a Guru</h1>
-        <p className="text-accent text-lg mb-6">The design peer who keeps it real. Attention over fluff.</p>
+        <h1 className="text-4xl font-bold text-gray-200 mb-2 uppercase font-mono">Not a Guru</h1>
+        <p className="text-cyan-400 text-lg mb-6">The design peer who keeps it real. Attention over fluff.</p>
         <button
           onClick={onOpenHelp}
-          className="inline-flex items-center gap-2 border border-main px-4 py-2 text-sm font-semibold uppercase font-mono text-secondary hover:border-accent hover:text-primary"
+          className="inline-flex items-center gap-2 border border-gray-800 px-4 py-2 text-sm font-semibold uppercase font-mono text-gray-300 hover:border-cyan-400 hover:text-white"
         >
           <HelpCircle size={16} />
           How to Use
@@ -56,19 +56,19 @@ export default function Onboarding({ onSelect, onOpenHelp, isLoading }) {
                 key={opt.key}
                 onClick={() => onSelect(opt.key)}
                 disabled={isLoading}
-                className="bg-card-alt group border-2 border-main p-8 text-left hover:bg-accent-subtle hover:border-accent transition-all duration-200 disabled:opacity-50 disabled:cursor-wait"
+                className="bg-gray-900/70 group border-2 border-gray-800 p-8 text-left hover:bg-cyan-900/20 hover:border-cyan-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-wait"
               >
                 <div className="mb-4">
-                  <Icon size={32} className="text-muted group-hover:text-primary transition-colors" />
+                  <Icon size={32} className="text-gray-400 group-hover:text-white transition-colors" />
                 </div>
-                <h2 className="font-semibold text-xl text-primary mb-1 uppercase font-mono">{opt.title}</h2>
-                <p className="text-base text-muted">{opt.description}</p>
+                <h2 className="font-semibold text-xl text-gray-200 mb-1 uppercase font-mono">{opt.title}</h2>
+                <p className="text-base text-gray-400">{opt.description}</p>
               </button>
             );
           })}
         </div>
 
-        {isLoading && <div className="mt-8 text-accent">Loading session...</div>}
+        {isLoading && <div className="mt-8 text-cyan-400">Loading session...</div>}
       </div>
     </div>
   );
