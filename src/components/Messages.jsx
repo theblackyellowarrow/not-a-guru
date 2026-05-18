@@ -1,3 +1,4 @@
+import { marked } from 'marked';
 import { BrainCircuit, FileText, ShieldAlert, Sparkles, User, X } from 'lucide-react';
 
 export function MessageRenderer({ message, isLoading, isLastMessage }) {
@@ -15,149 +16,14 @@ export function MessageRenderer({ message, isLoading, isLastMessage }) {
 }
 
 function MarkdownRenderer({ text, isStreaming }) {
-  const blocks = [];
-  const lines = (text || '').split('\n');
-  let paragraphLines = [];
-  let listItems = [];
-  let orderedItems = [];
-
-  function flushParagraph() {
-    if (paragraphLines.length === 0) return;
-    blocks.push({
-      type: 'paragraph',
-      content: paragraphLines.join(' '),
-    });
-    paragraphLines = [];
-  }
-
-  function flushList() {
-    if (listItems.length > 0) {
-      blocks.push({ type: 'unordered-list', content: [...listItems] });
-      listItems = [];
-    }
-
-    if (orderedItems.length > 0) {
-      blocks.push({ type: 'ordered-list', content: [...orderedItems] });
-      orderedItems = [];
-    }
-  }
-
-  lines.forEach((line) => {
-    const trimmed = line.trim();
-
-    if (!trimmed) {
-      flushParagraph();
-      flushList();
-      return;
-    }
-
-    const headingMatch = trimmed.match(/^(#{1,6})\s+(.*)$/);
-    if (headingMatch) {
-      flushParagraph();
-      flushList();
-      blocks.push({
-        type: 'heading',
-        level: headingMatch[1].length,
-        content: headingMatch[2],
-      });
-      return;
-    }
-
-    const orderedMatch = trimmed.match(/^\d+\.\s+(.*)$/);
-    if (orderedMatch) {
-      flushParagraph();
-      if (listItems.length > 0) {
-        flushList();
-      }
-      orderedItems.push(orderedMatch[1]);
-      return;
-    }
-
-    const unorderedMatch = trimmed.match(/^[-*]\s+(.*)$/);
-    if (unorderedMatch) {
-      flushParagraph();
-      if (orderedItems.length > 0) {
-        flushList();
-      }
-      listItems.push(unorderedMatch[1]);
-      return;
-    }
-
-    paragraphLines.push(trimmed);
-  });
-
-  flushParagraph();
-  flushList();
+  const html = marked.parse(text || '', { async: false });
 
   return (
-    <div className={`prose-styles ${isStreaming ? 'blinking-cursor' : ''}`}>
-      {blocks.map((block, index) => {
-        if (block.type === 'heading') {
-          return (
-            <p key={`${block.type}-${index}`} className="prose-heading">
-              {renderInline(block.content)}
-            </p>
-          );
-        }
-
-        if (block.type === 'unordered-list') {
-          return (
-            <ul key={`${block.type}-${index}`}>
-              {block.content.map((item, itemIndex) => (
-                <li key={`${block.type}-${index}-${itemIndex}`}>{renderInline(item)}</li>
-              ))}
-            </ul>
-          );
-        }
-
-        if (block.type === 'ordered-list') {
-          return (
-            <ol key={`${block.type}-${index}`}>
-              {block.content.map((item, itemIndex) => (
-                <li key={`${block.type}-${index}-${itemIndex}`}>{renderInline(item)}</li>
-              ))}
-            </ol>
-          );
-        }
-
-        return (
-          <p key={`${block.type}-${index}`}>
-            {renderInline(block.content)}
-          </p>
-        );
-      })}
-    </div>
+    <div
+      className={`prose-styles ${isStreaming ? 'blinking-cursor' : ''}`}
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
   );
-}
-
-function renderInline(text) {
-  const parts = [];
-  const pattern = /(`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g;
-  let lastIndex = 0;
-  let match;
-
-  while ((match = pattern.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push(text.slice(lastIndex, match.index));
-    }
-
-    const token = match[0];
-    if (token.startsWith('**') && token.endsWith('**')) {
-      parts.push(<strong key={`${match.index}-strong`}>{token.slice(2, -2)}</strong>);
-    } else if (token.startsWith('*') && token.endsWith('*')) {
-      parts.push(<em key={`${match.index}-em`}>{token.slice(1, -1)}</em>);
-    } else if (token.startsWith('`') && token.endsWith('`')) {
-      parts.push(<code key={`${match.index}-code`}>{token.slice(1, -1)}</code>);
-    }
-
-    lastIndex = pattern.lastIndex;
-  }
-
-  if (lastIndex < text.length) {
-    parts.push(text.slice(lastIndex));
-  }
-
-  return parts.length > 0 ? parts : text;
 }
 
 function AttachmentList({ attachments }) {

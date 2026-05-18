@@ -99,7 +99,12 @@ body::before {
   padding-left: 0;
 }
 
-.prose-heading {
+.prose-styles h1,
+.prose-styles h2,
+.prose-styles h3,
+.prose-styles h4,
+.prose-styles h5,
+.prose-styles h6 {
   color: #fff;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -109,4 +114,45 @@ body::before {
   color: rgba(0, 245, 212, 0.85);
   font-family: 'VT323', monospace;
   font-size: 1rem;
+}
+
+.prose-styles pre {
+  background: #111;
+  border: 2px solid #1f2937;
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+.prose-styles blockquote {
+  border-left: 3px solid #00f5d4;
+  padding-left: 1rem;
+  color: #9ca3af;
+  margin-left: 0;
+}
+
+.prose-styles a {
+  color: #00f5d4;
+  text-decoration: underline;
+}
+
+.prose-styles hr {
+  border-color: #1f2937;
+  margin: 1.5rem 0;
+}
+
+.prose-styles table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.prose-styles th,
+.prose-styles td {
+  border: 1px solid #1f2937;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.prose-styles th {
+  background: #111;
+  color: #fff;
 }

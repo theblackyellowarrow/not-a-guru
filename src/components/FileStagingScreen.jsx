@@ -28,9 +28,17 @@ export default function FileStagingScreen({
     fileInputRef.current?.click();
   }
 
+  const MAX_FILE_SIZE = 20 * 1024 * 1024;
+
   function handleFileUpload(event) {
     const file = event.target.files?.[0];
     if (!file || !currentUploadKey) return;
+
+    if (file.size > MAX_FILE_SIZE) {
+      setError(`File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum size is ${MAX_FILE_SIZE / 1024 / 1024} MB.`);
+      event.target.value = '';
+      return;
+    }
 
     const targetConfig = requiredFiles.find((item) => item.key === currentUploadKey);
     if (targetConfig?.isImage && !file.type.startsWith('image/')) {

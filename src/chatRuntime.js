@@ -82,10 +82,6 @@ export function extractTextFromResponse(result) {
     return '';
   }
 
-  if (typeof result.output_text === 'string' && result.output_text.trim()) {
-    return result.output_text;
-  }
-
   if (!Array.isArray(result.output)) {
     return '';
   }

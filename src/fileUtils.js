@@ -1,4 +1,9 @@
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
+
 export async function parseUploadedFile(file) {
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error(`File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum size is ${MAX_FILE_SIZE / 1024 / 1024} MB.`);
+  }
   const supportedImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
 
   if (supportedImageTypes.includes(file.type)) {
