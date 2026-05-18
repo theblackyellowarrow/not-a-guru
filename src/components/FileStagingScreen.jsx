@@ -53,33 +53,33 @@ export default function FileStagingScreen({
   }
 
   return (
-    <div className="bg-black text-gray-200 font-sans flex flex-col h-screen antialiased items-center justify-center p-4">
+    <div className="bg-main text-primary font-sans flex flex-col h-screen antialiased items-center justify-center p-4">
       <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
       <div className="w-full max-w-2xl">
-        <h1 className="text-3xl font-bold text-center text-cyan-400 mb-2 uppercase font-mono">{title}</h1>
-        <p className="text-center text-gray-400 mb-8 text-lg">{description}</p>
+        <h1 className="text-3xl font-bold text-center text-accent mb-2 uppercase font-mono">{title}</h1>
+        <p className="text-center text-muted mb-8 text-lg">{description}</p>
         {error && <p className="mb-4 border border-red-800 bg-red-950 px-4 py-3 text-sm text-red-200">{error}</p>}
-        <div className="bg-gray-900 border-2 border-gray-800 p-6 space-y-4">
+        <div className="bg-card border-2 border-main p-6 space-y-4">
           {requiredFiles.map(({ key, label, compulsory }) => (
-            <div key={key} className="flex items-center justify-between p-3 bg-black">
+              <div key={key} className="flex items-center justify-between p-3 bg-card-alt">
               <div className="flex items-center gap-3">
                 {stagedFiles[key] ? (
                   <CheckCircle size={20} className="text-green-500" />
                 ) : (
-                  <FileText size={20} className="text-gray-500" />
+                  <FileText size={20} className="text-muted" />
                 )}
                 <div>
-                  <span className="text-gray-200 uppercase font-mono">
-                    {label} {compulsory && <span className="text-cyan-400 font-bold">*</span>}
+                  <span className="text-primary uppercase font-mono">
+                    {label} {compulsory && <span className="text-accent font-bold">*</span>}
                   </span>
                   {stagedFiles[key] && (
-                    <p className="text-xs text-gray-400 truncate max-w-xs">{stagedFiles[key].name}</p>
+                    <p className="text-xs text-muted truncate max-w-xs">{stagedFiles[key].name}</p>
                   )}
                 </div>
               </div>
               <button
                 onClick={() => handleFileSelect(key)}
-                className="text-sm text-cyan-400 hover:text-cyan-300 font-semibold uppercase font-mono"
+                className="text-sm text-accent hover:text-primary font-semibold uppercase font-mono"
               >
                 {stagedFiles[key] ? 'Change' : 'Upload'}
               </button>
@@ -87,13 +87,13 @@ export default function FileStagingScreen({
           ))}
         </div>
         <div className="mt-8 flex items-center justify-between">
-          <button onClick={onBack} className="text-gray-400 hover:text-white uppercase font-mono">
+          <button onClick={onBack} className="text-muted hover:text-primary uppercase font-mono">
             &larr; Back
           </button>
           <button
             onClick={() => onSubmit(stagedFiles)}
             disabled={!canSubmit}
-            className="bg-cyan-600 text-black font-bold py-2 px-6 disabled:bg-gray-600 disabled:cursor-not-allowed hover:bg-cyan-500 transition-colors uppercase font-mono"
+            className="bg-accent text-primary font-bold py-2 px-6 disabled:bg-muted disabled:cursor-not-allowed hover:opacity-80 transition-colors uppercase font-mono"
           >
             Submit ({totalUploadedCount}/{totalRequiredCount})
           </button>

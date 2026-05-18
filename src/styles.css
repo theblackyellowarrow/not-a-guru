@@ -1,7 +1,15 @@
 :root {
-  color-scheme: dark;
-  --accent: #00f5d4;
-  --accent-soft: rgba(0, 245, 212, 0.35);
+  --accent: #18F3F5;
+  --accent-soft: rgba(24, 243, 245, 0.35);
+  --bg-main: #A6A6A6;
+  --bg-card: #999999;
+  --bg-card-hover: #8C8C8C;
+  --bg-elevated: #929292;
+  --border-main: #8A8A8A;
+  --border-light: #B0B0B0;
+  --text-primary: #1A1A1A;
+  --text-secondary: #333333;
+  --text-muted: #555555;
 }
 
 html,
@@ -18,18 +26,36 @@ body,
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
-  background: radial-gradient(1200px 800px at 70% 20%, rgba(0, 245, 212, 0.08), transparent 60%),
-    radial-gradient(900px 700px at 10% 80%, rgba(0, 245, 212, 0.05), transparent 55%),
-    #000;
+  background: #A6A6A6;
+  color: var(--text-primary);
 }
 
 body.embed-mode {
-  background: #000;
+  background: #A6A6A6;
 }
 
 body.embed-mode #root {
   height: 100vh;
 }
+
+/* Custom utility classes for the mid-grey colour profile */
+.bg-main { background-color: #A6A6A6; }
+.bg-card { background-color: #999999; }
+.bg-card-alt { background-color: #929292; }
+.bg-elevated { background-color: #8C8C8C; }
+.text-primary { color: #1A1A1A; }
+.text-secondary { color: #333333; }
+.text-muted { color: #555555; }
+.border-main { border-color: #8A8A8A; }
+.border-light { border-color: #B0B0B0; }
+.text-accent { color: #18F3F5; }
+.bg-muted { background-color: #999999; }
+.border-accent { border-color: #18F3F5; }
+.bg-accent { background-color: #18F3F5; }
+.bg-accent-subtle { background-color: rgba(24, 243, 245, 0.12); }
+.bg-accent-subtle:hover { background-color: rgba(24, 243, 245, 0.22); }
+.bg-accent-strong { background-color: rgba(24, 243, 245, 0.25); }
+.bg-accent-strong:hover { background-color: rgba(24, 243, 245, 0.35); }
 
 body::before {
   content: '';
@@ -37,12 +63,12 @@ body::before {
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.14;
+  opacity: 0.06;
   background-image: url('/brand/dotai-dots.png');
   background-repeat: no-repeat;
   background-position: 50% 35%;
   background-size: min(1100px, 120vw) auto;
-  mix-blend-mode: screen;
+  mix-blend-mode: multiply;
   filter: saturate(1.4) contrast(1.1);
 }
 
@@ -66,18 +92,18 @@ body::before {
 }
 
 .prose-styles {
-  color: #d1d5db;
+  color: var(--text-primary);
   font-size: 1rem;
   line-height: 1.6;
 }
 
 .prose-styles strong {
-  color: #fff;
+  color: #000;
   font-weight: 600;
 }
 
 .prose-styles em {
-  color: #e5e7eb;
+  color: var(--text-secondary);
   font-style: italic;
 }
 
@@ -105,38 +131,38 @@ body::before {
 .prose-styles h4,
 .prose-styles h5,
 .prose-styles h6 {
-  color: #fff;
+  color: #000;
   font-weight: 700;
   letter-spacing: 0.02em;
 }
 
 .prose-styles code {
-  color: rgba(0, 245, 212, 0.85);
+  color: var(--accent);
   font-family: 'VT323', monospace;
   font-size: 1rem;
 }
 
 .prose-styles pre {
-  background: #111;
-  border: 2px solid #1f2937;
+  background: #8A8A8A;
+  border: 2px solid var(--border-main);
   padding: 1rem;
   overflow-x: auto;
 }
 
 .prose-styles blockquote {
-  border-left: 3px solid #00f5d4;
+  border-left: 3px solid var(--accent);
   padding-left: 1rem;
-  color: #9ca3af;
+  color: var(--text-muted);
   margin-left: 0;
 }
 
 .prose-styles a {
-  color: #00f5d4;
+  color: var(--accent);
   text-decoration: underline;
 }
 
 .prose-styles hr {
-  border-color: #1f2937;
+  border-color: var(--border-main);
   margin: 1.5rem 0;
 }
 
@@ -147,12 +173,12 @@ body::before {
 
 .prose-styles th,
 .prose-styles td {
-  border: 1px solid #1f2937;
+  border: 1px solid var(--border-main);
   padding: 0.5rem;
   text-align: left;
 }
 
 .prose-styles th {
-  background: #111;
-  color: #fff;
+  background: #8A8A8A;
+  color: #000;
 }

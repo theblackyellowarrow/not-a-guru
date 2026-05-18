@@ -30,7 +30,7 @@ function AttachmentList({ attachments }) {
   if (!attachments?.length) return null;
 
   return (
-    <div className="mt-3 border-t-2 border-gray-700/50 pt-2 text-xs text-gray-400 space-y-2">
+    <div className="mt-3 border-t-2 border-light/50 pt-2 text-xs text-muted space-y-2">
       {attachments.map((attachment) => (
         <div key={`${attachment.name}-${attachment.label || 'attachment'}`} className="flex items-center gap-2">
           <FileText size={14} />
@@ -54,20 +54,20 @@ function ChatMessage({ message, isLoading, isLastMessage }) {
     <div className={`flex items-start gap-4 ${isGuru ? '' : 'flex-row-reverse'}`}>
       <div
         className={`flex-shrink-0 w-10 h-10 flex items-center justify-center border-2 ${
-          isGuru ? 'border-gray-700' : 'border-cyan-400'
+          isGuru ? 'border-light' : 'border-accent'
         }`}
       >
-        <Icon size={24} className={isGuru ? 'text-gray-200' : 'text-cyan-400'} />
+        <Icon size={24} className={isGuru ? 'text-primary' : 'text-accent'} />
       </div>
       <div
         className={`w-full max-w-xl p-4 border-2 ${
-          isGuru ? 'border-gray-800 bg-gray-900' : 'border-cyan-800 bg-cyan-900/20'
+          isGuru ? 'border-main bg-card' : 'border-accent bg-accent-subtle'
         }`}
       >
         {isGuru ? (
           <MarkdownRenderer text={message.text} isStreaming={isStreaming} />
         ) : (
-          <p className="text-gray-200 whitespace-pre-wrap text-base">{message.text}</p>
+          <p className="text-primary whitespace-pre-wrap text-base">{message.text}</p>
         )}
         <AttachmentList attachments={attachments} />
       </div>
@@ -78,24 +78,24 @@ function ChatMessage({ message, isLoading, isLastMessage }) {
 function PersonaMessage({ personas }) {
   return (
     <div className="my-6">
-      <h3 className="text-xl font-semibold text-gray-300 mb-4 flex items-center gap-2 uppercase font-mono">
-        <Sparkles size={20} className="text-cyan-300" /> Draft Personas
+      <h3 className="text-xl font-semibold text-secondary mb-4 flex items-center gap-2 uppercase font-mono">
+        <Sparkles size={20} className="text-accent" /> Draft Personas
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {personas.map((persona) => (
-          <div key={persona.name} className="bg-gray-900/50 border-2 border-gray-800 p-4">
-            <h4 className="font-bold text-cyan-300 text-lg uppercase font-mono">{persona.name}</h4>
-            <p className="text-base text-gray-400 mb-2">{persona.demographic}</p>
-            <p className="text-base italic text-gray-300 my-3">&quot;{persona.quote}&quot;</p>
+          <div key={persona.name} className="bg-card-alt border-2 border-main p-4">
+            <h4 className="font-bold text-accent text-lg uppercase font-mono">{persona.name}</h4>
+            <p className="text-base text-muted mb-2">{persona.demographic}</p>
+            <p className="text-base italic text-secondary my-3">&quot;{persona.quote}&quot;</p>
             <div className="text-base">
-              <strong className="text-gray-300 block mt-2 uppercase font-mono">Needs:</strong>
-              <ul className="list-disc list-inside text-gray-400">
+              <strong className="text-secondary block mt-2 uppercase font-mono">Needs:</strong>
+              <ul className="list-disc list-inside text-muted">
                 {persona.needs.map((need) => (
                   <li key={need}>{need}</li>
                 ))}
               </ul>
-              <strong className="text-gray-300 block mt-2 uppercase font-mono">Frustrations:</strong>
-              <ul className="list-disc list-inside text-gray-400">
+              <strong className="text-secondary block mt-2 uppercase font-mono">Frustrations:</strong>
+              <ul className="list-disc list-inside text-muted">
                 {persona.frustrations.map((frustration) => (
                   <li key={frustration}>{frustration}</li>
                 ))}
@@ -110,11 +110,11 @@ function PersonaMessage({ personas }) {
 
 function CritiqueMessage({ text }) {
   return (
-    <div className="my-6 p-4 bg-amber-900/20 border-2 border-amber-700/50">
-      <h3 className="text-lg font-semibold text-amber-300 mb-2 flex items-center gap-2 uppercase font-mono">
+    <div className="my-6 p-4 bg-accent-subtle border-2 border-accent">
+      <h3 className="text-lg font-semibold text-accent mb-2 flex items-center gap-2 uppercase font-mono">
         <ShieldAlert size={20} /> Bias Check
       </h3>
-      <div className="text-amber-200 whitespace-pre-wrap text-base">{text}</div>
+      <div className="text-primary whitespace-pre-wrap text-base">{text}</div>
     </div>
   );
 }
@@ -122,14 +122,14 @@ function CritiqueMessage({ text }) {
 export function LoadingIndicator() {
   return (
     <div className="flex items-start gap-4">
-      <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center border-2 border-gray-700">
-        <BrainCircuit size={24} className="text-gray-200 animate-pulse" />
+      <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center border-2 border-light">
+        <BrainCircuit size={24} className="text-primary animate-pulse" />
       </div>
-      <div className="w-full max-w-xl p-4 border-2 border-gray-800 bg-gray-900">
+      <div className="w-full max-w-xl p-4 border-2 border-main bg-card">
         <div className="flex items-center space-x-2">
-          <div className="w-3 h-3 bg-gray-600 animate-pulse" style={{ animationDelay: '0s' }} />
-          <div className="w-3 h-3 bg-gray-600 animate-pulse" style={{ animationDelay: '0.2s' }} />
-          <div className="w-3 h-3 bg-gray-600 animate-pulse" style={{ animationDelay: '0.4s' }} />
+          <div className="w-3 h-3 bg-muted animate-pulse" style={{ animationDelay: '0s' }} />
+          <div className="w-3 h-3 bg-muted animate-pulse" style={{ animationDelay: '0.2s' }} />
+          <div className="w-3 h-3 bg-muted animate-pulse" style={{ animationDelay: '0.4s' }} />
         </div>
       </div>
     </div>

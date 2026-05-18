@@ -491,7 +491,7 @@ export default function App() {
   return (
     <div
       ref={embedShellRef}
-      className={`bg-black text-gray-200 font-sans flex h-screen antialiased overflow-hidden ${isEmbed ? 'embed-shell' : ''}`}
+      className={`bg-main text-primary font-sans flex h-screen antialiased overflow-hidden ${isEmbed ? 'embed-shell' : ''}`}
     >
       <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
       {!isEmbed && (
@@ -506,24 +506,24 @@ export default function App() {
       )}
 
       <div className="flex-1 flex flex-col transition-all duration-300">
-        <header className="border-b-2 border-gray-800 p-4 flex items-center justify-between text-center shrink-0">
+        <header className="border-b-2 border-main p-4 flex items-center justify-between text-center shrink-0">
           {isEmbed ? (
             <div className="w-10" />
           ) : (
-            <button onClick={() => setIsHistoryPanelOpen(true)} className="p-2 text-gray-400 hover:text-white lg:hidden">
+            <button onClick={() => setIsHistoryPanelOpen(true)} className="p-2 text-muted hover:text-primary lg:hidden">
               <Book size={20} />
             </button>
           )}
           <div className="mx-auto flex items-center gap-3">
             <img src="/brand/dotai-logo-mark.png" alt="DotAI" className="h-6 w-auto opacity-90" />
-            <h1 className="text-2xl font-bold tracking-wider text-gray-300 uppercase font-mono">
+            <h1 className="text-2xl font-bold tracking-wider text-primary uppercase font-mono">
               {currentThread?.title || 'Not a Guru'}
             </h1>
           </div>
           {isEmbed ? (
             <button
               onClick={() => setIsHelpOpen(true)}
-              className="p-2 text-gray-400 hover:text-white"
+              className="p-2 text-muted hover:text-primary"
               aria-label="Open help"
             >
               <HelpCircle size={20} />
@@ -532,14 +532,14 @@ export default function App() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsHelpOpen(true)}
-                className="p-2 text-gray-400 hover:text-white"
+                className="p-2 text-muted hover:text-primary"
                 aria-label="Open help"
               >
                 <HelpCircle size={20} />
               </button>
               <button
                 onClick={() => setIsHistoryPanelOpen((prev) => !prev)}
-                className="p-2 text-gray-400 hover:text-white hidden lg:block"
+                className="p-2 text-muted hover:text-primary hidden lg:block"
                 aria-label="Toggle history"
               >
                 <Book size={20} />
@@ -569,22 +569,22 @@ export default function App() {
           </div>
         </main>
 
-        <footer className="border-t-2 border-gray-800 p-4 bg-black/80 backdrop-blur-sm shrink-0">
+        <footer className="border-t-2 border-main p-4 bg-black/80 backdrop-blur-sm shrink-0">
           <div className="max-w-3xl mx-auto">
             {error && <ErrorMessage message={error} onClose={() => setError(null)} />}
             {uploadedFile && (
-              <div className="mb-3 flex items-center justify-between gap-3 border border-gray-800 bg-gray-950 px-3 py-2 text-sm text-gray-300">
+              <div className="mb-3 flex items-center justify-between gap-3 border border-main bg-elevated px-3 py-2 text-sm text-secondary">
                 <span className="truncate">Attached: {uploadedFile.name}</span>
                 <button
                   onClick={clearUploadedFile}
-                  className="text-gray-500 transition-colors hover:text-white"
+                  className="text-muted transition-colors hover:text-primary"
                   aria-label="Remove attachment"
                 >
                   <X size={16} />
                 </button>
               </div>
             )}
-            <div className="flex items-center bg-gray-900 p-2 border-2 border-gray-700 focus-within:border-cyan-400">
+            <div className="flex items-center bg-card p-2 border-2 border-light focus-within:border-accent">
               <input
                 type="file"
                 ref={fileInputRef}
@@ -595,7 +595,7 @@ export default function App() {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isParsing || isLoading}
-                className="p-2 text-gray-400 hover:text-white disabled:opacity-50"
+                className="p-2 text-muted hover:text-primary disabled:opacity-50"
               >
                 <Upload size={20} />
               </button>
@@ -610,12 +610,12 @@ export default function App() {
                   }
                 }}
                 placeholder={isParsing ? 'Reading your file...' : "So, what's the move?"}
-                className="flex-1 bg-transparent px-4 text-base text-gray-200 placeholder-gray-500 focus:outline-none"
+                className="flex-1 bg-transparent px-4 text-base text-primary placeholder-muted focus:outline-none"
               />
               <button
                 onClick={handleSendMessage}
                 disabled={isLoading || isParsing}
-                className="p-2 text-gray-400 hover:text-white disabled:opacity-50"
+                className="p-2 text-muted hover:text-primary disabled:opacity-50"
               >
                 <Send size={20} />
               </button>

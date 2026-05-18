@@ -15,13 +15,13 @@ export default function HistoryPanel({
         onClick={() => setIsOpen(false)}
       />
       <div
-        className={`flex flex-col bg-black border-r-2 border-gray-800 w-72 shrink-0 absolute lg:static inset-y-0 left-0 z-20 transform transition-transform duration-300 ${
+        className={`flex flex-col bg-main border-r-2 border-main w-72 shrink-0 absolute lg:static inset-y-0 left-0 z-20 transform transition-transform duration-300 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         } lg:translate-x-0`}
       >
-        <div className="p-4 border-b-2 border-gray-800 flex justify-between items-center">
-          <h2 className="font-bold text-xl uppercase font-mono">History</h2>
-          <button onClick={() => setIsOpen(false)} className="p-1 text-gray-400 hover:text-white lg:hidden">
+        <div className="p-4 border-b-2 border-main flex justify-between items-center">
+          <h2 className="font-bold text-xl uppercase font-mono text-primary">History</h2>
+          <button onClick={() => setIsOpen(false)} className="p-1 text-muted hover:text-primary lg:hidden">
             <X size={20} />
           </button>
         </div>
@@ -30,18 +30,18 @@ export default function HistoryPanel({
             <button
               key={thread.id}
               onClick={() => onSelectThread(thread.id)}
-              className={`w-full text-left text-base p-2 truncate ${
-                thread.id === currentThreadId ? 'bg-cyan-900/20 text-cyan-200' : 'hover:bg-gray-800'
+              className={`w-full text-left text-base p-2 truncate text-primary ${
+                thread.id === currentThreadId ? 'bg-accent-subtle text-accent' : 'hover:bg-card'
               }`}
             >
               {thread.title}
             </button>
           ))}
         </div>
-        <div className="p-2 border-t-2 border-gray-800">
+        <div className="p-2 border-t-2 border-main">
           <button
             onClick={onNewChat}
-            className="w-full flex items-center justify-center gap-2 text-base p-2 text-cyan-400 hover:bg-cyan-900/50 transition-colors uppercase font-mono"
+            className="w-full flex items-center justify-center gap-2 text-base p-2 text-accent hover:bg-accent-subtle transition-colors uppercase font-mono"
           >
             <PlusCircle size={16} /> New Chat
           </button>
