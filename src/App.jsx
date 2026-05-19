@@ -1,4 +1,4 @@
-import { Book, HelpCircle, Send, Upload, X } from 'lucide-react';
+import { Book, HelpCircle, PlusCircle, Send, Upload, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import FileStagingScreen from './components/FileStagingScreen';
 import FirstRunTour from './components/FirstRunTour';
@@ -508,7 +508,14 @@ export default function App() {
       <div className="flex-1 flex flex-col transition-all duration-300">
         <header className="border-b-2 border-gray-800 p-4 flex items-center justify-between text-center shrink-0">
           {isEmbed ? (
-            <div className="w-10" />
+            <button
+              onClick={resetToOnboarding}
+              className="p-2 text-gray-400 hover:text-white"
+              aria-label="New chat"
+              title="New chat"
+            >
+              <PlusCircle size={20} />
+            </button>
           ) : (
             <button onClick={() => setIsHistoryPanelOpen(true)} className="p-2 text-gray-400 hover:text-white lg:hidden">
               <Book size={20} />
