@@ -53,7 +53,7 @@ export default function FileStagingScreen({
   }
 
   return (
-    <div className="bg-black text-gray-200 font-sans flex flex-col h-screen antialiased items-center justify-center p-4">
+    <div className="view-enter bg-black text-gray-200 font-sans flex flex-col h-screen antialiased items-center justify-center p-4">
       <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
       <div className="w-full max-w-2xl">
         <h1 className="text-3xl font-bold text-center text-cyan-400 mb-2 uppercase font-mono">{title}</h1>

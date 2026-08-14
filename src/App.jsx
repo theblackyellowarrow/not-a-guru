@@ -1,10 +1,11 @@
-import { Book, HelpCircle, PlusCircle, Send, Upload, X } from 'lucide-react';
+import { Book, HelpCircle, Home, PlusCircle, Send, Upload, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import FileStagingScreen from './components/FileStagingScreen';
 import FirstRunTour from './components/FirstRunTour';
 import HelpModal from './components/HelpModal';
 import HistoryPanel from './components/HistoryPanel';
 import { ErrorMessage, LoadingIndicator, MessageRenderer } from './components/Messages';
+import NextQuestCard from './components/NextQuestCard';
 import Onboarding from './components/Onboarding';
 import QuestTracker from './components/QuestTracker';
 import QuickReplies from './components/QuickReplies';
@@ -67,6 +68,43 @@ export default function App() {
     () => (currentThread?.flow === 'start_project' ? getQuestStageIndex(currentThread.messages) : null),
     [currentThread]
   );
+
+  const nextQuest = useMemo(() => {
+    if (!currentThread) return null;
+
+    const hasGuruReply = currentThread.messages.some(
+      (message) => message.type === 'guru' && message.text !== 'Thinking...'
+    );
+
+    if (currentThread.flow === 'start_project' && questStage === 2) {
+      return {
+        title: 'Next quest unlocked',
+        body: 'Problem and solution are on the table. Show the working with a Process Check, or go straight to the Final Roast.',
+        actions: [
+          { label: 'Process Check', flow: 'process_review' },
+          { label: 'Final Roast', flow: 'final_review' },
+        ],
+      };
+    }
+
+    if (currentThread.flow === 'process_review' && hasGuruReply) {
+      return {
+        title: 'Next quest unlocked',
+        body: 'Process traced. Ready to put the final output on the table?',
+        actions: [{ label: 'Final Roast', flow: 'final_review' }],
+      };
+    }
+
+    if (currentThread.flow === 'final_review' && hasGuruReply) {
+      return {
+        title: 'Run it back',
+        body: 'Roast done. Take the notes, fix the work, start a new quest when ready.',
+        actions: [{ label: 'Start a New Vibe', flow: 'start_project' }],
+      };
+    }
+
+    return null;
+  }, [currentThread, questStage]);
 
   useEffect(() => {
     try {
@@ -382,6 +420,11 @@ export default function App() {
     handleSendMessage(text);
   }
 
+  function handleNextQuest(flow) {
+    if (isLoading) return;
+    handleContextSelect('default', flow);
+  }
+
   async function handleFileUpload(event) {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -557,7 +600,7 @@ export default function App() {
   return (
     <div
       ref={embedShellRef}
-      className={`bg-black text-gray-200 font-sans flex h-screen antialiased overflow-hidden ${isEmbed ? 'embed-shell' : ''}`}
+      className={`view-enter bg-black text-gray-200 font-sans flex h-screen antialiased overflow-hidden ${isEmbed ? 'embed-shell' : ''}`}
     >
       <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
       {!isEmbed && (
@@ -604,6 +647,14 @@ export default function App() {
           ) : (
             <div className="flex items-center gap-2">
               <button
+                onClick={resetToOnboarding}
+                className="p-2 text-gray-400 hover:text-white"
+                aria-label="Back to home"
+                title="Back to home"
+              >
+                <Home size={20} />
+              </button>
+              <button
                 onClick={() => setIsHelpOpen(true)}
                 className="p-2 text-gray-400 hover:text-white"
                 aria-label="Open help"
@@ -639,6 +690,15 @@ export default function App() {
               onToolUse={handleToolUse}
               isLoading={isLoading}
             />
+            {nextQuest && !isLoading && (
+              <NextQuestCard
+                title={nextQuest.title}
+                body={nextQuest.body}
+                actions={nextQuest.actions}
+                onSelect={handleNextQuest}
+                isLoading={isLoading}
+              />
+            )}
             <div ref={chatEndRef} />
           </div>
         </main>
