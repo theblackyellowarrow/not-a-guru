@@ -5,6 +5,7 @@ import {
   createChatPayload,
   createToolPayload,
   extractTextFromResponse,
+  getQuestStageIndex,
   getRecentContextHistory,
   parsePersonasJson,
 } from '../src/chatRuntime.js';
@@ -77,4 +78,29 @@ test('parsePersonasJson rejects non-array payloads', () => {
 
 test('parsePersonasJson rejects malformed JSON', () => {
   assert.throws(() => parsePersonasJson('not json at all'));
+});
+
+test('getQuestStageIndex starts at zero without milestones', () => {
+  assert.equal(getQuestStageIndex([]), 0);
+  assert.equal(getQuestStageIndex([{ type: 'guru', text: 'Tell me the rough idea.' }]), 0);
+});
+
+test('getQuestStageIndex advances through problem then solution stages', () => {
+  const messages = [
+    { type: 'guru', text: 'What is the problem area?' },
+    { type: 'user', text: 'housing' },
+    { type: 'guru', text: 'So your problem statement needs evidence.' },
+  ];
+  assert.equal(getQuestStageIndex(messages), 1);
+
+  messages.push({ type: 'guru', text: 'Now write the solution statement.' });
+  assert.equal(getQuestStageIndex(messages), 2);
+});
+
+test('getQuestStageIndex ignores stage markers and user text', () => {
+  const messages = [
+    { type: 'stage_marker', text: 'solution statement', stageKey: 'quest_stage_2' },
+    { type: 'user', text: 'my solution statement draft' },
+  ];
+  assert.equal(getQuestStageIndex(messages), 0);
 });

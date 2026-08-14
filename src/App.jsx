@@ -6,6 +6,8 @@ import HelpModal from './components/HelpModal';
 import HistoryPanel from './components/HistoryPanel';
 import { ErrorMessage, LoadingIndicator, MessageRenderer } from './components/Messages';
 import Onboarding from './components/Onboarding';
+import QuestTracker from './components/QuestTracker';
+import QuickReplies from './components/QuickReplies';
 import Toolbelt from './components/ToolbeltClean';
 import { callAI } from './aiClient';
 import {
@@ -13,6 +15,7 @@ import {
   createToolPayload,
   extractTextFromResponse,
   getMessageParts,
+  getQuestStageIndex,
   getThreadTitlePreview,
   parsePersonasJson,
 } from './chatRuntime';
@@ -58,6 +61,11 @@ export default function App() {
   const currentThread = useMemo(
     () => threads.find((thread) => thread.id === currentThreadId),
     [threads, currentThreadId]
+  );
+
+  const questStage = useMemo(
+    () => (currentThread?.flow === 'start_project' ? getQuestStageIndex(currentThread.messages) : null),
+    [currentThread]
   );
 
   useEffect(() => {
@@ -252,6 +260,37 @@ export default function App() {
     fetchGuruResponse();
   }, [currentThread, isLoading]);
 
+  // Quest markers: append a stage-clear divider when the user advances a stage.
+  // Idempotent via stageKey so persisted threads never double-mark.
+  useEffect(() => {
+    if (questStage === null || questStage === 0 || !currentThread) return;
+
+    const stageKey = `quest_stage_${questStage}`;
+    const alreadyMarked = currentThread.messages.some(
+      (message) => message.type === 'stage_marker' && message.stageKey === stageKey
+    );
+    if (alreadyMarked) return;
+
+    const markerMessage = {
+      id: `marker_${Date.now()}`,
+      type: 'stage_marker',
+      stageKey,
+      text:
+        questStage === 1
+          ? 'Stage clear: the problem has a name. Now sharpen it.'
+          : 'Quest clear: solution on the table. Stress-test it.',
+      timestamp: new Date().toISOString(),
+    };
+
+    setThreads((prevThreads) =>
+      prevThreads.map((thread) =>
+        thread.id === currentThread.id
+          ? { ...thread, messages: [...thread.messages, markerMessage] }
+          : thread
+      )
+    );
+  }, [questStage, currentThread]);
+
   function resetToOnboarding() {
     setAppState('onboarding');
     setCurrentThreadId(null);
@@ -298,8 +337,8 @@ export default function App() {
     setIsLoading(false);
   }
 
-  const handleSendMessage = useCallback(() => {
-    const messageText = input.trim();
+  const handleSendMessage = useCallback((overrideText) => {
+    const messageText = (typeof overrideText === 'string' ? overrideText : input).trim();
     const attachments = uploadedFile ? [uploadedFile] : [];
 
     if (!messageText && attachments.length === 0) {
@@ -337,6 +376,11 @@ export default function App() {
     setUploadedFile(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   }, [currentThreadId, input, uploadedFile]);
+
+  function handleQuickReply(text) {
+    if (isLoading || isParsing || !currentThread) return;
+    handleSendMessage(text);
+  }
 
   async function handleFileUpload(event) {
     const file = event.target.files?.[0];
@@ -579,6 +623,7 @@ export default function App() {
 
         <main className={`flex-1 overflow-y-auto ${isEmbed ? 'p-4' : 'p-4 md:p-6 lg:p-8'}`}>
           <div className="max-w-3xl mx-auto space-y-6">
+            {questStage !== null && <QuestTracker stage={questStage} />}
             {currentThread?.messages.map((message, index) => (
               <MessageRenderer
                 key={message.id}
@@ -613,6 +658,11 @@ export default function App() {
                 </button>
               </div>
             )}
+            <QuickReplies
+              flow={currentThread?.flow}
+              onPick={handleQuickReply}
+              disabled={isLoading || isParsing || !currentThread}
+            />
             <div className="flex items-center bg-gray-900 p-2 border-2 border-gray-700 focus-within:border-cyan-400">
               <input
                 type="file"

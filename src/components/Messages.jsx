@@ -11,9 +11,21 @@ export function MessageRenderer({ message, isLoading, isLastMessage }) {
       return <PersonaMessage personas={message.personas} />;
     case 'tool_critique':
       return <CritiqueMessage text={message.text} />;
+    case 'stage_marker':
+      return <StageMarker text={message.text} />;
     default:
       return null;
   }
+}
+
+function StageMarker({ text }) {
+  return (
+    <div className="my-6 flex items-center gap-3">
+      <div className="h-px flex-1 bg-gray-800" />
+      <span className="text-xs uppercase font-mono tracking-widest text-cyan-400">{text}</span>
+      <div className="h-px flex-1 bg-gray-800" />
+    </div>
+  );
 }
 
 function MarkdownRenderer({ text, isStreaming }) {

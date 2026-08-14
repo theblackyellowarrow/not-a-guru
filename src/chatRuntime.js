@@ -93,6 +93,23 @@ export function extractTextFromResponse(result) {
     .trim();
 }
 
+export const QUEST_STAGES = ['Raw Idea', 'Problem Statement', 'Solution'];
+
+export function getQuestStageIndex(messages) {
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return 0;
+  }
+
+  const guruText = messages
+    .filter((message) => message.type === 'guru' && typeof message.text === 'string')
+    .map((message) => message.text.toLowerCase())
+    .join('\n');
+
+  if (guruText.includes('solution statement')) return 2;
+  if (guruText.includes('problem statement')) return 1;
+  return 0;
+}
+
 export function parsePersonasJson(content) {
   // Models sometimes wrap JSON in markdown fences despite schema instructions —
   // strip them before parsing.
