@@ -6,6 +6,7 @@ import {
   createToolPayload,
   extractTextFromResponse,
   getRecentContextHistory,
+  parsePersonasJson,
 } from '../src/chatRuntime.js';
 
 test('createChatPayload keeps recent context short for lightweight chat', () => {
@@ -59,4 +60,21 @@ test('getRecentContextHistory caps history length', () => {
   }));
 
   assert.equal(getRecentContextHistory(history, 5).length, 5);
+});
+
+test('parsePersonasJson strips markdown fences around model JSON', () => {
+  const personas = parsePersonasJson(
+    '```json\n[{"name":"Asha","demographic":"29, Pune, nurse","needs":["a"],"frustrations":["b"],"quote":"q"}]\n```'
+  );
+
+  assert.equal(personas.length, 1);
+  assert.equal(personas[0].name, 'Asha');
+});
+
+test('parsePersonasJson rejects non-array payloads', () => {
+  assert.throws(() => parsePersonasJson('{"name":"Asha"}'), /not a list/);
+});
+
+test('parsePersonasJson rejects malformed JSON', () => {
+  assert.throws(() => parsePersonasJson('not json at all'));
 });

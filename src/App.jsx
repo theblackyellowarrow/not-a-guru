@@ -14,6 +14,7 @@ import {
   extractTextFromResponse,
   getMessageParts,
   getThreadTitlePreview,
+  parsePersonasJson,
 } from './chatRuntime';
 import { parseUploadedFile } from './fileUtils';
 import { getRequiredFiles, getReviewPrompt } from './reviewConfig';
@@ -132,15 +133,28 @@ export default function App() {
   }, [isEmbed]);
 
   useEffect(() => {
-    try {
-      if (threads.length === 0) {
+    if (threads.length === 0) {
+      try {
         localStorage.removeItem(STORAGE_KEY);
-        return;
+      } catch {
+        // storage unavailable; nothing to clear
       }
+      return;
+    }
 
+    try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(threads));
     } catch (saveError) {
       console.error('Failed to save threads to localStorage', saveError);
+      // Likely QuotaExceededError from base64 attachments: prune to the five
+      // most recent threads (threads are stored newest-first) and retry once.
+      try {
+        const pruned = threads.slice(0, 5);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(pruned));
+        setError('Local storage is full. Only your 5 most recent threads will persist after reload.');
+      } catch {
+        setError('Local storage is full. Thread history will not be saved on this device.');
+      }
     }
   }, [threads]);
 
@@ -365,10 +379,18 @@ export default function App() {
         throw new Error('Received an empty or invalid response from OpenAI.');
       }
 
-      const newToolMessage =
-        toolType === 'personas'
-          ? { id: Date.now(), type: 'tool_personas', personas: JSON.parse(content), timestamp: new Date().toISOString() }
-          : { id: Date.now(), type: 'tool_critique', text: content, timestamp: new Date().toISOString() };
+      let newToolMessage;
+      if (toolType === 'personas') {
+        let personas;
+        try {
+          personas = parsePersonasJson(content);
+        } catch {
+          throw new Error('The personas response was not valid JSON. Try the tool again.');
+        }
+        newToolMessage = { id: Date.now(), type: 'tool_personas', personas, timestamp: new Date().toISOString() };
+      } else {
+        newToolMessage = { id: Date.now(), type: 'tool_critique', text: content, timestamp: new Date().toISOString() };
+      }
 
       setThreads((prevThreads) =>
         prevThreads.map((thread) =>

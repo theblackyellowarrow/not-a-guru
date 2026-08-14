@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify';
 import { marked } from 'marked';
 import { BrainCircuit, FileText, ShieldAlert, Sparkles, User, X } from 'lucide-react';
 
@@ -16,7 +17,9 @@ export function MessageRenderer({ message, isLoading, isLastMessage }) {
 }
 
 function MarkdownRenderer({ text, isStreaming }) {
-  const html = marked.parse(text || '', { async: false });
+  // Sanitize model output before injecting HTML: threads persist in localStorage,
+  // so unsanitized markup would become stored XSS on every reopen.
+  const html = DOMPurify.sanitize(marked.parse(text || '', { async: false }));
 
   return (
     <div

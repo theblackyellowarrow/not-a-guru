@@ -93,6 +93,24 @@ export function extractTextFromResponse(result) {
     .trim();
 }
 
+export function parsePersonasJson(content) {
+  // Models sometimes wrap JSON in markdown fences despite schema instructions —
+  // strip them before parsing.
+  const cleaned = String(content || '')
+    .trim()
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/```\s*$/, '')
+    .trim();
+
+  const parsed = JSON.parse(cleaned);
+
+  if (!Array.isArray(parsed)) {
+    throw new Error('Personas payload was not a list.');
+  }
+
+  return parsed;
+}
+
 export function createChatPayload(thread, historyMessages, userParts) {
   return {
     instructions: getChatInstructions(thread.flow, thread.projectContext),

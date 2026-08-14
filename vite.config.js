@@ -12,7 +12,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           react: ['react', 'react-dom'],
-          ui: ['lucide-react', 'marked'],
+          ui: ['lucide-react', 'marked', 'dompurify'],
           docs: ['mammoth'],
           pdf: ['pdfjs-dist'],
         },

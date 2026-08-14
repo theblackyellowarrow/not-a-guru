@@ -1,6 +1,11 @@
 import { Readable } from 'node:stream';
 
 const OPENAI_API_URL = 'https://api.openai.com/v1/responses';
+// Server-side guardrails: reject oversized payloads before they reach OpenAI,
+// and truncate individual text parts so a huge extracted document cannot blow
+// past the model context window.
+const MAX_PAYLOAD_BYTES = 4 * 1024 * 1024;
+const MAX_TEXT_PART_CHARS = 60000;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -18,6 +23,13 @@ export default async function handler(req, res) {
   const { payload, stream = false, model = 'gpt-4.1-mini' } = req.body || {};
   if (!payload) {
     res.status(400).json({ error: 'Missing OpenAI payload.' });
+    return;
+  }
+
+  if (JSON.stringify(payload).length > MAX_PAYLOAD_BYTES) {
+    res.status(413).json({
+      error: 'Request too large. Keep total message and attachments under about 4 MB.',
+    });
     return;
   }
 
@@ -96,8 +108,20 @@ export default async function handler(req, res) {
 function translateContentsToResponsesInput(contents) {
   return contents.map((message) => ({
     role: translateRole(message.role),
-    content: translatePartsToContent(message.parts || [], translateRole(message.role)),
+    content: translatePartsToContent(truncateTextParts(message.parts || []), translateRole(message.role)),
   }));
+}
+
+function truncateTextParts(parts) {
+  return parts.map((part) => {
+    if (typeof part.text === 'string' && part.text.length > MAX_TEXT_PART_CHARS) {
+      return {
+        ...part,
+        text: `${part.text.slice(0, MAX_TEXT_PART_CHARS)}\n\n[Attachment truncated: original exceeded ${MAX_TEXT_PART_CHARS} characters. Split long documents and resend if the missing section matters.]`,
+      };
+    }
+    return part;
+  });
 }
 
 function translateRole(role) {
