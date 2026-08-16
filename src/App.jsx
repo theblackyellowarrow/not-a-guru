@@ -861,6 +861,7 @@ export default function App() {
       )}
 
       <div className="flex-1 flex flex-col min-w-0">
+        <a href="#main-work-surface" className="skip-link">Skip to chat</a>
         {/* Product bar */}
         <header className="border-b border-[#6B6965] bg-[#090909] px-4 py-3 flex items-center justify-between shrink-0 z-10">
           {isEmbed ? (
@@ -926,8 +927,16 @@ export default function App() {
         </header>
 
         {/* Main workspace */}
-        <main className={`flex-1 overflow-y-auto ${isEmbed ? 'p-3' : 'p-4 md:p-6'}`}>
-          <div className="max-w-3xl mx-auto space-y-6">
+        <main
+          id="main-work-surface"
+          aria-label="Conversation"
+          className={`flex-1 overflow-y-auto ${isEmbed ? 'p-3' : 'p-4 md:p-6'}`}
+        >
+          <div
+            className="max-w-3xl mx-auto space-y-6"
+            aria-live="polite"
+            aria-relevant="additions text"
+          >
             {currentStage >= 0 && currentThread && (
               <QuestTracker stage={currentStage} flow={currentThread.flow} />
             )}

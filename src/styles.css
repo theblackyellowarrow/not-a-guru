@@ -165,7 +165,6 @@ body::before {
   font-size: 1rem;
   line-height: 1.55;
 }
-
 .prose-styles strong {
   color: var(--dot-white);
   font-weight: 600;
@@ -256,7 +255,110 @@ body::before {
   color: var(--dot-white);
 }
 
+/* Vector Cut: clip the top-right corner by 8px. Used by primary affordances
+   per dotaitooldesign.md §14.1. Components layer fuchsia contour lines on top. */
+.clip-corner {
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+}
+
+.clip-corner-lg {
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+}
+
+/* Field margin vector: a narrow column of drifting fuchsia lines on dotai
+   turn messages per §9.4. Respects the reduced-motion override below. */
+.field-vector {
+  position: relative;
+  width: 2px;
+  min-height: 100%;
+  background:
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      var(--dot-fuchsia) 12%,
+      transparent 22%,
+      transparent 42%,
+      var(--dot-fuchsia) 54%,
+      transparent 66%,
+      transparent 82%,
+      var(--dot-fuchsia) 92%,
+      transparent 100%
+    );
+  background-size: 100% 200%;
+  opacity: 0.45;
+  animation: field-drift 16s linear infinite;
+}
+
+@keyframes field-drift {
+  from { background-position: 0 0; }
+  to   { background-position: 0 200%; }
+}
+
+/* Tool activity rail: a single fuchsia point travelling through a mono row
+   per §9.4 Tool activity. */
+.tool-activity {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--dot-fuchsia);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.tool-activity::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--dot-fuchsia);
+  box-shadow: 0 0 0 2px rgba(255, 0, 168, 0.18);
+  animation: tool-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes tool-pulse {
+  0%, 100% { transform: translateX(0);   opacity: 0.4; }
+  50%      { transform: translateX(8px); opacity: 1; }
+}
+
 /* Accessibility */
+:focus-visible {
+  outline: 2px solid var(--dot-fuchsia);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 1px var(--dot-ink) inset;
+}
+
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 8px;
+  background: var(--dot-fuchsia);
+  color: var(--dot-ink);
+  padding: 6px 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  z-index: 50;
+  transition: top var(--motion-fast) ease-out;
+}
+
+.skip-link:focus {
+  top: 8px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -264,5 +366,25 @@ body::before {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .field-vector {
+    opacity: 0.25;
+    background:
+      linear-gradient(
+        to bottom,
+        transparent 0%,
+        var(--dot-fuchsia) 30%,
+        transparent 45%,
+        transparent 65%,
+        var(--dot-fuchsia) 80%,
+        transparent 100%
+      );
+    animation: none;
+  }
+
+  .tool-activity::before {
+    animation: none;
+    opacity: 1;
   }
 }
