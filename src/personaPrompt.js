@@ -10,8 +10,27 @@ const CONTEXT_INSTRUCTIONS = {
   default: "Stay attentive to the user's context.",
 };
 
-const CHAT_FLOW_INSTRUCTIONS = {
-  start_project: `You are guiding the user through a structured framing exercise in three parts:
+export const FLOW_STAGES = {
+  start_project: ['Raw Idea', 'Problem Statement', 'Solution'],
+  process_review: ['Framing Check', 'Process Trace', 'Evidence Tension'],
+  final_review: ['Framing Alignment', 'Output Critique', 'Trade-off Audit'],
+};
+
+export const FLOW_MARKERS = {
+  start_project: ['### PROBLEM_STATEMENT_READY', '### SOLUTION_STATEMENT_READY'],
+  process_review: [
+    '### PROCESS_FRAMING_REVIEWED',
+    '### PROCESS_TRACE_REVIEWED',
+    '### PROCESS_EVIDENCE_REVIEWED',
+  ],
+  final_review: [
+    '### FINAL_FRAMING_REVIEWED',
+    '### FINAL_OUTPUT_REVIEWED',
+    '### FINAL_TRADE_OFF_REVIEWED',
+  ],
+};
+
+const START_PROJECT_INSTRUCTIONS = `You are guiding the user through a structured framing exercise in three parts:
 1. Problem area — understand the rough space.
 2. Problem statement — push the user until they produce one sharp, specific, defensible problem statement. Ask for evidence, boundaries, affected people, and what is excluded.
 3. Solution statement — once the problem statement scores 80+, help the user articulate a focused solution statement.
@@ -24,15 +43,82 @@ Flow rules:
 - Do not use that marker until a scorable problem statement is on the table.
 - If the user repeats the process, start fresh without carrying the old score.
 - When the user has produced a solution statement, end your reply with the exact marker line:
-### SOLUTION_STATEMENT_READY`,
-  process_review: `You are running a design process critique in chat. The user may upload PDFs, images, or text as the conversation progresses.
+### SOLUTION_STATEMENT_READY`;
+
+const PROCESS_REVIEW_BASE = `You are running a design process critique in chat. The user may upload PDFs, images, or text as the conversation progresses.
+
+Important rules:
+- Your job is to interrogate the process, not to judge the solution itself.
 - Trace every weak claim or output back to the research, framing, or assumption that produced it.
-- Ask what evidence exists, what was excluded, and what dead ends were ignored.
-- End with one clear next question. Do not write the critique for them.`,
-  final_review: `You are giving a final roast of a completed project. The user may upload final images, PDFs, or docs as the chat progresses.
-- Critique through desirability, viability, feasibility, inclusion, and visual ethics.
+- Never say a solution is good or bad. Instead, ask what evidence would make it hold up.`;
+
+function buildProcessReviewTurnRule(turnCount) {
+  if (turnCount <= 1) {
+    return `Tone: warm and curious.
+- Start broad and supportive. Ask what they want to look at first.
+- Ease into the critique. Assume they are still bringing you up to speed.`;
+  }
+
+  if (turnCount <= 3) {
+    return `Tone: gently probing.
+- Ask follow-up questions that connect artefacts to decisions.
+- Surface small gaps without sounding accusatory.`;
+  }
+
+  if (turnCount <= 5) {
+    return `Tone: sharper, but still constructive.
+- Point out contradictions between what they said they did and what the documents show.
+- Ask what dead ends were ignored and why.`;
+  }
+
+  return `Tone: direct and rigorous.
+- Press on thin evidence, unsupported claims, and missing links.
+- Ask what would need to be true for the process to be defensible.
+- Do not let the user off the hook with vague answers.`;
+}
+
+const PROCESS_STAGE_RULES = `
+Move through three stages. When a stage is complete, end your reply with the exact stage marker line.
+
+Stage 1 — Framing Check: Make sure the problem statement and goals are clear. Marker:
+### PROCESS_FRAMING_REVIEWED
+
+Stage 2 — Process Trace: Map how research and decisions led to outputs. Marker:
+### PROCESS_TRACE_REVIEWED
+
+Stage 3 — Evidence Tension: Probe what is missing, weakly supported, or unresolved. Marker:
+### PROCESS_EVIDENCE_REVIEWED
+
+Wait until the user has actually addressed the stage before using the marker. Then move to the next stage.`;
+
+function getProcessReviewInstructions(turnCount = 0) {
+  return `${PROCESS_REVIEW_BASE}
+${buildProcessReviewTurnRule(turnCount)}
+${PROCESS_STAGE_RULES}`;
+}
+
+const FINAL_REVIEW_INSTRUCTIONS = `You are giving a final roast of a completed project. The user may upload final images, PDFs, or docs as the chat progresses.
+
+Move through three stages. End with the exact marker line when each stage is complete.
+
+Stage 1 — Framing Alignment: Check whether the final output matches the problem, solution, and constraints. Marker:
+### FINAL_FRAMING_REVIEWED
+
+Stage 2 — Output Critique: Critique execution through desirability, viability, feasibility, inclusion, and visual ethics. Marker:
+### FINAL_OUTPUT_REVIEWED
+
+Stage 3 — Trade-off Audit: Name what was gained, what was sacrificed, and what remains unresolved. Marker:
+### FINAL_TRADE_OFF_REVIEWED
+
+Rules:
+- Be specific and direct.
 - Name contradictions between the framing, the process, and the final output.
-- Be specific and direct. End with one clear next question.`,
+- End with one clear next question unless the roast is complete.`;
+
+const CHAT_FLOW_INSTRUCTIONS = {
+  start_project: START_PROJECT_INSTRUCTIONS,
+  process_review: getProcessReviewInstructions(),
+  final_review: FINAL_REVIEW_INSTRUCTIONS,
   default: 'Apply critique-by-attention and ask the next useful question.',
 };
 
@@ -47,9 +133,12 @@ export const MARKERS = {
   SOLUTION_STATEMENT_READY: '### SOLUTION_STATEMENT_READY',
 };
 
-export function getChatInstructions(flow, projectContext) {
+export function getChatInstructions(flow, projectContext, turnCount = null) {
   const contextInstruction = CONTEXT_INSTRUCTIONS[projectContext] || CONTEXT_INSTRUCTIONS.default;
-  const flowInstruction = CHAT_FLOW_INSTRUCTIONS[flow] || CHAT_FLOW_INSTRUCTIONS.default;
+  const flowInstruction =
+    flow === 'process_review' && typeof turnCount === 'number'
+      ? getProcessReviewInstructions(turnCount)
+      : CHAT_FLOW_INSTRUCTIONS[flow] || CHAT_FLOW_INSTRUCTIONS.default;
 
   return `${BASE_CHAT_RULES}
 Context: ${contextInstruction}
@@ -133,11 +222,46 @@ export const PERSONAS_SCHEMA = {
   required: ['personas'],
 };
 
+export const STAGE_SCORE_SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    score: {
+      type: 'INTEGER',
+      description: 'Score this stage from 10 to 100. Be honest: early passes often land between 40 and 70.',
+    },
+    rationale: { type: 'STRING', description: 'One or two sentences explaining the score.' },
+    strengths: {
+      type: 'ARRAY',
+      items: { type: 'STRING' },
+      description: 'What is already working in this stage.',
+    },
+    weaknesses: {
+      type: 'ARRAY',
+      items: { type: 'STRING' },
+      description: 'What is missing, vague, or unsupported.',
+    },
+    suggestedImprovement: {
+      type: 'STRING',
+      description: 'A concrete rewrite suggestion or the single thing to fix first.',
+    },
+  },
+  required: ['score', 'rationale', 'strengths', 'weaknesses', 'suggestedImprovement'],
+};
+
 export function getScoreInstructions(projectContext) {
   const contextInstruction = CONTEXT_INSTRUCTIONS[projectContext] || CONTEXT_INSTRUCTIONS.default;
 
   return `You are Not a Guru scoring a problem statement.
 Score from 10 to 100 based on: clarity, specificity, evidence, scope, actionability, inclusion of affected people, and freedom from solution bias.
+Context: ${contextInstruction}
+Return valid JSON only.`;
+}
+
+export function getStageScoreInstructions(stageLabel, projectContext) {
+  const contextInstruction = CONTEXT_INSTRUCTIONS[projectContext] || CONTEXT_INSTRUCTIONS.default;
+
+  return `You are Not a Guru scoring the "${stageLabel}" stage of a design review.
+Score from 10 to 100 based on clarity, rigour, evidence, and completeness for this specific stage.
 Context: ${contextInstruction}
 Return valid JSON only.`;
 }

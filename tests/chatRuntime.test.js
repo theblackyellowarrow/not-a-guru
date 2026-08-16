@@ -4,9 +4,11 @@ import assert from 'node:assert/strict';
 import {
   createChatPayload,
   createScorePayload,
+  createStageScorePayload,
   createToolPayload,
   createWorkflowPayload,
   extractTextFromResponse,
+  getFlowStageIndex,
   getQuestStageIndex,
   getRecentContextHistory,
   parsePersonasJson,
@@ -151,11 +153,41 @@ test('getQuestStageIndex ignores stage markers and user text', () => {
   assert.equal(getQuestStageIndex(messages), 0);
 });
 
-test('stripMarkers removes stage markers from rendered text', () => {
-  const text = 'Great work.\n### PROBLEM_STATEMENT_READY\n\nNext question.';
-  const cleaned = stripMarkers(text);
+test('getFlowStageIndex tracks start_project milestones', () => {
+  const messages = [{ type: 'guru', text: 'What is the problem area?' }];
+  assert.equal(getFlowStageIndex('start_project', messages), 0);
 
-  assert.ok(!cleaned.includes('### PROBLEM_STATEMENT_READY'));
-  assert.ok(cleaned.includes('Great work.'));
-  assert.ok(cleaned.includes('Next question.'));
+  messages.push({ type: 'guru', text: 'Good.\n### PROBLEM_STATEMENT_READY' });
+  assert.equal(getFlowStageIndex('start_project', messages), 1);
+
+  messages.push({ type: 'guru', text: 'Now the solution.\n### SOLUTION_STATEMENT_READY' });
+  assert.equal(getFlowStageIndex('start_project', messages), 2);
 });
+
+test('getFlowStageIndex tracks process_review milestones', () => {
+  const messages = [{ type: 'guru', text: 'Walk me through your process.' }];
+  assert.equal(getFlowStageIndex('process_review', messages), 0);
+
+  messages.push({ type: 'guru', text: 'The framing seems solid.\n### PROCESS_FRAMING_REVIEWED' });
+  assert.equal(getFlowStageIndex('process_review', messages), 1);
+
+  messages.push({ type: 'guru', text: 'Now evidence.\n### PROCESS_EVIDENCE_REVIEWED' });
+  assert.equal(getFlowStageIndex('process_review', messages), 2);
+});
+
+test('createStageScorePayload requests structured stage scoring', () => {
+  const payload = createStageScorePayload(
+    {
+      flow: 'process_review',
+      projectContext: 'class_project',
+      messages: [{ type: 'guru', text: 'What is the framing?' }, { type: 'user', text: 'We focused on housing.' }],
+    },
+    'Framing Check',
+    'We focused on housing affordability.'
+  );
+
+  assert.match(payload.instructions, /Framing Check/);
+  assert.equal(payload.generationConfig.responseSchema.type, 'OBJECT');
+  assert.ok(payload.contents[payload.contents.length - 1].parts[0].text.includes('housing'));
+});
+

@@ -10,28 +10,33 @@ import Onboarding from './components/Onboarding';
 import QuestTracker from './components/QuestTracker';
 import QuickReplies from './components/QuickReplies';
 import Toolbelt from './components/ToolbeltClean';
+import CertificateCard from './components/CertificateCard';
 import { callAI } from './aiClient';
 import {
   createChatPayload,
-  createScorePayload,
+  createStageScorePayload,
   createToolPayload,
   createWorkflowPayload,
   extractTextFromResponse,
+  getFlowStageIndex,
+  getFlowStages,
   getMessageParts,
-  getQuestStageIndex,
   getThreadTitlePreview,
   parsePersonasJson,
 } from './chatRuntime';
 import { parseUploadedFile } from './fileUtils';
+import { clearRoute, readRoute, setChatRoute } from './router';
 
-const STORAGE_KEY = 'guru_threads';
+const THREAD_MAP_KEY = 'guru_user_threads';
+const USERNAME_KEY = 'guru_username';
+const LAST_THREAD_KEY = (user) => `guru_last_thread_${user}`;
 const TOUR_KEY = 'guru_seen_tour';
 
 const INITIAL_MESSAGES = {
   start_project:
     "Aight, a new idea. Every great project starts with a spark. What's the general problem area you're thinking about? No need for a perfect pitch, just the raw concept.",
   process_review:
-    'Right, process critique. Before I tear into the output, walk me through what you actually did — research, decisions, dead ends. Upload docs whenever they help.',
+    'Right, process critique. Before we tear into the output, walk me through what you actually did — research, decisions, dead ends. Upload docs whenever they help.',
   final_review:
     'Final roast time. Show me the finished piece and the framing that got you here — problem statement, solution, any images or docs. I will be direct.',
 };
@@ -42,8 +47,56 @@ const TITLES = {
   final_review: 'Final Roast',
 };
 
+function loadThreadMap() {
+  try {
+    const saved = localStorage.getItem(THREAD_MAP_KEY);
+    const parsed = saved ? JSON.parse(saved) : {};
+    return typeof parsed === 'object' && parsed !== null ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function loadUsername() {
+  try {
+    return localStorage.getItem(USERNAME_KEY) || '';
+  } catch {
+    return '';
+  }
+}
+
+function loadUserThreads(username) {
+  const map = loadThreadMap();
+  const userThreads = map[username];
+  return Array.isArray(userThreads) ? userThreads : [];
+}
+
+function saveThreadMap(map) {
+  try {
+    localStorage.setItem(THREAD_MAP_KEY, JSON.stringify(map));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function saveUserThreads(username, userThreads) {
+  const map = loadThreadMap();
+  map[username] = userThreads;
+  return saveThreadMap(map);
+}
+
+function setLastActiveThread(username, threadId) {
+  try {
+    localStorage.setItem(LAST_THREAD_KEY(username), String(threadId));
+  } catch {
+    // ignore
+  }
+}
+
 export default function App() {
   const [appState, setAppState] = useState('onboarding');
+  const [username, setUsername] = useState('');
   const [threads, setThreads] = useState([]);
   const [currentThreadId, setCurrentThreadId] = useState(null);
   const [selectedProjectContext, setSelectedProjectContext] = useState(null);
@@ -70,8 +123,8 @@ export default function App() {
     [threads, currentThreadId]
   );
 
-  const questStage = useMemo(
-    () => (currentThread?.flow === 'start_project' ? getQuestStageIndex(currentThread.messages) : null),
+  const currentStage = useMemo(
+    () => (currentThread ? getFlowStageIndex(currentThread.flow, currentThread.messages) : -1),
     [currentThread]
   );
 
@@ -82,6 +135,8 @@ export default function App() {
 
   const nextQuest = useMemo(() => {
     if (!currentThread) return null;
+    const stages = getFlowStages(currentThread.flow);
+    const questClear = currentStage >= stages.length - 1;
 
     const hasGuruReply = currentThread.messages.some(
       (message) => message.type === 'guru' && message.text !== 'Thinking...'
@@ -98,7 +153,7 @@ export default function App() {
       };
     }
 
-    if (currentThread.flow === 'process_review' && hasGuruReply) {
+    if (currentThread.flow === 'process_review' && questClear) {
       return {
         title: 'Next quest unlocked',
         body: 'Process traced. Ready to put the final output on the table?',
@@ -106,7 +161,15 @@ export default function App() {
       };
     }
 
-    if (currentThread.flow === 'final_review' && hasGuruReply) {
+    if (currentThread.flow === 'process_review' && hasGuruReply) {
+      return {
+        title: 'Keep tracing',
+        body: 'You can keep interrogating the process, or move on to the final roast.',
+        actions: [{ label: 'Final Roast', flow: 'final_review' }],
+      };
+    }
+
+    if (currentThread.flow === 'final_review' && questClear) {
       return {
         title: 'Run it back',
         body: 'Roast done. Take the notes, fix the work, start a new quest when ready.',
@@ -114,45 +177,103 @@ export default function App() {
       };
     }
 
-    return null;
-  }, [currentThread, hasWorkflowCard]);
+    if (currentThread.flow === 'final_review' && hasGuruReply) {
+      return {
+        title: 'Keep roasting',
+        body: 'Keep digging into the final output, or start a new framing session.',
+        actions: [{ label: 'Build a Problem Statement', flow: 'start_project' }],
+      };
+    }
 
+    return null;
+  }, [currentThread, currentStage, hasWorkflowCard]);
+
+  // Initial load: username, threads, route.
   useEffect(() => {
     try {
-      const savedThreads = localStorage.getItem(STORAGE_KEY);
-      if (!savedThreads) {
-        setAppState('onboarding');
-        return;
+      const isEmbedMode = new URLSearchParams(window.location.search).get('embed') === '1';
+      setIsEmbed(isEmbedMode);
+      if (isEmbedMode) {
+        document.body.classList.add('embed-mode');
       }
+    } catch {
+      // ignore
+    }
 
-      const parsedThreads = JSON.parse(savedThreads);
-      if (!Array.isArray(parsedThreads) || parsedThreads.length === 0) {
+    const storedUsername = loadUsername();
+    const userThreads = storedUsername ? loadUserThreads(storedUsername) : [];
+    setUsername(storedUsername);
+    setThreads(userThreads);
+
+    try {
+      if (storedUsername && userThreads.length > 0) {
+        const route = readRoute();
+        let targetId = null;
+        if (route.route === 'chat' && route.threadId) {
+          const match = userThreads.find((thread) => thread.id === route.threadId);
+          if (match) targetId = match.id;
+        }
+        if (!targetId) {
+          const lastId = localStorage.getItem(LAST_THREAD_KEY(storedUsername));
+          const match = userThreads.find((thread) => thread.id === Number(lastId));
+          targetId = match ? match.id : userThreads[0].id;
+        }
+        setCurrentThreadId(targetId);
+        setAppState('chat');
+      } else {
         setAppState('onboarding');
-        return;
       }
-
-      setThreads(parsedThreads);
-      setCurrentThreadId(parsedThreads[0].id);
-      setAppState('chat');
     } catch (loadError) {
-      console.error('Failed to load threads from localStorage', loadError);
+      console.error('Failed to restore session', loadError);
       setAppState('onboarding');
     }
-  }, []);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const isEmbedMode = new URLSearchParams(window.location.search).get('embed') === '1';
-    setIsEmbed(isEmbedMode);
-    if (isEmbedMode) {
-      setIsHistoryPanelOpen(false);
-      document.body.classList.add('embed-mode');
-    }
     return () => {
       document.body.classList.remove('embed-mode');
     };
   }, []);
 
+  // Tour gate.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      if (isEmbed) return;
+      const hasSeenTour = localStorage.getItem(TOUR_KEY) === '1';
+      if (!hasSeenTour) {
+        setIsTourOpen(true);
+      }
+    } catch {
+      // ignore
+    }
+  }, [isEmbed]);
+
+  // Sync route and last-active thread (disabled in embed mode).
+  useEffect(() => {
+    if (typeof window === 'undefined' || isEmbed) return;
+    if (appState === 'chat' && currentThreadId) {
+      setChatRoute(currentThreadId);
+      if (username) setLastActiveThread(username, currentThreadId);
+    } else if (appState === 'onboarding') {
+      clearRoute();
+    }
+  }, [appState, currentThreadId, username, isEmbed]);
+
+  // Persist threads per user.
+  useEffect(() => {
+    if (!username) return;
+    const ok = saveUserThreads(username, threads);
+    if (!ok) {
+      try {
+        const pruned = threads.slice(0, 5);
+        saveUserThreads(username, pruned);
+        setError('Local storage is full. Only your 5 most recent threads will persist after reload.');
+      } catch {
+        setError('Local storage is full. Thread history will not be saved on this device.');
+      }
+    }
+  }, [threads, username]);
+
+  // Embed resize messaging.
   useEffect(() => {
     if (!isEmbed) return;
     if (typeof window === 'undefined') return;
@@ -176,43 +297,7 @@ export default function App() {
     };
   }, [isEmbed]);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      if (isEmbed) return;
-      const hasSeenTour = localStorage.getItem(TOUR_KEY) === '1';
-      if (!hasSeenTour) {
-        setIsTourOpen(true);
-      }
-    } catch {
-      // Ignore storage failures; the tour is optional.
-    }
-  }, [isEmbed]);
-
-  useEffect(() => {
-    if (threads.length === 0) {
-      try {
-        localStorage.removeItem(STORAGE_KEY);
-      } catch {
-        // storage unavailable; nothing to clear
-      }
-      return;
-    }
-
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(threads));
-    } catch (saveError) {
-      console.error('Failed to save threads to localStorage', saveError);
-      try {
-        const pruned = threads.slice(0, 5);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(pruned));
-        setError('Local storage is full. Only your 5 most recent threads will persist after reload.');
-      } catch {
-        setError('Local storage is full. Thread history will not be saved on this device.');
-      }
-    }
-  }, [threads]);
-
+  // Scroll to latest message.
   useEffect(() => {
     const currentCount = currentThread?.messages?.length || 0;
     if (currentCount > lastMessageCountRef.current) {
@@ -221,6 +306,7 @@ export default function App() {
     lastMessageCountRef.current = currentCount;
   }, [currentThreadId, currentThread?.messages?.length]);
 
+  // Fetch guru reply after user message.
   useEffect(() => {
     if (!currentThread || isLoading || inFlightRef.current) return;
 
@@ -307,24 +393,25 @@ export default function App() {
     fetchGuruResponse();
   }, [currentThread, isLoading]);
 
-  // Quest markers: append a stage-clear divider when the user advances a stage.
+  // Stage markers: append a stage-clear divider when the user advances a stage.
   useEffect(() => {
-    if (questStage === null || questStage === 0 || !currentThread) return;
+    if (currentStage < 0 || currentStage === 0 || !currentThread) return;
 
-    const stageKey = `quest_stage_${questStage}`;
     const alreadyMarked = currentThread.messages.some(
-      (message) => message.type === 'stage_marker' && message.stageKey === stageKey
+      (message) => message.type === 'stage_marker' && message.stageIndex === currentStage
     );
     if (alreadyMarked) return;
 
+    const stages = getFlowStages(currentThread.flow);
     const markerMessage = {
       id: `marker_${Date.now()}`,
       type: 'stage_marker',
-      stageKey,
+      stageIndex: currentStage,
+      stageKey: `stage_${currentStage}`,
       text:
-        questStage === 1
-          ? 'Stage clear: the problem has a name. Now sharpen it.'
-          : 'Quest clear: solution on the table. Stress-test it.',
+        currentStage === stages.length - 1
+          ? `${stages[currentStage]} complete. Quest clear.`
+          : `${stages[currentStage]} complete. Next: ${stages[currentStage + 1]}.`,
       timestamp: new Date().toISOString(),
     };
 
@@ -335,35 +422,44 @@ export default function App() {
           : thread
       )
     );
-  }, [questStage, currentThread]);
+  }, [currentStage, currentThread]);
 
-  // Structured scoring pass: runs once after the problem-statement stage marker is in place.
+  // Structured scoring pass: runs once after each stage marker is in place.
   useEffect(() => {
-    if (!currentThread || currentThread.flow !== 'start_project') return;
-    if (questStage !== 1) return;
-    if (isLoading || isScoring) return;
+    if (!currentThread || currentStage < 1 || isLoading || isScoring || isWorkflowing) return;
 
-    const problemStageMarked = currentThread.messages.some(
-      (message) => message.type === 'stage_marker' && message.stageKey === 'quest_stage_1'
+    const hasMarker = currentThread.messages.some(
+      (message) => message.type === 'stage_marker' && message.stageIndex === currentStage
     );
-    if (!problemStageMarked) return;
+    if (!hasMarker) return;
 
-    const alreadyScored = currentThread.messages.some((message) => message.type === 'score_card');
+    const alreadyScored = currentThread.messages.some(
+      (message) => message.type === 'score_card' && message.stageIndex === currentStage
+    );
     if (alreadyScored) return;
 
-    const problemStatementMessage = [...currentThread.messages]
-      .reverse()
-      .find((message) => message.type === 'user' && typeof message.text === 'string' && message.text.trim());
-
-    if (!problemStatementMessage) return;
+    const stages = getFlowStages(currentThread.flow);
+    const stageLabel = stages[currentStage];
 
     const runScore = async () => {
       const activeThreadId = currentThread.id;
       setIsScoring(true);
       setError(null);
 
+      const messagesBeforeMarker = currentThread.messages.slice(
+        0,
+        currentThread.messages.findIndex(
+          (message) => message.type === 'stage_marker' && message.stageIndex === currentStage
+        )
+      );
+      const targetMessage = [...messagesBeforeMarker]
+        .reverse()
+        .find((message) => message.type === 'user' && typeof message.text === 'string' && message.text.trim());
+
+      const scoreText = targetMessage ? targetMessage.text.trim() : '';
+
       try {
-        const payload = createScorePayload(currentThread, problemStatementMessage.text);
+        const payload = createStageScorePayload(currentThread, stageLabel, scoreText || threadSummaryText(currentThread.messages));
         const response = await callAI(payload);
         const result = await response.json();
         const content = extractTextFromResponse(result);
@@ -376,6 +472,8 @@ export default function App() {
         const scoreMessage = {
           id: `score_${Date.now()}`,
           type: 'score_card',
+          stageIndex: currentStage,
+          stageLabel,
           score: parsed.score,
           rationale: parsed.rationale,
           strengths: parsed.strengths,
@@ -392,26 +490,35 @@ export default function App() {
           )
         );
       } catch (scoreError) {
-        console.error('Error scoring problem statement:', scoreError);
-        setError(`Scoring failed: ${scoreError.message}`);
+        console.error('Error scoring stage:', scoreError);
+        setError(`Stage scoring failed: ${scoreError.message}`);
       } finally {
         setIsScoring(false);
       }
     };
 
     runScore();
-  }, [currentThread, questStage, isLoading, isScoring]);
+  }, [currentThread, currentStage, isLoading, isScoring, isWorkflowing]);
 
-  // Workflow proposal: runs once after the solution-stage marker is in place.
+  function threadSummaryText(messages) {
+    return messages
+      .filter((message) => (message.type === 'user' || message.type === 'guru') && typeof message.text === 'string')
+      .map((message) => message.text)
+      .join('\n\n');
+  }
+
+  // Workflow proposal: runs once after the final stage marker for start_project.
   useEffect(() => {
     if (!currentThread || currentThread.flow !== 'start_project') return;
-    if (questStage !== 2) return;
+    const stages = getFlowStages(currentThread.flow);
+    const finalStageIndex = stages.length - 1;
+    if (currentStage !== finalStageIndex) return;
     if (isLoading || isScoring || isWorkflowing) return;
 
-    const solutionStageMarked = currentThread.messages.some(
-      (message) => message.type === 'stage_marker' && message.stageKey === 'quest_stage_2'
+    const hasMarker = currentThread.messages.some(
+      (message) => message.type === 'stage_marker' && message.stageIndex === currentStage
     );
-    if (!solutionStageMarked) return;
+    if (!hasMarker) return;
 
     const alreadyProposed = currentThread.messages.some((message) => message.type === 'workflow_card');
     if (alreadyProposed) return;
@@ -458,7 +565,41 @@ export default function App() {
     };
 
     runWorkflow();
-  }, [currentThread, questStage, isLoading, isScoring, isWorkflowing]);
+  }, [currentThread, currentStage, isLoading, isScoring, isWorkflowing]);
+
+  function handleSetUsername(newUsername) {
+    const trimmed = newUsername.trim();
+    if (!trimmed) return;
+
+    setIsLoading(true);
+    try {
+      localStorage.setItem(USERNAME_KEY, trimmed);
+    } catch {
+      // ignore
+    }
+    setUsername(trimmed);
+
+    const userThreads = loadUserThreads(trimmed);
+    setThreads(userThreads);
+
+    if (userThreads.length > 0) {
+      const lastId = localStorage.getItem(LAST_THREAD_KEY(trimmed));
+      const match = userThreads.find((thread) => thread.id === Number(lastId));
+      setCurrentThreadId(match ? match.id : userThreads[0].id);
+      setAppState('chat');
+    } else {
+      setAppState('onboarding');
+    }
+
+    setIsLoading(false);
+  }
+
+  function handleContinueSession() {
+    if (!currentThreadId && threads.length > 0) {
+      setCurrentThreadId(threads[0].id);
+    }
+    setAppState('chat');
+  }
 
   function resetToOnboarding() {
     setAppState('onboarding');
@@ -469,6 +610,14 @@ export default function App() {
     setError(null);
     setIsScoring(false);
     setIsWorkflowing(false);
+  }
+
+  function handleNewSessionFromOnboarding() {
+    setAppState('onboarding');
+    setCurrentThreadId(null);
+    setInput('');
+    setUploadedFile(null);
+    setError(null);
   }
 
   function handleOnboardingSelect(selectedFlow) {
@@ -482,6 +631,7 @@ export default function App() {
 
     const newThread = {
       id: Date.now(),
+      username,
       title: TITLES[explicitFlow],
       flow: explicitFlow,
       projectContext,
@@ -656,10 +806,24 @@ export default function App() {
     setAppState('chat');
   }
 
+  const lastThreadTitle = useMemo(() => {
+    const lastId = localStorage.getItem(LAST_THREAD_KEY(username));
+    const match = threads.find((thread) => thread.id === Number(lastId));
+    return match ? match.title : threads[0]?.title || null;
+  }, [threads, username]);
+
   if (appState === 'onboarding') {
     return (
       <>
-        <Onboarding onSelect={handleOnboardingSelect} onOpenHelp={() => setIsHelpOpen(true)} isLoading={isLoading} />
+        <Onboarding
+          username={username}
+          lastThreadTitle={lastThreadTitle}
+          onSetUsername={handleSetUsername}
+          onContinueSession={handleContinueSession}
+          onSelect={handleOnboardingSelect}
+          onOpenHelp={() => setIsHelpOpen(true)}
+          isLoading={isLoading}
+        />
         <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
         <GeometricBackdrop />
         <FirstRunTour
@@ -763,7 +927,9 @@ export default function App() {
         {/* Main workspace */}
         <main className={`flex-1 overflow-y-auto ${isEmbed ? 'p-3' : 'p-4 md:p-6'}`}>
           <div className="max-w-3xl mx-auto space-y-6">
-            {questStage !== null && <QuestTracker stage={questStage} />}
+            {currentStage >= 0 && currentThread && (
+              <QuestTracker stage={currentStage} flow={currentThread.flow} />
+            )}
             {currentThread?.messages.map((message, index) => (
               <MessageRenderer
                 key={message.id}
@@ -781,6 +947,7 @@ export default function App() {
               onToolUse={handleToolUse}
               isLoading={isLoading || isScoring || isWorkflowing}
             />
+            <CertificateCard thread={currentThread} username={username} />
             {nextQuest && !isLoading && !isScoring && !isWorkflowing && (
               <NextQuestCard
                 title={nextQuest.title}
@@ -812,7 +979,7 @@ export default function App() {
             )}
             {(isScoring || isWorkflowing) && (
               <div className="mb-2 text-center text-xs uppercase font-mono tracking-widest text-[#FF00A8] animate-pulse">
-                {isScoring ? 'Scoring problem statement…' : 'Building workflow…'}
+                {isScoring ? 'Scoring stage…' : 'Building workflow…'}
               </div>
             )}
             <QuickReplies

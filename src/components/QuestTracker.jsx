@@ -1,16 +1,18 @@
 import { Check, Flag } from 'lucide-react';
+import { getFlowStages } from '../chatRuntime';
 
-const STAGES = ['Raw Idea', 'Problem Statement', 'Solution'];
+export default function QuestTracker({ stage, flow = 'start_project' }) {
+  const stages = getFlowStages(flow);
+  if (!stages.length) return null;
 
-export default function QuestTracker({ stage }) {
-  const questClear = stage >= STAGES.length - 1;
+  const questClear = stage >= stages.length - 1;
 
   return (
     <div className="select-none border border-[#6B6965] bg-[#0f0f0f] p-3">
       <div className="flex items-center justify-center">
-        {STAGES.map((label, index) => {
+        {stages.map((label, index) => {
           const complete = index < stage || questClear;
-          const active = index === stage && !questClear;
+          const active = index === stage;
 
           return (
             <div key={label} className="flex items-center">
@@ -26,8 +28,8 @@ export default function QuestTracker({ stage }) {
                 {complete && <Check size={12} />}
                 {label}
               </div>
-              {index < STAGES.length - 1 && (
-                <div className={`h-0.5 w-6 ${index < stage ? 'bg-[#FF00A8]' : 'bg-[#2a2a2a]'}`} />
+              {index < stages.length - 1 && (
+                <div className={`h-0.5 w-4 md:w-6 ${index < stage ? 'bg-[#FF00A8]' : 'bg-[#2a2a2a]'}`} />
               )}
             </div>
           );

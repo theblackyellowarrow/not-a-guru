@@ -12,7 +12,7 @@ const STEPS = [
   },
   {
     title: 'Keep It Moving',
-    body: 'Replies end with one sharp next question. Use quick chips if you’re stuck, and watch for the problem-statement score in the framing quest.',
+    body: 'Replies end with one sharp next question. Use quick chips if you’re stuck. Each stage earns a score, and once a quest is complete you can download a dotai marksheet.',
   },
 ];
 

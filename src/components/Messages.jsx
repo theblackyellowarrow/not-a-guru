@@ -124,16 +124,17 @@ function ChatMessage({ message, isLoading, isLastMessage }) {
 }
 
 function ScoreCard({ data, onRepeat }) {
-  const { score, rationale, strengths, weaknesses, suggestedImprovement } = data;
+  const { score, rationale, strengths, weaknesses, suggestedImprovement, stageIndex = 0 } = data;
   const passed = score >= 80;
   const scoreColor = passed ? 'text-[#FF00A8] border-[#FF00A8]' : 'text-[#A45A00] border-[#A45A00]';
+  const stageLabel = data.stageLabel || (stageIndex === 0 ? 'Problem statement score' : `Stage ${stageIndex + 1} score`);
 
   return (
     <div className={`my-6 border-2 ${scoreColor} bg-[#4A002D]/30 p-5`}>
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="text-[10px] uppercase font-mono tracking-[0.15em] text-[#6B6965] mb-1">
-            Problem statement score
+            {stageLabel}
           </div>
           <div className="flex items-baseline gap-3">
             <span className={`text-5xl font-bold font-mono ${passed ? 'text-[#FF00A8]' : 'text-[#A45A00]'}`}>

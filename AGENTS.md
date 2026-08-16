@@ -14,15 +14,33 @@ This is a Vite + React prototype extracted from a single-file app.
 - Keep browser-only assumptions explicit.
 - When touching AI calls, document whether the change is browser-side or server-side.
 
+## User sessions
+
+- Threads are keyed by username. `App` stores threads in `localStorage` under a per-user map.
+- The landing screen asks for a username and then restores the user's last active thread, or lets them start a new quest.
+- Each thread records `username`, `flow`, `projectContext`, `messages`, and `title`.
+
 ## Modes and flows
 
-The app now has three chat-only entry points:
+The app has three chat entry points:
 
 1. **Build a Problem Statement** (`start_project`) — a guided chat from raw idea to scored problem statement, then solution statement, then a proposed future workflow.
-2. **Design Process Critique** (`process_review`) — a chat critique of the user's process; PDFs/images can be uploaded as the conversation progresses.
+2. **Design Process Critique** (`process_review`) — a chat critique of the user's process; the tone starts gentle and becomes progressively tougher. It explicitly critiques the process, not the solution.
 3. **Final Roast** (`final_review`) — a chat critique of completed work; uploads happen in-chat.
 
-Stage markers (`### PROBLEM_STATEMENT_READY`, `### SOLUTION_STATEMENT_READY`) are control signals produced by the model and stripped from rendered output. Structured scoring and workflow passes are browser-side calls to the existing `/api/openai` proxy.
+Stage markers are flow-specific. The model emits markers when a stage is complete:
+
+- `start_project`: `### PROBLEM_STATEMENT_READY`, `### SOLUTION_STATEMENT_READY`
+- `process_review`: `### PROCESS_FRAMING_REVIEWED`, `### PROCESS_TRACE_REVIEWED`, `### PROCESS_EVIDENCE_REVIEWED`
+- `final_review`: `### FINAL_FRAMING_REVIEWED`, `### FINAL_OUTPUT_REVIEWED`, `### FINAL_TRADE_OFF_REVIEWED`
+
+Stage markers are control signals produced by the model and stripped from rendered output. Each scored stage creates a `score_card` message. When every scored stage is complete, the user can download a dotai marksheet/certificate.
+
+Structured scoring and workflow passes are browser-side calls to the existing `/api/openai` proxy.
+
+## URL routing
+
+The SPA uses hash routes. Chat sessions are reflected in the URL as `#/chat/{threadId}`. The onboarding screen clears the hash. Routing is disabled in embed mode.
 
 ## Priority areas
 
