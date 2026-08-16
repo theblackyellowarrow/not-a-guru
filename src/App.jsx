@@ -801,7 +801,7 @@ export default function App() {
               </div>
             )}
             {(isScoring || isWorkflowing) && (
-              <div className="mb-2 text-center text-xs uppercase font-mono tracking-widest text-fuchsia-400 animate-pulse">
+              <div className="mb-2 text-center text-xs uppercase font-mono tracking-widest text-cyan-400 animate-pulse">
                 {isScoring ? 'Scoring problem statement...' : 'Building workflow...'}
               </div>
             )}
@@ -810,7 +810,7 @@ export default function App() {
               onPick={handleQuickReply}
               disabled={isLoading || isParsing || isScoring || isWorkflowing || !currentThread}
             />
-            <div className="flex items-center bg-gray-900 p-2 border-2 border-gray-700 focus-within:border-fuchsia-400">
+            <div className="flex items-center bg-gray-900 p-2 border-2 border-gray-700 focus-within:border-cyan-400">
               <input
                 type="file"
                 ref={fileInputRef}

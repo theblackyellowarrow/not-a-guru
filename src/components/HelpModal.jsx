@@ -49,7 +49,7 @@ export default function HelpModal({ isOpen, onClose }) {
         <div className="border-t border-gray-800 px-6 py-4 text-right">
           <button
             onClick={onClose}
-            className="border border-fuchsia-400 px-4 py-2 text-sm font-semibold uppercase font-mono text-fuchsia-200 hover:bg-fuchsia-900/20"
+            className="border border-cyan-400 px-4 py-2 text-sm font-semibold uppercase font-mono text-cyan-200 hover:bg-cyan-900/20"
           >
             Got It
           </button>

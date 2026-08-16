@@ -56,7 +56,7 @@ export default function FileStagingScreen({
     <div className="view-enter bg-black text-gray-200 font-sans flex flex-col h-screen antialiased items-center justify-center p-4">
       <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
       <div className="w-full max-w-2xl">
-        <h1 className="text-3xl font-bold text-center text-fuchsia-400 mb-2 uppercase font-mono">{title}</h1>
+        <h1 className="text-3xl font-bold text-center text-cyan-400 mb-2 uppercase font-mono">{title}</h1>
         <p className="text-center text-gray-400 mb-8 text-lg">{description}</p>
         {error && <p className="mb-4 border border-red-800 bg-red-950 px-4 py-3 text-sm text-red-200">{error}</p>}
         <div className="bg-gray-900 border-2 border-gray-800 p-6 space-y-4">
@@ -70,7 +70,7 @@ export default function FileStagingScreen({
                 )}
                 <div>
                   <span className="text-gray-200 uppercase font-mono">
-                    {label} {compulsory && <span className="text-fuchsia-400 font-bold">*</span>}
+                    {label} {compulsory && <span className="text-cyan-400 font-bold">*</span>}
                   </span>
                   {stagedFiles[key] && (
                     <p className="text-xs text-gray-400 truncate max-w-xs">{stagedFiles[key].name}</p>
@@ -79,7 +79,7 @@ export default function FileStagingScreen({
               </div>
               <button
                 onClick={() => handleFileSelect(key)}
-                className="text-sm text-fuchsia-400 hover:text-fuchsia-300 font-semibold uppercase font-mono"
+                className="text-sm text-cyan-400 hover:text-cyan-300 font-semibold uppercase font-mono"
               >
                 {stagedFiles[key] ? 'Change' : 'Upload'}
               </button>
@@ -93,7 +93,7 @@ export default function FileStagingScreen({
           <button
             onClick={() => onSubmit(stagedFiles)}
             disabled={!canSubmit}
-            className="bg-fuchsia-600 text-black font-bold py-2 px-6 disabled:bg-gray-600 disabled:cursor-not-allowed hover:bg-fuchsia-500 transition-colors uppercase font-mono"
+            className="bg-cyan-600 text-black font-bold py-2 px-6 disabled:bg-gray-600 disabled:cursor-not-allowed hover:bg-cyan-500 transition-colors uppercase font-mono"
           >
             Submit ({totalUploadedCount}/{totalRequiredCount})
           </button>

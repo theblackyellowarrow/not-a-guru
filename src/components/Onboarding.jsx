@@ -55,10 +55,10 @@ export default function Onboarding({ onSelect, onOpenHelp, isLoading }) {
           loading="eager"
         />
         <h1 className="text-4xl font-bold text-gray-200 mb-2 uppercase font-mono">Not a Guru</h1>
-        <p className="text-fuchsia-400 text-lg">The design peer who keeps it real. Attention over fluff.</p>
+        <p className="text-cyan-400 text-lg">The design peer who keeps it real. Attention over fluff.</p>
         <button
           onClick={onOpenHelp}
-          className="mt-4 inline-flex items-center gap-2 border border-gray-800 px-4 py-2 text-sm font-semibold uppercase font-mono text-gray-300 hover:border-fuchsia-400 hover:text-white"
+          className="mt-4 inline-flex items-center gap-2 border border-gray-800 px-4 py-2 text-sm font-semibold uppercase font-mono text-gray-300 hover:border-cyan-400 hover:text-white"
         >
           <HelpCircle size={16} />
           How to Use
@@ -72,7 +72,7 @@ export default function Onboarding({ onSelect, onOpenHelp, isLoading }) {
               return (
                 <div key={step.title} className="border-2 border-gray-800 bg-gray-900/60 p-5">
                   <div className="flex items-center gap-3">
-                    <span className="text-gray-500 group-hover:text-fuchsia-400 transition-colors">
+                    <span className="text-gray-500 group-hover:text-cyan-400 transition-colors">
                       <Icon size={20} />
                     </span>
                     <span className="text-xs uppercase font-mono tracking-widest text-gray-500">
@@ -98,11 +98,11 @@ export default function Onboarding({ onSelect, onOpenHelp, isLoading }) {
                   key={quest.key}
                   onClick={() => onSelect(quest.key)}
                   disabled={isLoading}
-                  className="bg-gray-900/70 group border-2 border-gray-800 p-6 text-left hover:bg-fuchsia-900/20 hover:border-fuchsia-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-wait"
+                  className="bg-gray-900/70 group border-2 border-gray-800 p-6 text-left hover:bg-cyan-900/20 hover:border-cyan-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-wait"
                 >
                   <div className="flex items-center justify-between">
                     <Icon size={28} className="text-gray-400 group-hover:text-white transition-colors" />
-                    <span className="text-[10px] uppercase font-mono tracking-widest text-gray-600 group-hover:text-fuchsia-400 transition-colors">
+                    <span className="text-[10px] uppercase font-mono tracking-widest text-gray-600 group-hover:text-cyan-400 transition-colors">
                       {quest.tag}
                     </span>
                   </div>
@@ -114,7 +114,7 @@ export default function Onboarding({ onSelect, onOpenHelp, isLoading }) {
           </div>
         </div>
 
-        {isLoading && <div className="mt-8 text-fuchsia-400">Loading session...</div>}
+        {isLoading && <div className="mt-8 text-cyan-400">Loading session...</div>}
 
         <div className="mt-14 border-t-2 border-gray-800 pt-8">
           <p className="text-gray-400 text-sm max-w-2xl mx-auto">
@@ -124,7 +124,7 @@ export default function Onboarding({ onSelect, onOpenHelp, isLoading }) {
               href="https://dotai.org"
               target="_blank"
               rel="noreferrer noopener"
-              className="text-fuchsia-400 underline hover:text-fuchsia-300"
+              className="text-cyan-400 underline hover:text-cyan-300"
             >
               dotai.org
             </a>

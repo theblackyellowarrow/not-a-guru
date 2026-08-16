@@ -9,6 +9,10 @@ export default function GeometricBackdrop() {
       style={{ mixBlendMode: 'screen', opacity: 0.45 }}
     >
       <defs>
+        <linearGradient id="gb-cyan" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#00f5d4" stopOpacity="0.9" />
+          <stop offset="100%" stopColor="#00f5d4" stopOpacity="0.3" />
+        </linearGradient>
         <linearGradient id="gb-fuchsia" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#ff0066" stopOpacity="0.9" />
           <stop offset="100%" stopColor="#ff0066" stopOpacity="0.3" />
@@ -23,17 +27,17 @@ export default function GeometricBackdrop() {
         </linearGradient>
       </defs>
 
-      {/* Wireframe cube — top left */}
+      {/* Wireframe cube — top left, cyan */}
       <g transform="translate(130, 130)" opacity="0.5">
-        <polygon points="0,40 70,0 140,40 70,80" fill="none" stroke="url(#gb-fuchsia)" strokeWidth="1" />
-        <polygon points="0,40 70,80 70,160 0,120" fill="none" stroke="url(#gb-fuchsia)" strokeWidth="0.8" />
-        <polygon points="70,80 140,40 140,120 70,160" fill="none" stroke="url(#gb-fuchsia)" strokeWidth="0.8" />
-        <line x1="0" y1="120" x2="70" y2="160" stroke="url(#gb-fuchsia)" strokeWidth="0.6" opacity="0.5" />
-        <line x1="70" y1="0" x2="70" y2="80" stroke="url(#gb-fuchsia)" strokeWidth="0.6" opacity="0.5" />
-        <line x1="140" y1="40" x2="140" y2="120" stroke="url(#gb-fuchsia)" strokeWidth="0.6" opacity="0.5" />
+        <polygon points="0,40 70,0 140,40 70,80" fill="none" stroke="url(#gb-cyan)" strokeWidth="1" />
+        <polygon points="0,40 70,80 70,160 0,120" fill="none" stroke="url(#gb-cyan)" strokeWidth="0.8" />
+        <polygon points="70,80 140,40 140,120 70,160" fill="none" stroke="url(#gb-cyan)" strokeWidth="0.8" />
+        <line x1="0" y1="120" x2="70" y2="160" stroke="url(#gb-cyan)" strokeWidth="0.6" opacity="0.5" />
+        <line x1="70" y1="0" x2="70" y2="80" stroke="url(#gb-cyan)" strokeWidth="0.6" opacity="0.5" />
+        <line x1="140" y1="40" x2="140" y2="120" stroke="url(#gb-cyan)" strokeWidth="0.6" opacity="0.5" />
       </g>
 
-      {/* Wireframe sphere — bottom right */}
+      {/* Wireframe sphere — bottom right, violet */}
       <g transform="translate(1040, 600)" opacity="0.45">
         <circle r="90" fill="none" stroke="url(#gb-violet)" strokeWidth="1" />
         <ellipse rx="90" ry="28" fill="none" stroke="url(#gb-violet)" strokeWidth="0.8" />
@@ -41,7 +45,7 @@ export default function GeometricBackdrop() {
         <ellipse rx="90" ry="28" fill="none" stroke="url(#gb-violet)" strokeWidth="0.8" transform="rotate(120)" />
       </g>
 
-      {/* Spiral / hourglass shape — right middle */}
+      {/* Spiral / hourglass shape — right middle, coral */}
       <g transform="translate(1060, 260)" opacity="0.4">
         <path
           d="M0,-80 C50,-40 50,40 0,80 C-50,40 -50,-40 0,-80"
@@ -63,23 +67,23 @@ export default function GeometricBackdrop() {
         />
       </g>
 
-      {/* Wavy horizontal lines */}
+      {/* Wavy horizontal lines: cyan + fuchsia highlight */}
       <path
         d="M0,220 Q200,170 400,220 T800,220 T1200,180"
         fill="none"
-        stroke="url(#gb-fuchsia)"
+        stroke="url(#gb-cyan)"
         strokeWidth="0.8"
         opacity="0.35"
       />
       <path
         d="M0,580 Q300,640 600,580 T1200,620"
         fill="none"
-        stroke="url(#gb-violet)"
+        stroke="url(#gb-fuchsia)"
         strokeWidth="0.8"
         opacity="0.3"
       />
 
-      {/* Star / asterisk cluster — top right */}
+      {/* Star / asterisk cluster — top right, fuchsia highlight */}
       <g transform="translate(1080, 110)" opacity="0.5">
         {Array.from({ length: 16 }).map((_, i) => (
           <line
@@ -95,7 +99,7 @@ export default function GeometricBackdrop() {
         <circle r="12" fill="#ff0066" opacity="0.25" />
       </g>
 
-      {/* Grid rectangles — bottom left */}
+      {/* Grid rectangle — bottom left, violet */}
       <g transform="translate(80, 620)" opacity="0.35">
         <rect x="0" y="0" width="120" height="120" fill="none" stroke="url(#gb-violet)" strokeWidth="1" />
         <line x1="40" y1="0" x2="40" y2="120" stroke="url(#gb-violet)" strokeWidth="0.6" />
@@ -104,21 +108,21 @@ export default function GeometricBackdrop() {
         <line x1="0" y1="80" x2="120" y2="80" stroke="url(#gb-violet)" strokeWidth="0.6" />
       </g>
 
-      {/* Arcs and rings — left middle */}
+      {/* Arcs and rings — left middle, coral */}
       <g transform="translate(90, 360)" opacity="0.35">
         <path d="M0,0 A60,60 0 0,1 120,0" fill="none" stroke="url(#gb-coral)" strokeWidth="1" />
         <path d="M0,20 A50,50 0 0,1 100,20" fill="none" stroke="url(#gb-coral)" strokeWidth="0.8" />
         <path d="M0,40 A40,40 0 0,1 80,40" fill="none" stroke="url(#gb-coral)" strokeWidth="0.7" />
       </g>
 
-      {/* Concentric circles — center, very subtle */}
+      {/* Concentric circles — center, cyan + violet + fuchsia highlight */}
       <g transform="translate(600, 400)" opacity="0.25">
-        <circle r="220" fill="none" stroke="url(#gb-fuchsia)" strokeWidth="0.7" />
+        <circle r="220" fill="none" stroke="url(#gb-cyan)" strokeWidth="0.7" />
         <circle r="170" fill="none" stroke="url(#gb-violet)" strokeWidth="0.6" />
         <circle r="120" fill="none" stroke="url(#gb-fuchsia)" strokeWidth="0.5" />
       </g>
 
-      {/* Thin cross / plus marks */}
+      {/* Thin cross / plus marks — fuchsia highlight */}
       <g stroke="#ff0066" strokeWidth="0.8" opacity="0.35">
         <line x1="260" y1="80" x2="300" y2="80" />
         <line x1="280" y1="60" x2="280" y2="100" />
