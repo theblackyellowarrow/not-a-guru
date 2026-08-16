@@ -270,8 +270,11 @@ export default function Onboarding({
                 </>
               ) : (
                 <form onSubmit={handleRouteSubmit}>
+                  <h2 className="text-2xl md:text-3xl font-semibold text-white leading-tight mb-4">
+                    Start your design process from scratch — become a dotai Design Ninja
+                  </h2>
                   <label className="block text-[10px] uppercase font-mono tracking-[0.15em] text-[#6B6965] mb-2">
-                    {triageRoute ? `Username to begin ${FLOW_TITLES[triageRoute]}` : 'Begin a session'}
+                    Pick your ninja name
                   </label>
                   <div className="flex flex-col sm:flex-row gap-3">
                     <input
@@ -302,7 +305,7 @@ export default function Onboarding({
             <div className="mt-10 border-t border-[#2a2a2a] pt-6">
               <p className="text-xs text-[#6B6965] leading-relaxed">
                 Not a Guru is built by <span className="text-white">dotai</span>. It asks better questions,
-                scores your work stage-by-stage, and helps you leave with a marksheet.
+                scores every stage, and signs off with a dotai Design Ninja certificate addressed to your ninja name.
               </p>
               <p className="mt-4 text-[10px] text-[#6B6965] font-mono tracking-[0.2em]">powered by dotai</p>
             </div>

@@ -185,6 +185,70 @@ export function confidenceLabelFor(score) {
   return 'Source missing';
 }
 
+export const NINJA_RANK_BANDS = [
+  { min: 90, label: 'Master Ninja' },
+  { min: 80, label: 'Senior Ninja' },
+  { min: 70, label: 'Ninja' },
+  { min: 55, label: 'Apprentice' },
+  { min: 0, label: 'Initiate' },
+];
+
+export function rankForAverage(average) {
+  if (typeof average !== 'number' || Number.isNaN(average)) return 'Unranked';
+  const band = NINJA_RANK_BANDS.find((entry) => average >= entry.min);
+  return band ? band.label : 'Unranked';
+}
+
+const FLOW_LABELS = {
+  start_project: 'Build a Problem Statement',
+  process_review: 'Design Process Critique',
+  final_review: 'Final Roast',
+};
+
+export function listAllFlows() {
+  return Object.keys(FLOW_STAGES);
+}
+
+export function collectStageScoresFromThreads(threads, { username } = {}) {
+  const rows = [];
+
+  (threads || []).forEach((thread) => {
+    if (!thread || !thread.flow) return;
+    const stages = FLOW_STAGES[thread.flow] || [];
+    const flowLabel = FLOW_LABELS[thread.flow] || thread.flow;
+
+    (thread.messages || [])
+      .filter(
+        (message) =>
+          message.type === 'score_card' && typeof message.stageIndex === 'number'
+      )
+      .forEach((message) => {
+        rows.push({
+          flow: thread.flow,
+          flowLabel,
+          threadId: thread.id,
+          threadTitle: thread.title || flowLabel,
+          username: thread.username || username || '',
+          stageIndex: message.stageIndex,
+          stage: stages[message.stageIndex] || `Stage ${message.stageIndex + 1}`,
+          score: message.score,
+          rationale: message.rationale || '',
+          confidence: message.confidence || confidenceLabelFor(message.score),
+          strengths: Array.isArray(message.strengths) ? message.strengths : [],
+          weaknesses: Array.isArray(message.weaknesses) ? message.weaknesses : [],
+          suggestedImprovement: message.suggestedImprovement || '',
+        });
+      });
+  });
+
+  rows.sort((a, b) => {
+    if (a.flow === b.flow) return a.stageIndex - b.stageIndex;
+    return a.flow.localeCompare(b.flow);
+  });
+
+  return rows;
+}
+
 export function parsePersonasJson(content) {
   const parsed = safeJsonParse(content, 'personas');
 
@@ -294,39 +358,88 @@ export function createToolPayload(toolType, thread) {
   };
 }
 
-export function generateCertificateHtml({ title, username, date, scores }) {
-  const scoreRows = scores
-    .map(
-      (score) => `
-      <tr>
-        <td>${score.stage}</td>
-        <td><strong>${score.score}</strong> / 100</td>
-        <td>${score.rationale}</td>
-      </tr>`
-    )
+export function generateCertificateHtml({ title, username, date, scores, rank, average }) {
+  const groups = {};
+  scores.forEach((score) => {
+    if (!groups[score.flow]) groups[score.flow] = [];
+    groups[score.flow].push(score);
+  });
+
+  const groupSections = Object.entries(groups)
+    .map(([flow, rows]) => {
+      const flowHeading = rows[0]?.flowLabel || flow;
+      const rowsHtml = rows
+        .map(
+          (score) => `
+          <tr>
+            <td>
+              <div class="stage">${score.stage}</div>
+              <div class="confidence">${score.confidence}</div>
+            </td>
+            <td class="score"><strong>${score.score}</strong> <span class="of">/ 100</span></td>
+            <td>
+              <div class="rationale">${score.rationale || ''}</div>
+              ${score.strengths.length ? `<div class="tag-row"><span class="tag tag-cyan">Strengths</span><span class="tag-body">${score.strengths.join(' · ')}</span></div>` : ''}
+              ${score.weaknesses.length ? `<div class="tag-row"><span class="tag tag-fuchsia">Weaknesses</span><span class="tag-body">${score.weaknesses.join(' · ')}</span></div>` : ''}
+              ${score.suggestedImprovement ? `<div class="improve">Next move: ${score.suggestedImprovement}</div>` : ''}
+            </td>
+          </tr>`
+        )
+        .join('');
+      return `
+        <section class="flow">
+          <h2>${flowHeading}</h2>
+          <table>
+            <thead>
+              <tr><th>Stage</th><th>Score</th><th>Critique</th></tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        </section>`;
+    })
     .join('');
+
+  const avgDisplay = typeof average === 'number' ? average.toFixed(1) : '—';
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title} — dotai Marksheet</title>
+  <title>${title} — dotai Design Ninja Certificate</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&family=Source+Serif+4:wght@400;600&display=swap');
     body { margin: 0; font-family: 'IBM Plex Sans', Arial, sans-serif; background: #090909; color: #F7F5F0; }
-    .sheet { max-width: 720px; margin: 40px auto; border: 1px solid #F7F5F0; padding: 48px; background: #090909; }
+    .sheet { max-width: 820px; margin: 40px auto; border: 2px solid #F7F5F0; padding: 56px; background: #090909; }
     .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #00F1DE; padding-bottom: 24px; margin-bottom: 32px; }
-    .brand { font-family: 'IBM Plex Mono', monospace; font-size: 14px; text-transform: uppercase; letter-spacing: 0.2em; color: #00F1DE; }
-    h1 { font-family: 'IBM Plex Mono', monospace; font-size: 28px; text-transform: uppercase; margin: 0; letter-spacing: 0.04em; }
-    .meta { margin: 24px 0 32px; }
-    .meta div { font-size: 14px; color: #C8C5BF; margin-bottom: 6px; }
-    table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    th { text-align: left; text-transform: uppercase; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #00F1DE; border-bottom: 1px solid #6B6965; padding: 12px 8px; }
+    .brand { font-family: 'IBM Plex Mono', monospace; font-size: 13px; text-transform: uppercase; letter-spacing: 0.2em; color: #00F1DE; }
+    h1 { font-family: 'IBM Plex Mono', monospace; font-size: 30px; text-transform: uppercase; margin: 12px 0 0; letter-spacing: 0.04em; }
+    .rank-stamp { border: 2px solid #FF00A8; padding: 14px 20px; text-align: center; font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; letter-spacing: 0.18em; }
+    .rank-stamp .label { font-size: 11px; color: #FF00A8; }
+    .rank-stamp .value { font-size: 22px; margin-top: 6px; color: #FF00A8; }
+    .rank-stamp .avg { font-size: 12px; color: #C8C5BF; margin-top: 4px; letter-spacing: 0.1em; }
+    .meta { margin: 24px 0 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px; }
+    .meta div { font-size: 14px; color: #C8C5BF; }
+    .meta strong { color: #F7F5F0; font-weight: 600; }
+    .flow { margin-top: 28px; }
+    .flow h2 { font-family: 'IBM Plex Mono', monospace; font-size: 13px; text-transform: uppercase; letter-spacing: 0.18em; color: #00F1DE; margin: 0 0 12px; border-left: 2px solid #00F1DE; padding-left: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 12px; }
+    th { text-align: left; text-transform: uppercase; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: #00F1DE; border-bottom: 1px solid #6B6965; padding: 10px 8px; }
     td { border-bottom: 1px solid #2a2a2a; padding: 14px 8px; vertical-align: top; color: #EFEDE8; }
-    td strong { color: #FF00A8; }
-    .footer { margin-top: 40px; padding-top: 24px; border-top: 1px solid #2a2a2a; font-size: 12px; color: #6B6965; font-family: 'IBM Plex Mono', monospace; text-align: center; }
-    @media print { body { background: #fff; color: #000; } .sheet { border: 1px solid #000; } }
+    td .stage { font-weight: 600; }
+    td .confidence { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #6B6965; margin-top: 4px; }
+    td.score { font-family: 'IBM Plex Mono', monospace; font-size: 16px; white-space: nowrap; }
+    td.score strong { color: #FF00A8; font-size: 22px; }
+    td.score .of { color: #6B6965; font-size: 11px; }
+    td .rationale { line-height: 1.5; margin-bottom: 8px; }
+    td .tag-row { display: flex; gap: 8px; align-items: flex-start; margin-top: 6px; font-size: 12px; }
+    td .tag { font-family: 'IBM Plex Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; padding: 2px 6px; flex-shrink: 0; }
+    .tag-cyan { color: #00F1DE; border: 1px solid #00F1DE; }
+    .tag-fuchsia { color: #FF00A8; border: 1px solid #FF00A8; }
+    td .tag-body { color: #C8C5BF; line-height: 1.4; }
+    td .improve { margin-top: 8px; font-size: 12px; color: #EFEDE8; border-left: 2px solid #FF00A8; padding-left: 8px; font-style: italic; }
+    .footer { margin-top: 40px; padding-top: 24px; border-top: 1px solid #2a2a2a; font-size: 12px; color: #6B6965; font-family: 'IBM Plex Mono', monospace; text-align: center; letter-spacing: 0.1em; }
+    @media print { body { background: #fff; color: #000; } .sheet { border: 1px solid #000; } td .improve { color: #000; } }
   </style>
 </head>
 <body>
@@ -334,37 +447,40 @@ export function generateCertificateHtml({ title, username, date, scores }) {
     <div class="header">
       <div>
         <div class="brand">dotai · Not a Guru</div>
-        <h1>${title}</h1>
+        <h1>Design Ninja Certificate</h1>
+        <div style="margin-top: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #C8C5BF; text-transform: uppercase; letter-spacing: 0.16em;">Prepared for ${username || 'Unnamed'}</div>
+      </div>
+      <div class="rank-stamp">
+        <div class="label">Rank</div>
+        <div class="value">${rank || 'Unranked'}</div>
+        <div class="avg">Average ${avgDisplay} / 100</div>
       </div>
     </div>
     <div class="meta">
       <div><strong>Practitioner:</strong> ${username || 'Unnamed'}</div>
       <div><strong>Date:</strong> ${date}</div>
+      <div><strong>Sessions scored:</strong> ${scores.length} stages across ${Object.keys(groups).length} flow(s)</div>
+      <div><strong>Issued by:</strong> dotai · Not a Guru</div>
     </div>
-    <table>
-      <thead>
-        <tr><th>Stage</th><th>Score</th><th>Rationale</th></tr>
-      </thead>
-      <tbody>
-        ${scoreRows}
-      </tbody>
-    </table>
+    ${groupSections || '<p>No scored stages yet.</p>'}
     <div class="footer">
-      This marksheet records stage-by-stage critique scores generated by the Not a Guru assistant.
+      This Design Ninja certificate records stage-by-stage critique scores generated by the Not a Guru assistant.
     </div>
   </div>
 </body>
 </html>`;
 }
 
-export function downloadCertificate({ title, username, scores }) {
+export function downloadCertificate({ username, scores, title, rank, average }) {
   const date = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-  const html = generateCertificateHtml({ title, username, date, scores });
+  const safeTitle = title || 'dotai Design Ninja Certificate';
+  const html = generateCertificateHtml({ title: safeTitle, username, date, scores, rank, average });
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `${(title || 'marksheet').replace(/\s+/g, '_').toLowerCase()}_marksheet.html`;
+  const nameSlug = (username || 'ninja').replace(/\s+/g, '_').toLowerCase();
+  link.download = `${nameSlug}_design_ninja_certificate.html`;
   document.body.appendChild(link);
   link.click();
   link.remove();

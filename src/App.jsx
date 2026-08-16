@@ -42,6 +42,21 @@ const INITIAL_MESSAGES = {
     'Final roast time. Show me the finished piece and the framing that got you here — problem statement, solution, any images or docs. I will be direct.',
 };
 
+function buildPersonalisedGreeting(flow, name) {
+  const safeName = (name || '').trim();
+  if (!safeName) return INITIAL_MESSAGES[flow];
+  switch (flow) {
+    case 'start_project':
+      return `Welcome, ${safeName}. Aight, a new idea — every great project starts with a spark. What's the general problem area you're thinking about? No need for a perfect pitch, just the raw concept.`;
+    case 'process_review':
+      return `Welcome, ${safeName}. Process critique time — walk me through what you actually did. Research, decisions, dead ends. Upload docs whenever they help.`;
+    case 'final_review':
+      return `Welcome, ${safeName}. Final roast incoming. Show me the finished piece and the framing that got you here — problem statement, solution, any images or docs. I will be direct.`;
+    default:
+      return `Welcome, ${safeName}. ${INITIAL_MESSAGES[flow]}`;
+  }
+}
+
 const TITLES = {
   start_project: 'Build a Problem Statement',
   process_review: 'Design Process Critique',
@@ -695,7 +710,7 @@ export default function App() {
         {
           id: `initial_guru_${Date.now()}`,
           type: 'guru',
-          text: INITIAL_MESSAGES[explicitFlow],
+          text: buildPersonalisedGreeting(explicitFlow, username),
           timestamp: new Date().toISOString(),
         },
       ],
@@ -801,7 +816,7 @@ export default function App() {
                 {
                   id: `initial_guru_${Date.now()}`,
                   type: 'guru',
-                  text: INITIAL_MESSAGES.start_project,
+                  text: buildPersonalisedGreeting('start_project', thread.username || username),
                   timestamp: new Date().toISOString(),
                 },
               ],
@@ -987,6 +1002,11 @@ export default function App() {
                 {currentThread?.title || 'Not a Guru'}
               </h1>
             </div>
+            {username && (
+              <span className="text-[10px] uppercase font-mono tracking-[0.18em] text-[#FF00A8]">
+                Hi, {username}
+              </span>
+            )}
             {saveStatusLabel && (
               <span
                 aria-live="polite"

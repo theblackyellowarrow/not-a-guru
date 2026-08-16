@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  collectStageScoresFromThreads,
   confidenceLabelFor,
   createChatPayload,
   createStageScorePayload,
@@ -11,6 +12,7 @@ import {
   getFlowStageIndex,
   getRecentContextHistory,
   parsePersonasJson,
+  rankForAverage,
   safeJsonParse,
   stripJsonFences,
   stripMarkers,
@@ -187,5 +189,52 @@ test('confidence bands map scores to grounded labels per §11.1', () => {
       `score ${score} should map to ${expected}`
     );
   }
+});
+
+test('rankForAverage maps averages to the five ninja bands', () => {
+  const cases = [
+    [95, 'Master Ninja'],
+    [82, 'Senior Ninja'],
+    [74, 'Ninja'],
+    [60, 'Apprentice'],
+    [42, 'Initiate'],
+    [Number.NaN, 'Unranked'],
+  ];
+  for (const [average, expected] of cases) {
+    assert.equal(rankForAverage(average), expected, `avg ${average} should map to ${expected}`);
+  }
+});
+
+test('collectStageScoresFromThreads flattens scores across all flows', () => {
+  const threads = [
+    {
+      id: 1,
+      flow: 'start_project',
+      username: 'Asha',
+      title: 'Build',
+      messages: [
+        { type: 'score_card', stageIndex: 0, score: 82, rationale: 'Solid framing', confidence: 'Directly supported', strengths: ['a'], weaknesses: ['b'], suggestedImprovement: 'Tighten scope' },
+        { type: 'score_card', stageIndex: 1, score: 70, rationale: 'Solution holds', confidence: 'Supported across sources' },
+      ],
+    },
+    {
+      id: 2,
+      flow: 'process_review',
+      username: 'Asha',
+      title: 'Process',
+      messages: [
+        { type: 'score_card', stageIndex: 0, score: 91, rationale: 'Sharp framing', confidence: 'Directly supported' },
+      ],
+    },
+  ];
+
+  const rows = collectStageScoresFromThreads(threads, { username: 'Asha' });
+  assert.equal(rows.length, 3);
+  const startRows = rows.filter((row) => row.flow === 'start_project');
+  const processRows = rows.filter((row) => row.flow === 'process_review');
+  assert.equal(startRows.length, 2);
+  assert.equal(startRows[0].stage, 'Raw Idea');
+  assert.equal(processRows.length, 1);
+  assert.ok(rows.every((row) => row.username === 'Asha'));
 });
 
