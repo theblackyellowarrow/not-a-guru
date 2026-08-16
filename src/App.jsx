@@ -4,7 +4,7 @@ import FirstRunTour from './components/FirstRunTour';
 import GeometricBackdrop from './components/GeometricBackdrop';
 import HelpModal from './components/HelpModal';
 import HistoryPanel from './components/HistoryPanel';
-import { ErrorMessage, LoadingIndicator, MessageRenderer } from './components/Messages';
+import { ErrorMessage, LoadingIndicator, MessageRenderer, ToolActivity } from './components/Messages';
 import NextQuestCard from './components/NextQuestCard';
 import Onboarding from './components/Onboarding';
 import QuestTracker from './components/QuestTracker';
@@ -110,6 +110,7 @@ export default function App() {
   const embedShellRef = useRef(null);
   const [input, setInput] = useState('');
   const [uploadedFile, setUploadedFile] = useState(null);
+  const [revisingFromMessage, setRevisingFromMessage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
   const [error, setError] = useState(null);
@@ -694,6 +695,7 @@ export default function App() {
 
     setInput('');
     setUploadedFile(null);
+    setRevisingFromMessage(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   }, [currentThreadId, input, uploadedFile]);
 
@@ -701,6 +703,29 @@ export default function App() {
     if (isLoading || isParsing || isScoring || isWorkflowing || !currentThread) return;
     handleSendMessage(text);
   }
+
+  function handleReviseFrom(message) {
+    if (isLoading || isParsing || isScoring || isWorkflowing || !currentThread) return;
+    if (!message || typeof message.text !== 'string') return;
+    setRevisingFromMessage(message);
+    setInput(message.text);
+  }
+
+  function cancelRevision() {
+    setRevisingFromMessage(null);
+    setInput('');
+  }
+
+  const toolPhase = useMemo(() => {
+    if (isWorkflowing) return 'Building workflow…';
+    if (isScoring && currentThread) {
+      const stages = getFlowStages(currentThread.flow);
+      const label = stages[currentStage] || 'stage';
+      return `Scoring ${label}…`;
+    }
+    if (isLoading) return 'Reading conversation…';
+    return null;
+  }, [isWorkflowing, isScoring, isLoading, currentThread, currentStage]);
 
   function handleNextQuest(flow) {
     if (isLoading || isScoring || isWorkflowing) return;
@@ -982,8 +1007,14 @@ export default function App() {
                 isLoading={isLoading}
                 isLastMessage={index === currentThread.messages.length - 1}
                 onRepeat={handleRepeatProblemBuilder}
+                onReviseFrom={
+                  message.type === 'user' && index !== currentThread.messages.length - 1
+                    ? handleReviseFrom
+                    : undefined
+                }
               />
             ))}
+            <ToolActivity phase={toolPhase} />
             {(isLoading || isScoring || isWorkflowing) &&
               (!currentThread || currentThread.messages.length === 0) && <LoadingIndicator />}
             <Toolbelt
@@ -1019,6 +1050,25 @@ export default function App() {
                   aria-label="Remove attachment"
                 >
                   <X size={16} />
+                </button>
+              </div>
+            )}
+            {revisingFromMessage && (
+              <div className="mb-2 flex items-center justify-between gap-3 border border-[#FF00A8] bg-[#4A002D]/30 px-3 py-2 text-xs font-mono uppercase tracking-[0.12em] text-[#FF00A8]">
+                <span className="truncate">
+                  Revising from{' '}
+                  {new Date(revisingFromMessage.timestamp).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}{' '}
+                  · send to branch
+                </span>
+                <button
+                  onClick={cancelRevision}
+                  className="text-[#FF00A8]/70 hover:text-white transition-colors"
+                  aria-label="Cancel revision"
+                >
+                  <X size={14} />
                 </button>
               </div>
             )}

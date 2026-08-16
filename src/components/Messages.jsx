@@ -1,6 +1,6 @@
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
-import { ArrowRight, BrainCircuit, FileText, Flag, RefreshCcw, ShieldAlert, Sparkles, User, X } from 'lucide-react';
+import { ArrowRight, BrainCircuit, FileText, Flag, Pencil, RefreshCcw, ShieldAlert, Sparkles, User, X } from 'lucide-react';
 import { stripMarkers } from '../chatRuntime';
 
 function formatTimestamp(iso) {
@@ -12,9 +12,15 @@ function formatTimestamp(iso) {
   }
 }
 
-export function MessageRenderer({ message, isLoading, isLastMessage, onRepeat }) {
+export function MessageRenderer({ message, isLoading, isLastMessage, onRepeat, onReviseFrom }) {
   switch (message.type) {
     case 'user':
+      return (
+        <ChatMessage
+          message={message}
+          onReviseFrom={onReviseFrom}
+        />
+      );
     case 'guru':
       return <ChatMessage message={message} isLoading={isLoading} isLastMessage={isLastMessage} />;
     case 'tool_personas':
@@ -72,7 +78,7 @@ function AttachmentList({ attachments }) {
   );
 }
 
-function ChatMessage({ message, isLoading, isLastMessage }) {
+function ChatMessage({ message, isLoading, isLastMessage, onReviseFrom }) {
   const isGuru = message.type === 'guru';
   const Icon = isGuru ? BrainCircuit : User;
   const isStreaming = isGuru && isLoading && isLastMessage;
@@ -84,18 +90,24 @@ function ChatMessage({ message, isLoading, isLastMessage }) {
         <div className="flex-shrink-0 w-9 h-9 flex items-center justify-center border border-[#6B6965] bg-[#090909]">
           <Icon size={20} className="text-white" />
         </div>
-        <div className="flex-1 min-w-0 border border-[#2a2a2a] bg-[#0f0f0f] p-4">
-          {isStreaming && message.text === 'Thinking...' ? (
-            <div className="flex items-center gap-2 text-[#6B6965] text-sm font-mono uppercase tracking-wider">
-              <span className="inline-block w-2 h-2 bg-[#FF00A8] animate-pulse" />
-              Thinking…
+        <div className="flex flex-1 min-w-0 items-stretch gap-3">
+          <div
+            aria-hidden="true"
+            className="field-vector flex-shrink-0 self-stretch"
+          />
+          <div className="flex-1 min-w-0 border border-[#2a2a2a] bg-[#0f0f0f] p-4">
+            {isStreaming && message.text === 'Thinking...' ? (
+              <div className="flex items-center gap-2 text-[#6B6965] text-sm font-mono uppercase tracking-wider">
+                <span className="inline-block w-2 h-2 bg-[#FF00A8] animate-pulse" />
+                Thinking…
+              </div>
+            ) : (
+              <MarkdownRenderer text={message.text} isStreaming={isStreaming} />
+            )}
+            <AttachmentList attachments={attachments} />
+            <div className="mt-3 text-[10px] font-mono text-[#6B6965] tracking-wider">
+              {formatTimestamp(message.timestamp)}
             </div>
-          ) : (
-            <MarkdownRenderer text={message.text} isStreaming={isStreaming} />
-          )}
-          <AttachmentList attachments={attachments} />
-          <div className="mt-3 text-[10px] font-mono text-[#6B6965] tracking-wider">
-            {formatTimestamp(message.timestamp)}
           </div>
         </div>
       </div>
@@ -115,9 +127,17 @@ function ChatMessage({ message, isLoading, isLastMessage }) {
       </div>
       <div className="mt-2 flex items-center gap-3 text-[10px] font-mono text-[#6B6965] tracking-wider">
         <span>{formatTimestamp(message.timestamp)}</span>
-        <button className="hover:text-[#FF00A8] transition-colors underline-offset-2 hover:underline hidden">
-          Edit
-        </button>
+        {onReviseFrom && (
+          <button
+            type="button"
+            onClick={() => onReviseFrom(message)}
+            className="inline-flex items-center gap-1 hover:text-[#FF00A8] transition-colors underline-offset-2 hover:underline"
+            aria-label="Revise from this turn"
+            title="Copy this turn into the composer as the next message"
+          >
+            <Pencil size={12} /> Revise
+          </button>
+        )}
       </div>
     </div>
   );
@@ -283,6 +303,19 @@ export function LoadingIndicator() {
           Thinking…
         </div>
       </div>
+    </div>
+  );
+}
+
+export function ToolActivity({ phase }) {
+  if (!phase) return null;
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="my-4 border border-dashed border-[#6B6965] bg-[#0f0f0f]/40 px-4 py-3"
+    >
+      <span className="tool-activity">{phase}</span>
     </div>
   );
 }
