@@ -113,6 +113,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
   const [error, setError] = useState(null);
+  const [saveStatus, setSaveStatus] = useState({ state: 'idle', at: null });
   const fileInputRef = useRef(null);
   const chatEndRef = useRef(null);
   const handledMessageIdsRef = useRef(new Set());
@@ -263,14 +264,18 @@ export default function App() {
   useEffect(() => {
     if (!username) return;
     const ok = saveUserThreads(username, threads);
-    if (!ok) {
-      try {
-        const pruned = threads.slice(0, 5);
-        saveUserThreads(username, pruned);
-        setError('Local storage is full. Only your 5 most recent threads will persist after reload.');
-      } catch {
-        setError('Local storage is full. Thread history will not be saved on this device.');
-      }
+    if (ok) {
+      setSaveStatus({ state: 'saved', at: new Date() });
+      return;
+    }
+    try {
+      const pruned = threads.slice(0, 5);
+      saveUserThreads(username, pruned);
+      setSaveStatus({ state: 'saved', at: new Date() });
+      setError('Local storage is full. Only your 5 most recent threads will persist after reload.');
+    } catch {
+      setSaveStatus({ state: 'error', at: new Date() });
+      setError('Local storage is full. Thread history will not be saved on this device.');
     }
   }, [threads, username]);
 
@@ -813,6 +818,24 @@ export default function App() {
     return match ? match.title : threads[0]?.title || null;
   }, [threads, username]);
 
+  const [tickNow, setTickNow] = useState(() => Date.now());
+  useEffect(() => {
+    const interval = window.setInterval(() => setTickNow(Date.now()), 60 * 1000);
+    return () => window.clearInterval(interval);
+  }, []);
+
+  const saveStatusLabel = useMemo(() => {
+    if (saveStatus.state === 'error') return 'Could not save';
+    if (saveStatus.state === 'idle' || !saveStatus.at) return null;
+    const ageMs = tickNow - saveStatus.at.getTime();
+    if (ageMs < 30 * 1000) return 'Saved · just now';
+    try {
+      return `Saved · ${saveStatus.at.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    } catch {
+      return 'Saved';
+    }
+  }, [saveStatus, tickNow]);
+
   if (appState === 'onboarding') {
     return (
       <>
@@ -883,11 +906,23 @@ export default function App() {
             </button>
           )}
 
-          <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3">
-            <img src="/brand/dotai-logo-mark.png" alt="dotai" className="h-6 w-auto opacity-90" />
-            <h1 className="text-lg sm:text-xl font-semibold tracking-widest text-white uppercase font-mono">
-              {currentThread?.title || 'Not a Guru'}
-            </h1>
+          <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
+            <div className="flex items-center gap-3">
+              <img src="/brand/dotai-logo-mark.png" alt="dotai" className="h-6 w-auto opacity-90" />
+              <h1 className="text-lg sm:text-xl font-semibold tracking-widest text-white uppercase font-mono">
+                {currentThread?.title || 'Not a Guru'}
+              </h1>
+            </div>
+            {saveStatusLabel && (
+              <span
+                aria-live="polite"
+                className={`text-[10px] uppercase font-mono tracking-[0.18em] ${
+                  saveStatus.state === 'error' ? 'text-[#B42318]' : 'text-[#6B6965]'
+                }`}
+              >
+                {saveStatusLabel}
+              </span>
+            )}
           </div>
 
           {isEmbed ? (
