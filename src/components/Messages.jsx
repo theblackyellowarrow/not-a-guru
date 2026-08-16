@@ -1,6 +1,7 @@
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
-import { ArrowRight, BrainCircuit, FileText, Flag, Pencil, RefreshCcw, ShieldAlert, Sparkles, User, X } from 'lucide-react';
+import { ArrowRight, BrainCircuit, ChevronDown, ChevronUp, Copy, FileText, Flag, Pencil, RefreshCcw, ShieldAlert, Sparkles, User, X } from 'lucide-react';
+import { useState } from 'react';
 import { stripMarkers } from '../chatRuntime';
 
 function formatTimestamp(iso) {
@@ -96,10 +97,18 @@ function ChatMessage({ message, isLoading, isLastMessage, onReviseFrom }) {
             className="field-vector flex-shrink-0 self-stretch"
           />
           <div className="flex-1 min-w-0 border border-[#2a2a2a] bg-[#0f0f0f] p-4">
-            {isStreaming && message.text === 'Thinking...' ? (
+            {isStreaming ? (
               <div className="flex items-center gap-2 text-[#6B6965] text-sm font-mono uppercase tracking-wider">
                 <span className="inline-block w-2 h-2 bg-[#FF00A8] animate-pulse" />
-                Thinking…
+                {message.phase === 'queued'
+                  ? 'Draft queued…'
+                  : message.phase === 'reading'
+                    ? 'Reading your turn…'
+                    : message.phase === 'generating'
+                      ? 'Drafting response…'
+                      : message.phase === 'checking'
+                        ? 'Checking stage markers…'
+                        : 'Drafting response…'}
               </div>
             ) : (
               <MarkdownRenderer text={message.text} isStreaming={isStreaming} />
@@ -320,13 +329,69 @@ export function ToolActivity({ phase }) {
   );
 }
 
-export function ErrorMessage({ message, onClose }) {
+export function ErrorMessage({ error, onClose }) {
+  const [expanded, setExpanded] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  if (!error) return null;
+
+  const message = typeof error === 'string' ? error : error.message;
+  const refId = error && typeof error === 'object' ? error.refId : null;
+
+  const handleCopy = async () => {
+    if (!refId) return;
+    try {
+      await navigator.clipboard.writeText(refId);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      // ignore
+    }
+  };
+
   return (
-    <div className="mb-2 p-3 border border-[#B42318] bg-[#B42318]/10 flex items-center justify-between text-sm text-[#EFEDE8]">
-      <span>{message}</span>
-      <button onClick={onClose} className="p-1 text-[#C8C5BF] hover:text-white">
-        <X size={16} />
-      </button>
+    <div
+      role="alert"
+      className="mb-2 border border-[#B42318] bg-[#B42318]/10 text-sm text-[#EFEDE8]"
+    >
+      <div className="flex items-start justify-between gap-3 px-3 py-2">
+        <div className="flex-1 min-w-0">
+          <p className="leading-relaxed">{message}</p>
+          <div className="mt-1 flex items-center gap-3 text-[10px] font-mono tracking-[0.12em] text-[#C8C5BF]">
+            {refId && (
+              <button
+                type="button"
+                onClick={handleCopy}
+                className="inline-flex items-center gap-1 hover:text-white transition-colors"
+                aria-label={`Copy error reference ${refId}`}
+              >
+                <Copy size={12} /> {copied ? 'Copied' : refId}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setExpanded((prev) => !prev)}
+              className="inline-flex items-center gap-1 hover:text-white transition-colors"
+              aria-expanded={expanded}
+            >
+              {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+              {expanded ? 'Hide details' : 'Show details'}
+            </button>
+          </div>
+        </div>
+        <button
+          onClick={onClose}
+          className="p-1 text-[#C8C5BF] hover:text-white"
+          aria-label="Dismiss error"
+        >
+          <X size={16} />
+        </button>
+      </div>
+      {expanded && (
+        <pre className="border-t border-[#B42318]/40 px-3 py-2 text-[10px] font-mono text-[#C8C5BF] whitespace-pre-wrap break-words">
+          {message}
+        </pre>
+      )}
     </div>
   );
 }

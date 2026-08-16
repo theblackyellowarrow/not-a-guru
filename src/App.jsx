@@ -95,6 +95,12 @@ function setLastActiveThread(username, threadId) {
   }
 }
 
+function generateErrorRef() {
+  const time = Date.now().toString(36).slice(-4);
+  const rand = Math.floor(Math.random() * 0xffff).toString(36).padStart(4, '0');
+  return `err-${time}-${rand}`;
+}
+
 export default function App() {
   const [appState, setAppState] = useState('onboarding');
   const [username, setUsername] = useState('');
@@ -338,7 +344,8 @@ export default function App() {
       const placeholderMessage = {
         id: guruMessageId,
         type: 'guru',
-        text: 'Thinking...',
+        text: 'Drafting response…',
+        phase: 'queued',
         timestamp: new Date().toISOString(),
       };
 
@@ -355,6 +362,18 @@ export default function App() {
           currentThread,
           currentThread.messages.slice(0, -1),
           userParts
+        );
+        setThreads((prevThreads) =>
+          prevThreads.map((thread) =>
+            thread.id === activeThreadId
+              ? {
+                  ...thread,
+                  messages: thread.messages.map((message) =>
+                    message.id === guruMessageId ? { ...message, phase: 'generating' } : message
+                  ),
+                }
+              : thread
+          )
         );
         const response = await callAI(payload);
         const result = await response.json();
@@ -373,6 +392,7 @@ export default function App() {
               newMessages[targetIndex] = {
                 ...newMessages[targetIndex],
                 text: finalText,
+                phase: 'ready',
               };
             }
             return { ...thread, messages: newMessages };
@@ -380,7 +400,8 @@ export default function App() {
         );
       } catch (requestError) {
         console.error('Error fetching response:', requestError);
-        setError(requestError.message);
+        const refId = generateErrorRef();
+        setError({ message: requestError.message, refId });
         setThreads((prevThreads) =>
           prevThreads.map((thread) =>
             thread.id === activeThreadId
@@ -498,7 +519,7 @@ export default function App() {
         );
       } catch (scoreError) {
         console.error('Error scoring stage:', scoreError);
-        setError(`Stage scoring failed: ${scoreError.message}`);
+        setError({ message: `Stage scoring failed: ${scoreError.message}`, refId: generateErrorRef() });
       } finally {
         setIsScoring(false);
       }
@@ -565,7 +586,7 @@ export default function App() {
         );
       } catch (workflowError) {
         console.error('Error creating workflow:', workflowError);
-        setError(`Workflow proposal failed: ${workflowError.message}`);
+        setError({ message: `Workflow proposal failed: ${workflowError.message}`, refId: generateErrorRef() });
       } finally {
         setIsWorkflowing(false);
       }
@@ -663,7 +684,7 @@ export default function App() {
     const attachments = uploadedFile ? [uploadedFile] : [];
 
     if (!messageText && attachments.length === 0) {
-      setError('Add a message or a file so the review has something to work with.');
+      setError({ message: 'Add a message or a file so the review has something to work with.', refId: null });
       return;
     }
 
@@ -774,7 +795,7 @@ export default function App() {
       setUploadedFile(parsedFile);
     } catch (parseError) {
       console.error('File parsing error:', parseError);
-      setError(parseError.message);
+      setError({ message: parseError.message, refId: generateErrorRef() });
     } finally {
       setIsParsing(false);
     }
@@ -825,7 +846,7 @@ export default function App() {
       );
     } catch (toolError) {
       console.error(`Error using tool ${toolType}:`, toolError);
-      setError(`The specialist tool hit a snag: ${toolError.message}.`);
+      setError({ message: `The specialist tool hit a snag: ${toolError.message}.`, refId: generateErrorRef() });
     } finally {
       setIsLoading(false);
     }
@@ -1040,7 +1061,7 @@ export default function App() {
         {/* Composer */}
         <footer className="border-t border-[#6B6965] bg-[#090909] px-4 py-3 shrink-0 z-10">
           <div className="max-w-3xl mx-auto">
-            {error && <ErrorMessage message={error} onClose={() => setError(null)} />}
+            {error && <ErrorMessage error={error} onClose={() => setError(null)} />}
             {uploadedFile && (
               <div className="mb-2 flex items-center justify-between gap-3 border border-[#6B6965] bg-[#090909] px-3 py-2 text-sm text-[#EFEDE8]">
                 <span className="truncate font-mono text-xs">{uploadedFile.name}</span>
