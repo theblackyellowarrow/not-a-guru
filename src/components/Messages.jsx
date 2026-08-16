@@ -2,7 +2,7 @@ import DOMPurify from 'dompurify';
 import { marked } from 'marked';
 import { ArrowRight, BrainCircuit, ChevronDown, ChevronUp, Copy, FileText, Flag, Pencil, RefreshCcw, ShieldAlert, Sparkles, User, X } from 'lucide-react';
 import { useState } from 'react';
-import { stripMarkers } from '../chatRuntime';
+import { confidenceLabelFor, stripMarkers } from '../chatRuntime';
 
 function formatTimestamp(iso) {
   if (!iso) return '';
@@ -13,7 +13,34 @@ function formatTimestamp(iso) {
   }
 }
 
-export function MessageRenderer({ message, isLoading, isLastMessage, onRepeat, onReviseFrom }) {
+function ProcessPanel({ process }) {
+  const entries = Object.entries(process || {}).filter(([, value]) => value !== null && value !== undefined && value !== '');
+  if (entries.length === 0) return null;
+  return (
+    <details className="ml-auto text-[10px] font-mono text-[#6B6965] tracking-wider">
+      <summary className="inline-flex items-center gap-1 cursor-pointer list-none hover:text-white transition-colors">
+        Process
+      </summary>
+      <dl className="mt-2 grid grid-cols-[max-content_1fr] gap-x-3 gap-y-1 text-[10px]">
+        {entries.map(([key, value]) => (
+          <div key={key} className="contents">
+            <dt className="uppercase tracking-[0.12em] text-[#6B6965]">{key}</dt>
+            <dd className="text-[#C8C5BF] truncate">{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </details>
+  );
+}
+
+export function MessageRenderer({
+  message,
+  isLoading,
+  isLastMessage,
+  onRepeat,
+  onReviseFrom,
+  process,
+}) {
   switch (message.type) {
     case 'user':
       return (
@@ -23,7 +50,14 @@ export function MessageRenderer({ message, isLoading, isLastMessage, onRepeat, o
         />
       );
     case 'guru':
-      return <ChatMessage message={message} isLoading={isLoading} isLastMessage={isLastMessage} />;
+      return (
+        <ChatMessage
+          message={message}
+          isLoading={isLoading}
+          isLastMessage={isLastMessage}
+          process={process}
+        />
+      );
     case 'tool_personas':
       return <PersonaMessage personas={message.personas} />;
     case 'tool_critique':
@@ -79,7 +113,7 @@ function AttachmentList({ attachments }) {
   );
 }
 
-function ChatMessage({ message, isLoading, isLastMessage, onReviseFrom }) {
+function ChatMessage({ message, isLoading, isLastMessage, onReviseFrom, process }) {
   const isGuru = message.type === 'guru';
   const Icon = isGuru ? BrainCircuit : User;
   const isStreaming = isGuru && isLoading && isLastMessage;
@@ -114,8 +148,9 @@ function ChatMessage({ message, isLoading, isLastMessage, onReviseFrom }) {
               <MarkdownRenderer text={message.text} isStreaming={isStreaming} />
             )}
             <AttachmentList attachments={attachments} />
-            <div className="mt-3 text-[10px] font-mono text-[#6B6965] tracking-wider">
-              {formatTimestamp(message.timestamp)}
+            <div className="mt-3 flex items-center justify-between gap-3 text-[10px] font-mono text-[#6B6965] tracking-wider">
+              <span>{formatTimestamp(message.timestamp)}</span>
+              {process && <ProcessPanel process={process} />}
             </div>
           </div>
         </div>
@@ -157,6 +192,7 @@ function ScoreCard({ data, onRepeat }) {
   const passed = score >= 80;
   const scoreColor = passed ? 'text-[#FF00A8] border-[#FF00A8]' : 'text-[#A45A00] border-[#A45A00]';
   const stageLabel = data.stageLabel || (stageIndex === 0 ? 'Problem statement score' : `Stage ${stageIndex + 1} score`);
+  const confidence = confidenceLabelFor(score);
 
   return (
     <div className={`my-6 border-2 ${scoreColor} bg-[#4A002D]/30 p-5`}>
@@ -172,8 +208,16 @@ function ScoreCard({ data, onRepeat }) {
             <span className="text-sm text-[#C8C5BF] font-mono">/ 100</span>
           </div>
         </div>
-        <div className={`border px-3 py-1 text-[10px] uppercase font-mono tracking-wider ${passed ? 'border-[#FF00A8] text-[#FF00A8]' : 'border-[#A45A00] text-[#A45A00]'}`}>
-          {passed ? 'Good to go' : 'Needs work'}
+        <div className="flex flex-col items-end gap-2">
+          <div className={`border px-3 py-1 text-[10px] uppercase font-mono tracking-wider ${passed ? 'border-[#FF00A8] text-[#FF00A8]' : 'border-[#A45A00] text-[#A45A00]'}`}>
+            {passed ? 'Good to go' : 'Needs work'}
+          </div>
+          <div
+            className="border border-[#6B6965] px-3 py-1 text-[10px] uppercase font-mono tracking-wider text-[#C8C5BF]"
+            title="Confidence label per dotaitooldesign.md §11.1, derived from the score band"
+          >
+            {confidence}
+          </div>
         </div>
       </div>
 

@@ -101,6 +101,34 @@ function generateErrorRef() {
   return `err-${time}-${rand}`;
 }
 
+const MODEL_NAME = import.meta.env.VITE_OPENAI_MODEL || 'gpt-4.1-mini';
+const FLOW_LABELS = {
+  start_project: 'Build a Problem Statement',
+  process_review: 'Design Process Critique',
+  final_review: 'Final Roast',
+};
+
+function buildProcessMeta(thread, messageIndex) {
+  if (!thread || typeof messageIndex !== 'number') return null;
+  const messages = thread.messages || [];
+  const prior = messages.slice(0, messageIndex);
+  const userTurns = prior.filter((message) => message.type === 'user').length;
+  const attachmentCount = prior.reduce((count, message) => {
+    const atts = message.attachments || (message.file ? [message.file] : []);
+    return count + atts.length;
+  }, 0);
+  const stageIndex = getFlowStageIndex(thread.flow, prior.concat([{ type: 'guru', text: '' }]));
+  const stages = getFlowStages(thread.flow);
+
+  return {
+    model: MODEL_NAME,
+    flow: FLOW_LABELS[thread.flow] || thread.flow,
+    stage: stages[stageIndex] || '—',
+    turn: userTurns,
+    attachments: attachmentCount,
+  };
+}
+
 export default function App() {
   const [appState, setAppState] = useState('onboarding');
   const [username, setUsername] = useState('');
@@ -1032,6 +1060,11 @@ export default function App() {
                   message.type === 'user' && index !== currentThread.messages.length - 1
                     ? handleReviseFrom
                     : undefined
+                }
+                process={
+                  message.type === 'guru'
+                    ? buildProcessMeta(currentThread, index)
+                    : null
                 }
               />
             ))}

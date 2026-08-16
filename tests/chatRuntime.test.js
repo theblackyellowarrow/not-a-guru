@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  confidenceLabelFor,
   createChatPayload,
   createStageScorePayload,
   createToolPayload,
@@ -164,5 +165,27 @@ test('createStageScorePayload requests structured stage scoring', () => {
 test('stripMarkers drops stage control lines but keeps surrounding text', () => {
   const text = 'Sharp observation.\n### PROBLEM_STATEMENT_READY\n\nNext step.';
   assert.equal(stripMarkers(text), 'Sharp observation.\n\nNext step.');
+});
+
+test('confidence bands map scores to grounded labels per §11.1', () => {
+  const bands = {
+    95: 'Directly supported',
+    80: 'Directly supported',
+    79: 'Supported across sources',
+    60: 'Supported across sources',
+    59: 'Interpretive',
+    40: 'Interpretive',
+    39: 'Contested',
+    20: 'Contested',
+    19: 'Source missing',
+    0: 'Source missing',
+  };
+  for (const [score, expected] of Object.entries(bands)) {
+    assert.equal(
+      confidenceLabelFor(Number(score)),
+      expected,
+      `score ${score} should map to ${expected}`
+    );
+  }
 });
 

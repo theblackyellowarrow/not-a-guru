@@ -159,6 +159,15 @@ export function safeJsonParse(text, label = 'response') {
   }
 }
 
+export function confidenceLabelFor(score) {
+  if (typeof score !== 'number' || Number.isNaN(score)) return 'Unrated';
+  if (score >= 80) return 'Directly supported';
+  if (score >= 60) return 'Supported across sources';
+  if (score >= 40) return 'Interpretive';
+  if (score >= 20) return 'Contested';
+  return 'Source missing';
+}
+
 export function parsePersonasJson(content) {
   const parsed = safeJsonParse(content, 'personas');
 
