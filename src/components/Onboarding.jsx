@@ -2,13 +2,13 @@ import { useRef, useState } from 'react';
 import { ArrowRight, BookOpen, HelpCircle, MessageSquare, Send, Sparkles } from 'lucide-react';
 import GeometricBackdrop from './GeometricBackdrop';
 import { useHoverParallax, usePointerOffset } from '../hooks/useParallax.js';
-import { callAI } from './aiClient';
+import { callAI } from '../aiClient';
 import {
   createTriagePayload,
   extractTextFromResponse,
   extractTriageRoute,
   stripTriageMarker,
-} from './chatRuntime';
+} from '../chatRuntime';
 
 const TRIAGE_GREETING =
   'How can Not a Guru help you? You can call me NG. Do you have a design problem to discuss?';
