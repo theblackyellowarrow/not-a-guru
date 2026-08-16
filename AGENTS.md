@@ -35,5 +35,11 @@ Stage markers (`### PROBLEM_STATEMENT_READY`, `### SOLUTION_STATEMENT_READY`) ar
 
 - **Magic UI** — https://github.com/magicuidesign/magicui / https://magicui.design/docs  
   A copy-paste UI library for design engineers: animated React components and effects built with TypeScript, Tailwind CSS, and Framer Motion. Useful for adding polished, motion-rich UI elements while keeping the dark, sharp Not a Guru aesthetic.
-  - Primary dotai brand colour is synthwave cyan (`#00f5d4`).
-  - Fuchsia (`#ff0066`) is used only as a highlight accent, e.g. score cards and workflow cards.
+
+- **GenUAI** — https://github.com/xKevIsDev/GenUAI  
+  An open-source AI-to-UI generation app (forked from llamacoder) that generates small apps from one prompt. Built with Next.js, Tailwind, Sandpack, and component libraries including Shadcn, Aceternity, MagicUI, and SyntaxUI. Useful as a reference for prompt-driven component generation and sandbox previews.
+
+## Colour notes
+
+- Primary dotai brand colour is synthwave cyan (`#00f5d4`).
+- Fuchsia (`#ff0066`) is used only as a highlight accent, e.g. score cards and workflow cards.
