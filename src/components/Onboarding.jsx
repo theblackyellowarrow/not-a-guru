@@ -72,7 +72,7 @@ export default function Onboarding({ onSelect, onOpenHelp, isLoading }) {
               return (
                 <div key={step.title} className="border-2 border-gray-800 bg-gray-900/60 p-5">
                   <div className="flex items-center gap-3">
-                    <span className="text-fuchsia-400">
+                    <span className="text-gray-500 group-hover:text-fuchsia-400 transition-colors">
                       <Icon size={20} />
                     </span>
                     <span className="text-xs uppercase font-mono tracking-widest text-gray-500">
