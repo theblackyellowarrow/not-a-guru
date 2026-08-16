@@ -76,9 +76,9 @@ export function MessageRenderer({
 function StageMarker({ text }) {
   return (
     <div className="my-6 flex items-center gap-3">
-      <div className="h-px flex-1 bg-[#6B6965]" />
+      <div className="h-px flex-1 bg-[#00F1DE]/40" />
       <span className="text-xs uppercase font-mono tracking-[0.15em] text-[#FF00A8]">{text}</span>
-      <div className="h-px flex-1 bg-[#6B6965]" />
+      <div className="h-px flex-1 bg-[#00F1DE]/40" />
     </div>
   );
 }
@@ -102,7 +102,7 @@ function AttachmentList({ attachments }) {
     <div className="mt-3 border-t border-[#2a2a2a] pt-2 text-xs text-[#C8C5BF] space-y-1 font-mono">
       {attachments.map((attachment) => (
         <div key={`${attachment.name}-${attachment.label || 'attachment'}`} className="flex items-center gap-2">
-          <FileText size={14} className="text-[#FF00A8]" />
+          <FileText size={14} className="text-[#00F1DE]" />
           <span className="truncate">
             {attachment.label ? `${attachment.label}: ` : ''}
             {attachment.name}
@@ -159,10 +159,10 @@ function ChatMessage({ message, isLoading, isLastMessage, onReviseFrom, process 
   }
 
   return (
-    <div className="relative my-4 border-l-2 border-[#FF00A8] bg-[#090909] pl-4 py-3 pr-3">
+    <div className="relative my-4 border-l-2 border-[#00F1DE] bg-[#090909] pl-4 py-3 pr-3">
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center border border-[#6B6965]">
-          <Icon size={14} className="text-[#FF00A8]" />
+          <Icon size={14} className="text-[#00F1DE]" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-white whitespace-pre-wrap text-base leading-relaxed">{message.text}</p>
@@ -266,8 +266,8 @@ function WorkflowCard({ data }) {
   const html = DOMPurify.sanitize(marked.parse(workflow || '', { async: false }));
 
   return (
-    <div className="my-6 border-2 border-[#FF00A8] bg-[#4A002D]/20 p-5">
-      <div className="flex items-center gap-2 text-[#FF00A8] uppercase font-mono text-[10px] tracking-[0.15em] mb-4">
+    <div className="my-6 border-2 border-[#00F1DE] bg-[#003D39]/40 p-5">
+      <div className="flex items-center gap-2 text-[#00F1DE] uppercase font-mono text-[10px] tracking-[0.15em] mb-4">
         <Flag size={16} /> Proposed workflow
       </div>
 
@@ -302,13 +302,17 @@ function WorkflowCard({ data }) {
 
 function PersonaMessage({ personas }) {
   return (
-    <div className="my-6 border border-[#2a2a2a] bg-[#0f0f0f] p-4">
+    <div className="my-6 border border-[#00F1DE]/40 bg-[#0f0f0f] p-4">
       <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2 uppercase font-mono tracking-wider">
-        <Sparkles size={18} className="text-[#FF00A8]" /> Draft Personas
+        <Sparkles size={18} className="text-[#00F1DE]" /> Draft Personas
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {personas.map((persona) => (
-          <div key={persona.name} className="border border-[#2a2a2a] bg-[#090909] p-4 hover:border-[#FF00A8] transition-colors">
+          <div key={persona.name} className="relative border border-[#2a2a2a] bg-[#090909] p-4 hover:border-[#00F1DE] transition-colors">
+            <span
+              aria-hidden="true"
+              className="absolute top-2 right-2 w-1.5 h-1.5 bg-[#FF00A8]"
+            />
             <h4 className="font-bold text-white text-lg uppercase font-mono tracking-wider">{persona.name}</h4>
             <p className="text-base text-[#C8C5BF] mb-2 font-mono text-sm">{persona.demographic}</p>
             <p className="text-base italic text-[#EFEDE8] my-3 font-serif-reading">&quot;{persona.quote}&quot;</p>
@@ -366,7 +370,7 @@ export function ToolActivity({ phase }) {
     <div
       role="status"
       aria-live="polite"
-      className="my-4 border border-dashed border-[#6B6965] bg-[#0f0f0f]/40 px-4 py-3"
+      className="my-4 border border-dashed border-[#00F1DE] bg-[#003D39]/40 px-4 py-3"
     >
       <span className="tool-activity">{phase}</span>
     </div>

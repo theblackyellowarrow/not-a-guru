@@ -3,6 +3,11 @@
 :root {
   color-scheme: dark;
 
+  --dot-cyan: #00f1de;
+  --dot-cyan-dark: #007f76;
+  --dot-cyan-soft: #c9fff9;
+  --dot-cyan-deep: #003d39;
+
   --dot-fuchsia: #ff00a8;
   --dot-fuchsia-dark: #a60063;
   --dot-fuchsia-soft: #ffd6ee;
@@ -265,8 +270,8 @@ body::before {
   clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
 }
 
-/* Field margin vector: a narrow column of drifting fuchsia lines on dotai
-   turn messages per §9.4. Respects the reduced-motion override below. */
+/* Field margin vector: a narrow column of drifting cyan with brief fuchsia
+   peaks per dotaitooldesign.md §4.3 / §9.4. Respects the reduced-motion override. */
 .field-vector {
   position: relative;
   width: 2px;
@@ -275,17 +280,21 @@ body::before {
     linear-gradient(
       to bottom,
       transparent 0%,
-      var(--dot-fuchsia) 12%,
-      transparent 22%,
-      transparent 42%,
-      var(--dot-fuchsia) 54%,
-      transparent 66%,
-      transparent 82%,
-      var(--dot-fuchsia) 92%,
+      var(--dot-cyan) 18%,
+      var(--dot-fuchsia) 22%,
+      var(--dot-cyan) 26%,
+      transparent 38%,
+      var(--dot-cyan) 52%,
+      var(--dot-fuchsia) 56%,
+      var(--dot-cyan) 60%,
+      transparent 72%,
+      var(--dot-cyan) 84%,
+      var(--dot-fuchsia) 88%,
+      var(--dot-cyan) 92%,
       transparent 100%
     );
   background-size: 100% 200%;
-  opacity: 0.45;
+  opacity: 0.55;
   animation: field-drift 16s linear infinite;
 }
 
@@ -294,14 +303,14 @@ body::before {
   to   { background-position: 0 200%; }
 }
 
-/* Tool activity rail: a single fuchsia point travelling through a mono row
-   per §9.4 Tool activity. */
+/* Tool activity rail: a cyan line travels through the row with a fuchsia
+   point at its leading edge per §9.4 Tool activity. */
 .tool-activity {
   font-family: var(--font-mono);
   font-size: 0.75rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--dot-fuchsia);
+  color: var(--dot-cyan);
   display: flex;
   align-items: center;
   gap: 0.6rem;
@@ -309,15 +318,21 @@ body::before {
 
 .tool-activity::before {
   content: '';
-  width: 6px;
-  height: 6px;
-  background: var(--dot-fuchsia);
-  box-shadow: 0 0 0 2px rgba(255, 0, 168, 0.18);
+  width: 14px;
+  height: 2px;
+  background:
+    linear-gradient(
+      to right,
+      var(--dot-cyan) 0%,
+      var(--dot-cyan) 60%,
+      var(--dot-fuchsia) 100%
+    );
+  box-shadow: 0 0 0 0 transparent;
   animation: tool-pulse 1.6s ease-in-out infinite;
 }
 
 @keyframes tool-pulse {
-  0%, 100% { transform: translateX(0);   opacity: 0.4; }
+  0%, 100% { transform: translateX(0);  opacity: 0.5; }
   50%      { transform: translateX(8px); opacity: 1; }
 }
 
@@ -369,15 +384,18 @@ body::before {
   }
 
   .field-vector {
-    opacity: 0.25;
+    opacity: 0.35;
     background:
       linear-gradient(
         to bottom,
         transparent 0%,
-        var(--dot-fuchsia) 30%,
-        transparent 45%,
-        transparent 65%,
-        var(--dot-fuchsia) 80%,
+        var(--dot-cyan) 30%,
+        var(--dot-fuchsia) 33%,
+        var(--dot-cyan) 36%,
+        transparent 50%,
+        var(--dot-cyan) 70%,
+        var(--dot-fuchsia) 73%,
+        var(--dot-cyan) 76%,
         transparent 100%
       );
     animation: none;

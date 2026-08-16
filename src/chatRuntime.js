@@ -291,13 +291,13 @@ export function generateCertificateHtml({ title, username, date, scores }) {
     @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap');
     body { margin: 0; font-family: 'IBM Plex Sans', Arial, sans-serif; background: #090909; color: #F7F5F0; }
     .sheet { max-width: 720px; margin: 40px auto; border: 1px solid #F7F5F0; padding: 48px; background: #090909; }
-    .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #FF00A8; padding-bottom: 24px; margin-bottom: 32px; }
-    .brand { font-family: 'IBM Plex Mono', monospace; font-size: 14px; text-transform: uppercase; letter-spacing: 0.2em; color: #FF00A8; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #00F1DE; padding-bottom: 24px; margin-bottom: 32px; }
+    .brand { font-family: 'IBM Plex Mono', monospace; font-size: 14px; text-transform: uppercase; letter-spacing: 0.2em; color: #00F1DE; }
     h1 { font-family: 'IBM Plex Mono', monospace; font-size: 28px; text-transform: uppercase; margin: 0; letter-spacing: 0.04em; }
     .meta { margin: 24px 0 32px; }
     .meta div { font-size: 14px; color: #C8C5BF; margin-bottom: 6px; }
     table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    th { text-align: left; text-transform: uppercase; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #FF00A8; border-bottom: 1px solid #6B6965; padding: 12px 8px; }
+    th { text-align: left; text-transform: uppercase; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #00F1DE; border-bottom: 1px solid #6B6965; padding: 12px 8px; }
     td { border-bottom: 1px solid #2a2a2a; padding: 14px 8px; vertical-align: top; color: #EFEDE8; }
     td strong { color: #FF00A8; }
     .footer { margin-top: 40px; padding-top: 24px; border-top: 1px solid #2a2a2a; font-size: 12px; color: #6B6965; font-family: 'IBM Plex Mono', monospace; text-align: center; }

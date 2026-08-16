@@ -1,6 +1,6 @@
 # dotai Digital Product Design System
 
-Status: Product style guide, version 1.1, Syncretic Vector Edition  
+Status: Product style guide, version 1.2, Cyan-Fuchsia Syncretic Vector Edition  
 Parent system: `dotai-design.md`, version 1.1 and later  
 Applies to: Design Decode, dotai Academy, Not a Guru and future dotai digital products  
 Reference repositories: `xKevIsDev/GenUAI` and `magicuidesign/magicui`  
@@ -11,7 +11,7 @@ This guide translates the dotai identity into working digital products. The webs
 
 Every dotai product should feel related before its logo appears. The relation comes from:
 
-- Fuchsia as the permanent accent colour
+- dotai cyan as the primary product colour, with fuchsia as the permanent accent
 - Strong monochrome structure
 - Monospaced operational type
 - Visible sources, annotations and edits
@@ -41,7 +41,7 @@ Ask for judgement where judgement matters. Confirm destructive actions. Surface 
 
 ### 2.5 Structured energy
 
-Repeated work still needs rhythm, character and surprise. Stable controls sit inside an active visual field of fuchsia vectors, changing geometries, hard-edged panels and purposeful motion. The system does not divide itself into a quiet “serious product” and an expressive “creative layer”. Expression is built into navigation, chat, progress, evidence and transition states.
+Repeated work still needs rhythm, character and surprise. Stable controls sit inside an active field of cyan vectors interrupted by fuchsia accents, changing geometries, hard-edged panels and purposeful motion. The system does not divide itself into a quiet “serious product” and an expressive “creative layer”. Expression is built into navigation, chat, progress, evidence and transition states.
 
 ### 2.6 Mobile-first, task-aware
 
@@ -59,23 +59,28 @@ Use the strongest lesson from the Smashing Magazine Gen Z reference: quick entry
 
 `dotai-design.md` remains authoritative for the logo, editorial voice, core typography and ethical position. This tool system adds product states, interaction rules and a distinct accent hierarchy.
 
-### 3.1 Fuchsia rule
+### 3.1 Cyan-fuchsia hierarchy
 
-Fuchsia is always the accent colour in dotai digital products.
+dotai cyan is the primary product colour. Fuchsia is always the accent.
 
-- Use fuchsia for active controls, selected states, keyboard focus, live annotations, progress and meaningful motion.
-- Do not substitute product-specific accent colours.
-- Do not use cyan as a competing interface accent.
-- The original dotai logo may retain its cyan contour when official artwork is used. Outside the master mark, cyan is treated as legacy brand material, not an interactive colour.
+- Use cyan for primary fields, structural lines, navigation states, open panels, progress tracks and the dominant body of vector forms.
+- Use fuchsia for the exact point of intervention: primary action, current focus, active evidence, cursor, live annotation and the visual peak of an animation.
+- Do not substitute product-specific accent colours for fuchsia.
+- The official dotai logo retains its cyan contour and should feel continuous with the product field.
+- Cyan and fuchsia may meet in gradients and line transitions, but they must not perform the same interface role.
 - Semantic success, warning and error colours may appear only where meaning requires them.
 
 ## 4. Colour system
 
 | Token | Value | Role |
 | --- | --- | --- |
-| `--dot-fuchsia` | `#FF00A8` | Canonical accent, focus, selection, active state |
+| `--dot-cyan` | `#00F1DE` | Primary product colour, fields, structural vectors |
+| `--dot-cyan-dark` | `#007F76` | Accessible cyan text and rules on light fields |
+| `--dot-cyan-soft` | `#C9FFF9` | Open panels, selected surfaces, quiet vector wash |
+| `--dot-cyan-deep` | `#003D39` | Dark cyan field and inverse surfaces |
+| `--dot-fuchsia` | `#FF00A8` | Canonical accent, decisive action, current focus, intervention |
 | `--dot-fuchsia-dark` | `#A60063` | Accessible fuchsia text and rules on light fields |
-| `--dot-fuchsia-soft` | `#FFD6EE` | Selected backgrounds, annotation wash |
+| `--dot-fuchsia-soft` | `#FFD6EE` | Annotation wash and brief accent field |
 | `--dot-fuchsia-deep` | `#4A002D` | Dark tinted panels |
 | `--dot-ink` | `#090909` | Primary text and dark surfaces |
 | `--dot-paper` | `#F7F5F0` | Warm reading surface |
@@ -89,17 +94,17 @@ Fuchsia is always the accent colour in dotai digital products.
 
 ### 4.1 Accent discipline
 
-Fuchsia is the product's pulse, not a timid highlight. It may occupy 5-15% of a normal screen and more inside a generative vector moment, active chat composer or full-screen transition. Large fuchsia fields require a quieter surrounding structure.
+Cyan establishes the product atmosphere and may occupy 10-30% of a normal screen through fields, rules and vectors. Fuchsia is the cut, spark or interruption and should usually occupy 2-6%. A decisive fuchsia screen or transition is allowed, but it must be brief and return to the cyan-led system.
 
 Avoid fuchsia body copy on white. Use `--dot-fuchsia-dark` for small text. White or black text must be contrast-tested on every fuchsia surface. Colour never carries status alone.
 
 ### 4.2 Dark mode
 
-Dark mode uses `--dot-ink` as the field, off-white text and fuchsia for the same accent roles. It is a complete theme, not an inversion filter. Images, charts, code and annotations need dedicated dark states.
+Dark mode uses `--dot-ink` or `--dot-cyan-deep` as the field, off-white text, luminous cyan structure and fuchsia accents. It is a complete theme, not an inversion filter. Images, charts, code and annotations need dedicated dark states.
 
 ### 4.3 Spectral vector colour
 
-Fuchsia remains the accent even when vector forms use spectral colour. A vector may travel from fuchsia through dusty lilac, electric blue, warm coral or pale silver to describe depth and motion. These colours belong inside the vector object. They do not become independent button, link or selection colours.
+The vector spectrum is anchored by cyan and punctuated by fuchsia. A form may travel from cyan through electric blue or dusty lilac, then peak in fuchsia and warm coral. Pale silver can carry receding structure. These colours belong inside the vector object. They do not become independent button, link or selection colours.
 
 Approved supporting vector colours:
 
@@ -110,7 +115,7 @@ Approved supporting vector colours:
 | `--vector-coral` | `#FF6B61` | Warm transition inside a vector |
 | `--vector-silver` | `#D9D8D2` | Wireframe structure on dark fields |
 
-Every multicolour vector must begin, end or visually peak in fuchsia.
+Every multicolour vector must contain a clear cyan body and a smaller fuchsia moment.
 
 ## 5. Typography
 
@@ -155,7 +160,7 @@ Generated answers use a minimum 1.55 line height and a maximum line length of 72
 - Control radius: 4 px
 - Pill radius: reserved for tags, filters and status only
 - Default rule: 1 px solid `--dot-grey-300`
-- Active rule: 2 px solid `--dot-fuchsia`
+- Active panel rule: 2 px solid `--dot-cyan`
 - Annotation rule: 2 px dotted `--dot-fuchsia-dark`
 - Shadow: none by default
 - Elevated overlay: a short hard shadow, never a diffuse floating cloud
@@ -289,7 +294,7 @@ The chatbox is a central visual object across the product family. It should rese
 
 #### Resting state
 
-- Hard-edged or lightly clipped container with a 1 px ink rule and fuchsia lower edge
+- Hard-edged or lightly clipped container with a 1 px ink rule and cyan lower edge
 - One animated vector fragment entering from a corner or passing behind the composer
 - Generous multiline field with a visible label
 - Attach, source-scope and mode controls on a clear tool row
@@ -301,7 +306,7 @@ The chatbox grows with the user's thought. On desktop it may widen into a split 
 
 #### User turn
 
-User prompts appear as full-width editorial strips with a fuchsia registration line, timestamp and edit action. Avoid speech bubbles.
+User prompts appear as full-width editorial strips with a cyan registration line, timestamp and edit action. The currently edited prompt receives a fuchsia cursor or corner mark. Avoid speech bubbles.
 
 #### dotai turn
 
@@ -309,7 +314,7 @@ Responses sit on the paper field with a narrow animated `Field` vector in the ma
 
 #### Tool activity
 
-Tool calls appear as compact mono rows: `Reading source`, `Comparing image`, `Checking citation`. A fuchsia point travels through the active row. Completed activity folds into a persistent `Process` section.
+Tool calls appear as compact mono rows: `Reading source`, `Comparing image`, `Checking citation`. A cyan line travels through the active row with a fuchsia point at its leading edge. Completed activity folds into a persistent `Process` section.
 
 #### Branching
 
@@ -419,15 +424,15 @@ Magic UI provides open-source animated React components and effects for Next.js,
 | --- | --- | --- |
 | Bento Grid | Module or project overview | Cards must represent unequal, real priorities; collapse to a linear mobile order |
 | Animated Beam | Source-to-claim relation and chat activity | May cross a panel edge; endpoints must remain legible |
-| Border Beam | Active processing boundary | One active region per viewport; fuchsia beam; static rule under reduced motion |
-| Shimmer Button | Primary generation action | Fuchsia-led sweep; becomes a vector progress state after activation |
+| Border Beam | Active processing boundary | Cyan beam with a short fuchsia head; static cyan rule under reduced motion |
+| Shimmer Button | Primary generation action | Fuchsia-led sweep across a cyan/black control; becomes vector progress after activation |
 | Marquee | Contributor or archive strip | Pause control required; avoid for testimonials, notices or essential content |
 | Dock | Expert tool switcher | Desktop only; labels, tooltips, keyboard order and stable positions required |
 | Text Reveal | Chapter, lesson and major tool-state opening | Full text remains accessible and selectable |
 
 ### 13.1 Effects as a native layer
 
-Animated grids, orbiting lines, particles, blur transitions and number motion may enter core screens when they are translated into the dotai vector families. An orbit can hold versions. A grid can open a source. Particles can gather while a corpus is indexed. The effect must inherit fuchsia, respond to state and resolve into useful structure. Generic rainbow borders, meteors and ambient techno spectacle remain outside the system.
+Animated grids, orbiting lines, particles, blur transitions and number motion may enter core screens when they are translated into the dotai vector families. An orbit can hold versions. A grid can open a source. Particles can gather while a corpus is indexed. The effect must use cyan as its body, fuchsia as its active interruption, respond to state and resolve into useful structure. Generic rainbow borders, meteors and ambient techno spectacle remain outside the system.
 
 ### 13.2 Motion tokens
 
@@ -461,7 +466,7 @@ Buttons should carry the same geometric intelligence as the vector system. They 
 
 ### 14.1 Primary: Vector Cut
 
-Black field, white text, one clipped corner and a 2 px fuchsia lower or side rule. On hover, two to four fuchsia contour lines slide through the clipped corner. On activation, these lines travel around the boundary as progress.
+Black field, white text, one clipped corner and a 2 px cyan lower or side rule. On hover, cyan contour lines slide through the clipped corner and one fuchsia line cuts across them. On activation, the cyan lines travel around the boundary with a fuchsia leading point.
 
 ### 14.2 Accent: Pulse
 
@@ -469,7 +474,7 @@ Fuchsia field, black text and a compact four-point `Pulse` mark. Use for a singl
 
 ### 14.3 Secondary: Outline Shift
 
-Paper field, black text and black rule. A fuchsia offset outline appears 3 px away on hover, echoing the dotai logo's registration logic.
+Paper field, black text and black rule. A cyan offset outline appears 3 px away on hover, echoing the dotai logo's registration logic. Keyboard focus adds the fuchsia focus ring.
 
 ### 14.4 Tertiary: Thread Link
 
@@ -477,7 +482,7 @@ Text link with a visible underline that extends into a short fuchsia thread or a
 
 ### 14.5 Tool button: Shape Key
 
-Square or circular icon control with a distinct vector glyph. Active state fills with fuchsia. Tooltips name the action and shortcut. Shape Keys may assemble into a Magic UI-style dock or compact chatbox tool row.
+Square or circular icon control with a distinct vector glyph. Selected state fills with cyan; the currently active tool carries a small fuchsia point. Tooltips name the action and shortcut. Shape Keys may assemble into a Magic UI-style dock or compact chatbox tool row.
 
 ### 14.6 Destructive
 
@@ -547,7 +552,7 @@ The image canvas may carry a slowly moving contour field beyond the object bound
 
 - Support zoom, pan, rotate, fit, full resolution and side-by-side comparison.
 - Annotations retain coordinates across responsive views.
-- Fuchsia outlines mark the active region; inactive regions use numbered monochrome rules.
+- Cyan outlines mark analysed regions; a fuchsia handle marks the region currently in focus. Inactive regions use numbered monochrome rules.
 - Do not cover the object with opaque interface chrome.
 - Provide keyboard alternatives to pointer drawing.
 
@@ -614,7 +619,7 @@ Direct, curious and willing to disagree. Avoid therapeutic mimicry, praise loops
 
 ### 21.4 Signature visual
 
-Use a fuchsia marginal line that splits, overlaps or reconnects as positions diverge. Pulse marks identify a claim, doubt or intervention. The line can move behind chat panels and reappear as a branch selector, so the argument has a visible topology.
+Use a cyan marginal line that splits, overlaps or reconnects as positions diverge. Fuchsia pulse marks identify a claim, doubt or intervention. The line can move behind chat panels and reappear as a branch selector, so the argument has a visible topology.
 
 ## 22. Search and retrieval
 
@@ -714,6 +719,11 @@ The implementation name should describe the product meaning, not the borrowed ef
 
 ```css
 :root {
+  --dot-cyan: #00f1de;
+  --dot-cyan-dark: #007f76;
+  --dot-cyan-soft: #c9fff9;
+  --dot-cyan-deep: #003d39;
+
   --dot-fuchsia: #ff00a8;
   --dot-fuchsia-dark: #a60063;
   --dot-fuchsia-soft: #ffd6ee;
@@ -751,7 +761,7 @@ The implementation name should describe the product meaning, not the borrowed ef
   --radius-panel: 2px;
   --radius-control: 4px;
   --rule-default: 1px solid var(--dot-grey-300);
-  --rule-active: 2px solid var(--dot-fuchsia);
+  --rule-active: 2px solid var(--dot-cyan);
   --focus-ring: 0 0 0 3px var(--dot-white), 0 0 0 6px var(--dot-fuchsia-dark);
 
   --motion-instant: 80ms;
@@ -766,8 +776,10 @@ The implementation name should describe the product meaning, not the borrowed ef
 
 ## 30. Product review checklist
 
-- Is fuchsia the only non-semantic accent?
-- Does every fuchsia element communicate state, relation or priority?
+- Is dotai cyan visibly carrying the product field and structural language?
+- Is fuchsia acting as the accent rather than the dominant colour?
+- Does every fuchsia element identify an action, focus or moment of intervention?
+- Do cyan and fuchsia have distinct jobs on the screen?
 - Does the screen contain a recognisable dotai vector family rather than generic tech decoration?
 - Is the vector language woven into chat, navigation or state rather than pasted behind the interface?
 - Does the interface still read clearly in greyscale?
@@ -797,7 +809,7 @@ Useful for its generative workspace: prompt, library selection, live artefact pr
 
 ### Magic UI
 
-Useful as a source of copyable, locally owned React motion patterns. Bento Grid, Animated Beam, Border Beam, Shimmer Button, Marquee, Dock and Text Reveal can enter dotai only after semantic renaming, fuchsia tokenisation, accessibility work and reduced-motion design. The library's visual abundance should expand dotai's expressive range without setting the product's judgement.
+Useful as a source of copyable, locally owned React motion patterns. Bento Grid, Animated Beam, Border Beam, Shimmer Button, Marquee, Dock and Text Reveal can enter dotai only after semantic renaming, cyan-fuchsia tokenisation, accessibility work and reduced-motion design. The library's visual abundance should expand dotai's expressive range without setting the product's judgement.
 
 ### dotai-design.md
 

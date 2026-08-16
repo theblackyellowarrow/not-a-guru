@@ -23,19 +23,19 @@ export default function HelpModal({ isOpen, onClose }) {
             </p>
           </div>
           <div className="grid gap-3">
-            <div className="border border-[#6B6965] bg-[#0f0f0f] px-4 py-3 hover:border-[#FF00A8] transition-colors">
+            <div className="border border-[#6B6965] bg-[#0f0f0f] px-4 py-3 hover:border-[#00F1DE] transition-colors">
               <div className="font-semibold uppercase font-mono tracking-wider text-white">Build a Problem Statement</div>
               <div className="text-[#C8C5BF] mt-1">
                 Talk through a raw idea until it becomes a sharp, scored problem statement, then a solution statement and a future workflow.
               </div>
             </div>
-            <div className="border border-[#6B6965] bg-[#0f0f0f] px-4 py-3 hover:border-[#FF00A8] transition-colors">
+            <div className="border border-[#6B6965] bg-[#0f0f0f] px-4 py-3 hover:border-[#00F1DE] transition-colors">
               <div className="font-semibold uppercase font-mono tracking-wider text-white">Design Process Critique</div>
               <div className="text-[#C8C5BF] mt-1">
                 Chat through your process and upload docs or images. The critique traces weak outputs back to shaky research or assumptions.
               </div>
             </div>
-            <div className="border border-[#6B6965] bg-[#0f0f0f] px-4 py-3 hover:border-[#FF00A8] transition-colors">
+            <div className="border border-[#6B6965] bg-[#0f0f0f] px-4 py-3 hover:border-[#00F1DE] transition-colors">
               <div className="font-semibold uppercase font-mono tracking-wider text-white">Final Roast</div>
               <div className="text-[#C8C5BF] mt-1">
                 Upload final assets and framing. You’ll get a direct critique of the finished work.

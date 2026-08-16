@@ -76,7 +76,7 @@ export default function Onboarding({
           {/* Left: guide chat */}
           <div className="border border-[#6B6965] bg-[#090909]/90 flex flex-col">
             <div className="border-b border-[#2a2a2a] px-4 py-3 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-[10px] uppercase font-mono tracking-[0.15em] text-[#FF00A8]">
+              <div className="flex items-center gap-2 text-[10px] uppercase font-mono tracking-[0.15em] text-[#00F1DE]">
                 <ModeIcon size={16} /> Not a Guru guide
               </div>
               <button
@@ -101,10 +101,10 @@ export default function Onboarding({
                   </div>
                 ) : (
                   <div key={entry.id} className="flex items-start gap-3 flex-row-reverse">
-                    <div className="flex-shrink-0 w-7 h-7 flex items-center justify-center border border-[#FF00A8] bg-[#090909]">
-                      <span className="text-[#FF00A8] text-[10px] font-mono">YOU</span>
+                    <div className="flex-shrink-0 w-7 h-7 flex items-center justify-center border border-[#00F1DE] bg-[#090909]">
+                      <span className="text-[#00F1DE] text-[10px] font-mono">YOU</span>
                     </div>
-                    <div className="flex-1 border-r-2 border-[#FF00A8] bg-[#090909] p-3 text-sm text-white text-right">
+                    <div className="flex-1 border-r-2 border-[#00F1DE] bg-[#090909] p-3 text-sm text-white text-right">
                       {entry.text}
                     </div>
                   </div>
@@ -125,11 +125,11 @@ export default function Onboarding({
                       disabled={isLoading}
                       className={`text-left border px-4 py-3 transition-all disabled:opacity-50 ${
                         active
-                          ? 'border-[#FF00A8] bg-[#4A002D]/20 text-white'
-                          : 'border-[#F7F5F0] hover:border-[#FF00A8] bg-[#090909]'
+? 'border-[#00F1DE] bg-[#003D39]/30 text-white'
+                          : 'border-[#F7F5F0] hover:border-[#00F1DE] hover:shadow-[3px_3px_0_0_#00F1DE] bg-[#090909]'
                       }`}
                     >
-                      <Icon size={18} className={active ? 'text-[#FF00A8]' : 'text-[#C8C5BF]'} />
+                      <Icon size={18} className={active ? 'text-[#00F1DE]' : 'text-[#C8C5BF]'} />
                       <div className="mt-2 text-sm font-semibold font-mono uppercase tracking-wider">{mode.label}</div>
                     </button>
                   );
@@ -149,7 +149,7 @@ export default function Onboarding({
             <h1 className="text-3xl md:text-4xl font-semibold text-white mb-2 uppercase font-mono tracking-wider">
               Not a Guru
             </h1>
-            <p className="text-[#FF00A8] text-base font-medium">The design peer who keeps it real.</p>
+            <p className="text-[#00F1DE] text-base font-medium">The design peer who keeps it real.</p>
 
             <div className="mt-8 space-y-6">
               {username ? (
@@ -162,14 +162,14 @@ export default function Onboarding({
 
                   {lastThreadTitle && (
                     <div className="border border-[#6B6965] bg-[#0f0f0f] p-4">
-                      <div className="flex items-center gap-2 text-[10px] uppercase font-mono tracking-[0.15em] text-[#FF00A8] mb-2">
+                      <div className="flex items-center gap-2 text-[10px] uppercase font-mono tracking-[0.15em] text-[#00F1DE] mb-2">
                         <BookOpen size={14} /> Continue where you left off
                       </div>
                       <p className="text-sm text-[#EFEDE8] truncate">{lastThreadTitle}</p>
                       <button
                         onClick={onContinueSession}
                         disabled={isLoading}
-                        className="mt-3 group flex items-center gap-2 border border-[#FF00A8] text-[#FF00A8] px-4 py-2 text-sm uppercase font-mono transition-all hover:bg-[#FF00A8] hover:text-black disabled:opacity-50 clip-corner"
+                        className="mt-3 group relative flex items-center gap-2 border border-white bg-[#F7F5F0] text-black px-4 py-2 text-sm uppercase font-mono transition-all hover:border-[#00F1DE] hover:shadow-[3px_3px_0_0_#00F1DE] disabled:opacity-50 clip-corner"
                       >
                         Continue session <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                       </button>
@@ -189,13 +189,13 @@ export default function Onboarding({
                             key={mode.key}
                             onClick={() => onSelect(mode.key)}
                             disabled={isLoading}
-                            className={`text-left border px-4 py-3 transition-all disabled:opacity-50 flex items-start gap-3 ${
-                              active
-                                ? 'border-[#FF00A8] bg-[#4A002D]/20'
-                                : 'border-[#F7F5F0] hover:border-[#FF00A8] bg-[#090909]'
-                            }`}
-                          >
-                            <Icon size={20} className={active ? 'text-[#FF00A8]' : 'text-[#C8C5BF]'} />
+className={`text-left border px-4 py-3 transition-all disabled:opacity-50 flex items-start gap-3 ${
+                            active
+                              ? 'border-[#00F1DE] bg-[#003D39]/40'
+                              : 'border-[#F7F5F0] hover:border-[#00F1DE] hover:shadow-[3px_3px_0_0_#00F1DE] bg-[#090909]'
+                          }`}
+                        >
+                          <Icon size={20} className={active ? 'text-[#00F1DE]' : 'text-[#C8C5BF]'} />
                             <div>
                               <div className="text-sm font-semibold font-mono uppercase tracking-wider">{mode.label}</div>
                               <p className="mt-1 text-xs text-[#C8C5BF]">{mode.followUp}</p>

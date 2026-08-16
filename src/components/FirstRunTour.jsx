@@ -42,7 +42,7 @@ export default function FirstRunTour({ isOpen, onClose }) {
         <div className="border-t border-[#6B6965] px-6 py-4 flex items-center justify-between gap-3">
           <button
             onClick={() => setStepIndex((prev) => Math.max(0, prev - 1))}
-            className="border border-[#6B6965] px-4 py-2 text-sm font-semibold uppercase font-mono text-[#C8C5BF] hover:border-[#FF00A8] hover:text-white disabled:opacity-40 transition-colors"
+            className="border border-[#6B6965] px-4 py-2 text-sm font-semibold uppercase font-mono text-[#C8C5BF] hover:border-[#00F1DE] hover:text-white disabled:opacity-40 transition-colors"
             disabled={stepIndex === 0}
           >
             Back
@@ -50,7 +50,7 @@ export default function FirstRunTour({ isOpen, onClose }) {
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="border border-[#6B6965] px-4 py-2 text-sm font-semibold uppercase font-mono text-[#C8C5BF] hover:border-[#FF00A8] hover:text-white transition-colors"
+              className="border border-[#6B6965] px-4 py-2 text-sm font-semibold uppercase font-mono text-[#C8C5BF] hover:border-[#00F1DE] hover:text-white transition-colors"
             >
               Skip
             </button>

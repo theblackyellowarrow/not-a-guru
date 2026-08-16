@@ -31,7 +31,7 @@ export default function QuickReplies({ flow, onPick, disabled }) {
           key={reply}
           onClick={() => onPick(reply)}
           disabled={disabled}
-          className="border border-[#6B6965] px-3 py-1 text-[10px] uppercase font-mono tracking-wider text-[#C8C5BF] transition-colors hover:border-[#FF00A8] hover:text-[#FF00A8] disabled:opacity-40"
+          className="border border-[#6B6965] px-3 py-1 text-[10px] uppercase font-mono tracking-wider text-[#C8C5BF] transition-colors hover:border-[#00F1DE] hover:text-[#00F1DE] disabled:opacity-40"
         >
           {reply}
         </button>

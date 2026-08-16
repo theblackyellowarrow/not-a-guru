@@ -1138,7 +1138,7 @@ export default function App() {
             />
 
             {/* Signature chatbox */}
-            <div className="relative flex flex-col border border-[#F7F5F0] focus-within:border-[#FF00A8] focus-within:border-b-2 bg-[#090909] transition-colors">
+            <div className="relative flex flex-col border border-[#F7F5F0] focus-within:border-[#00F1DE] focus-within:border-b-2 bg-[#090909] transition-colors">
               <div className="flex items-center gap-2 px-3 py-2 border-b border-[#2a2a2a]">
                 <span className="text-xs uppercase font-mono tracking-wider text-[#6B6965]">Composer</span>
                 <div className="h-px flex-1 bg-[#2a2a2a]" />

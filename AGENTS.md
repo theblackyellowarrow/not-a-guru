@@ -53,12 +53,13 @@ The SPA uses hash routes. Chat sessions are reflected in the URL as `#/chat/{thr
 
 The authoritative product design guide is `dotaitooldesign.md` in this repo. Key rules for this codebase:
 
-- **Fuchsia (`#FF00A8`) is the only non-semantic accent colour.** Use it for active controls, focus, selection, progress, live annotations and meaningful motion.
-- **Do not use cyan as an interactive/product accent.** The original dotai logo may keep its cyan contour, but inside the product interface cyan is treated as legacy brand material.
-- **Not a Guru vector signature:** `Split` and `Pulse` — splitting marginal lines and pulse marks for claims, doubts or interventions.
+- **Cyan (`#00F1DE`) carries the product field.** Use it for primary structure, navigation states, open panels, progress tracks and the dominant body of vector forms.
+- **Fuchsia (`#FF00A8`) is the accent of intervention.** Use it only for the exact point of action: primary action, current focus, live annotation, decisive state, and the visual peak of an animation. Keep it to ~2–6 % of a normal screen.
+- **Cyan and fuchsia meet in gradients and line transitions**, but they do not perform the same interface role.
+- **Not a Guru vector signature:** a cyan `Split` line with fuchsia `Pulse` moments — splitting marginal lines for diverging positions, pulse marks for claims, doubts or interventions.
 - **Typography:** IBM Plex Sans for UI text, IBM Plex Mono for labels/metadata/code, Source Serif 4 for long reading.
-- **Shape language:** hard-edged or lightly clipped panels (radius 0–4 px), 1 px default rules, 2 px fuchsia active rules, minimal shadows.
-- **Magic UI / GenUAI components** may be copied in, but they must be renamed semantically, tokenised to fuchsia, made accessible and given reduced-motion behaviour.
+- **Shape language:** hard-edged or lightly clipped panels (radius 0–4 px), 1 px default rules, 2 px cyan active rules, minimal shadows. Fuchsia is reserved for the focus ring and intervention moments.
+- **Magic UI / GenUAI components** may be copied in, but they must be renamed semantically, tokenised to the cyan-fuchsia hierarchy, made accessible and given reduced-motion behaviour.
 
 ## Design references
 

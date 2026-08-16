@@ -32,7 +32,7 @@ export default function HistoryPanel({
               onClick={() => onSelectThread(thread.id)}
               className={`w-full text-left text-sm p-2 truncate font-mono transition-colors ${
                 thread.id === currentThreadId
-                  ? 'bg-[#FF00A8]/10 text-[#FF00A8] border-l-2 border-[#FF00A8]'
+                  ? 'bg-[#00F1DE]/10 text-[#00F1DE] border-l-2 border-[#00F1DE]'
                   : 'text-[#C8C5BF] hover:bg-[#0f0f0f] hover:text-white'
               }`}
             >
@@ -43,7 +43,7 @@ export default function HistoryPanel({
         <div className="p-2 border-t border-[#6B6965]">
           <button
             onClick={onNewChat}
-            className="w-full flex items-center justify-center gap-2 text-sm p-2 text-[#FF00A8] hover:bg-[#FF00A8]/10 transition-colors uppercase font-mono tracking-wider border border-transparent hover:border-[#FF00A8]"
+            className="w-full flex items-center justify-center gap-2 text-sm p-2 text-[#00F1DE] hover:bg-[#00F1DE]/10 transition-colors uppercase font-mono tracking-wider border border-transparent hover:border-[#00F1DE]"
           >
             <PlusCircle size={16} /> New Chat
           </button>

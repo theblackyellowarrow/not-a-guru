@@ -24,8 +24,8 @@ export default function CertificateCard({ thread, username }) {
   };
 
   return (
-    <div className="my-6 border-2 border-[#FF00A8] bg-[#4A002D]/20 p-5">
-      <div className="flex items-center gap-2 text-[#FF00A8] uppercase font-mono text-[10px] tracking-[0.15em]">
+    <div className="my-6 border-2 border-[#00F1DE] bg-[#003D39]/40 p-5">
+      <div className="flex items-center gap-2 text-[#00F1DE] uppercase font-mono text-[10px] tracking-[0.15em]">
         <FileBadge size={16} /> Stage marksheet ready
       </div>
       <p className="mt-2 text-sm text-[#EFEDE8]">
@@ -33,7 +33,7 @@ export default function CertificateCard({ thread, username }) {
       </p>
       <button
         onClick={handleDownload}
-        className="mt-4 group flex items-center gap-2 border border-[#FF00A8] bg-[#FF00A8]/10 px-4 py-2 text-sm uppercase font-mono text-[#FF00A8] transition-all hover:bg-[#FF00A8] hover:text-black clip-corner"
+        className="mt-4 group flex items-center gap-2 border border-white bg-[#F7F5F0] text-black px-4 py-2 text-sm uppercase font-mono transition-all hover:border-[#00F1DE] hover:shadow-[3px_3px_0_0_#00F1DE] clip-corner"
       >
         <Download size={16} /> Download marksheet
       </button>
