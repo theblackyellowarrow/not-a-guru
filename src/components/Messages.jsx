@@ -41,12 +41,14 @@ export function MessageRenderer({
   onReviseFrom,
   process,
 }) {
+  const baseClass = 'message-rise';
   switch (message.type) {
     case 'user':
       return (
         <ChatMessage
           message={message}
           onReviseFrom={onReviseFrom}
+          baseClass={baseClass}
         />
       );
     case 'guru':
@@ -56,6 +58,7 @@ export function MessageRenderer({
           isLoading={isLoading}
           isLastMessage={isLastMessage}
           process={process}
+          baseClass={baseClass}
         />
       );
     case 'tool_personas':
@@ -113,7 +116,7 @@ function AttachmentList({ attachments }) {
   );
 }
 
-function ChatMessage({ message, isLoading, isLastMessage, onReviseFrom, process }) {
+function ChatMessage({ message, isLoading, isLastMessage, onReviseFrom, process, baseClass }) {
   const isGuru = message.type === 'guru';
   const Icon = isGuru ? BrainCircuit : User;
   const isStreaming = isGuru && isLoading && isLastMessage;
@@ -121,7 +124,7 @@ function ChatMessage({ message, isLoading, isLastMessage, onReviseFrom, process 
 
   if (isGuru) {
     return (
-      <div className="flex items-start gap-3 my-6">
+      <div className={`flex items-start gap-3 my-6 ${baseClass || ''}`}>
         <div className="flex-shrink-0 w-9 h-9 flex items-center justify-center border border-[#6B6965] bg-[#090909]">
           <Icon size={20} className="text-white" />
         </div>
@@ -159,7 +162,7 @@ function ChatMessage({ message, isLoading, isLastMessage, onReviseFrom, process 
   }
 
   return (
-    <div className="relative my-4 border-l-2 border-[#00F1DE] bg-[#090909] pl-4 py-3 pr-3">
+    <div className={`relative my-4 border-l-2 border-[#00F1DE] bg-[#090909] pl-4 py-3 pr-3 ${baseClass || ''}`}>
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center border border-[#6B6965]">
           <Icon size={14} className="text-[#00F1DE]" />

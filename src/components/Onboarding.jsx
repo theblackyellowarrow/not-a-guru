@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ArrowRight, BookOpen, FilePlus, HelpCircle, MessageSquare, SearchCheck, Wrench } from 'lucide-react';
 import GeometricBackdrop from './GeometricBackdrop';
+import { usePointerOffset, useHoverParallax } from '../hooks/useParallax.js';
 
 const modeOptions = [
   {
@@ -44,6 +45,9 @@ export default function Onboarding({
     },
   ]);
   const [highlightedMode, setHighlightedMode] = useState(null);
+  const heroRef = useRef(null);
+  const heroPointer = usePointerOffset(6);
+  const heroHover = useHoverParallax(2);
 
   const handleModePick = (mode) => {
     if (chatLog.some((entry) => entry.key === mode.key)) return;
@@ -66,14 +70,39 @@ export default function Onboarding({
     onSetUsername(draftUsername.trim());
   };
 
+  const handlePathEnter = (event) => {
+    const target = event.currentTarget;
+    const rect = target.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = ((event.clientX - cx) / (rect.width / 2)) * 3;
+    const dy = ((event.clientY - cy) / (rect.height / 2)) * 3;
+    target.style.setProperty('--hover-x', `${dx}px`);
+    target.style.setProperty('--hover-y', `${dy}px`);
+  };
+
+  const handlePathLeave = (event) => {
+    const target = event.currentTarget;
+    target.style.setProperty('--hover-x', '0px');
+    target.style.setProperty('--hover-y', '0px');
+  };
+
   const ModeIcon = highlightedMode ? modeOptions.find((m) => m.key === highlightedMode)?.icon || MessageSquare : MessageSquare;
 
-return (
+  return (
     <div className="view-enter bg-[#090909] text-white min-h-screen antialiased overflow-y-auto">
       <GeometricBackdrop />
       <div className="relative z-10 mx-auto max-w-6xl px-4 py-8 md:py-12">
         {/* Hero: logo + name + tagline, independent of the columns below */}
-        <header className="flex flex-col items-center text-center mb-10 md:mb-14">
+        <header
+          ref={heroRef}
+          className="flex flex-col items-center text-center mb-10 md:mb-14"
+          style={{
+            transform: `translate3d(${heroPointer.x}px, ${heroPointer.y + heroHover.y}px, 0)`,
+            transition: 'transform 160ms ease-out',
+            willChange: 'transform',
+          }}
+        >
           <div className="relative inline-flex items-center justify-center w-32 h-32 md:w-40 md:h-40 rounded-full border-[3px] border-[#FF00A8] mb-6 bg-[#090909]">
             <span
               aria-hidden="true"

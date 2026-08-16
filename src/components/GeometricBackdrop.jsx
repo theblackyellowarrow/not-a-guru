@@ -1,4 +1,15 @@
+import { usePointerOffset, useScrollY } from '../hooks/useParallax.js';
+
+const SCROLL_FACTOR = 0.12;
+const POINTER_FACTOR = 1;
+
 export default function GeometricBackdrop() {
+  const scrollY = useScrollY();
+  const pointer = usePointerOffset(8);
+
+  const parallaxY = -scrollY * SCROLL_FACTOR + pointer.y * POINTER_FACTOR;
+  const parallaxX = pointer.x * POINTER_FACTOR;
+
   return (
     <svg
       className="fixed inset-0 w-full h-full -z-10 pointer-events-none"
@@ -6,7 +17,12 @@ export default function GeometricBackdrop() {
       preserveAspectRatio="xMidYMid slice"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
-      style={{ opacity: 0.55 }}
+      style={{
+        opacity: 0.55,
+        transform: `translate3d(${parallaxX}px, ${parallaxY}px, 0)`,
+        transition: 'transform 120ms ease-out',
+        willChange: 'transform',
+      }}
     >
       <defs>
         <linearGradient id="split-left" x1="0%" y1="0%" x2="100%" y2="100%">
