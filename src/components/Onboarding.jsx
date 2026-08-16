@@ -1,31 +1,23 @@
 import { useRef, useState } from 'react';
-import { ArrowRight, BookOpen, FilePlus, HelpCircle, MessageSquare, SearchCheck, Wrench } from 'lucide-react';
+import { ArrowRight, BookOpen, HelpCircle, MessageSquare, Send, Sparkles } from 'lucide-react';
 import GeometricBackdrop from './GeometricBackdrop';
-import { usePointerOffset, useHoverParallax } from '../hooks/useParallax.js';
+import { useHoverParallax, usePointerOffset } from '../hooks/useParallax.js';
+import { callAI } from './aiClient';
+import {
+  createTriagePayload,
+  extractTextFromResponse,
+  extractTriageRoute,
+  stripTriageMarker,
+} from './chatRuntime';
 
-const modeOptions = [
-  {
-    key: 'start_project',
-    label: 'Frame a new idea',
-    followUp:
-      'Good place to start. We will take your raw idea and turn it into a scored problem statement, then a solution statement and a future workflow.',
-    icon: FilePlus,
-  },
-  {
-    key: 'process_review',
-    label: 'Review my process',
-    followUp:
-      'Smart. We will trace your research and decisions to see where the work might be shaky. I will start gentle and get sharper as we go.',
-    icon: Wrench,
-  },
-  {
-    key: 'final_review',
-    label: 'Roast my final output',
-    followUp:
-      'Brave. Upload your final assets and framing, and I will critique the finished work against intent and trade-offs.',
-    icon: SearchCheck,
-  },
-];
+const TRIAGE_GREETING =
+  'How can Not a Guru help you? You can call me NG. Do you have a design problem to discuss?';
+
+const FLOW_TITLES = {
+  start_project: 'Build a Problem Statement',
+  process_review: 'Design Process Critique',
+  final_review: 'Final Roast',
+};
 
 export default function Onboarding({
   username,
@@ -38,56 +30,86 @@ export default function Onboarding({
 }) {
   const [draftUsername, setDraftUsername] = useState(username || '');
   const [chatLog, setChatLog] = useState([
-    {
-      id: 'intro',
-      type: 'guru',
-      text: "Aight. I'm Not a Guru — a design peer built to keep your work honest. What are you here to do?",
-    },
+    { id: 'intro', type: 'guru', text: TRIAGE_GREETING, timestamp: new Date().toISOString() },
   ]);
-  const [highlightedMode, setHighlightedMode] = useState(null);
+  const [triageInput, setTriageInput] = useState('');
+  const [triageLoading, setTriageLoading] = useState(false);
+  const [triageRoute, setTriageRoute] = useState(null);
+  const [triageError, setTriageError] = useState(null);
+  const triageInFlightRef = useRef(false);
+
   const heroRef = useRef(null);
   const heroPointer = usePointerOffset(6);
   const heroHover = useHoverParallax(2);
 
-  const handleModePick = (mode) => {
-    if (chatLog.some((entry) => entry.key === mode.key)) return;
-    setHighlightedMode(mode.key);
-    setChatLog((prev) => [
-      ...prev,
-      { id: `user-${mode.key}`, type: 'user', text: mode.label, key: mode.key },
-      { id: `guru-${mode.key}`, type: 'guru', text: mode.followUp },
-      {
-        id: 'next',
-        type: 'guru',
-        text: 'Ready? Add your username on the right and begin a session. I will bring you back to your last active chat next time.',
-      },
-    ]);
-  };
+  async function handleTriageSend(event) {
+    event?.preventDefault?.();
+    const userText = triageInput.trim();
+    if (!userText || triageLoading || triageInFlightRef.current || triageRoute) return;
 
-  const handleSubmitUsername = (event) => {
+    const userMessage = {
+      id: `triage_user_${Date.now()}`,
+      type: 'user',
+      text: userText,
+      timestamp: new Date().toISOString(),
+    };
+
+    const placeholderId = `triage_guru_${Date.now()}`;
+    const placeholderMessage = {
+      id: placeholderId,
+      type: 'guru',
+      text: 'Thinking…',
+      phase: 'generating',
+      timestamp: new Date().toISOString(),
+    };
+
+    setChatLog((prev) => [...prev, userMessage, placeholderMessage]);
+    setTriageInput('');
+    setTriageLoading(true);
+    setTriageError(null);
+    triageInFlightRef.current = true;
+
+    try {
+      const history = [...chatLog, userMessage];
+      const payload = createTriagePayload(history, [{ text: userText }]);
+      const response = await callAI(payload);
+      const result = await response.json();
+      const finalText = extractTextFromResponse(result);
+
+      if (!finalText) {
+        throw new Error('The model returned no readable text.');
+      }
+
+      const route = extractTriageRoute(finalText);
+      const cleanedText = stripTriageMarker(finalText);
+
+      setChatLog((prev) =>
+        prev.map((m) =>
+          m.id === placeholderId ? { ...m, text: cleanedText, phase: 'ready' } : m
+        )
+      );
+
+      if (route) {
+        setTriageRoute(route);
+      }
+    } catch (requestError) {
+      console.error('Triage error:', requestError);
+      setTriageError(requestError.message || 'Could not reach NG.');
+      setChatLog((prev) => prev.filter((m) => m.id !== placeholderId));
+    } finally {
+      setTriageLoading(false);
+      triageInFlightRef.current = false;
+    }
+  }
+
+  function handleRouteSubmit(event) {
     event.preventDefault();
-    if (!draftUsername.trim()) return;
+    if (!triageRoute || !draftUsername.trim()) return;
     onSetUsername(draftUsername.trim());
-  };
+    onSelect(triageRoute);
+  }
 
-  const handlePathEnter = (event) => {
-    const target = event.currentTarget;
-    const rect = target.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const dx = ((event.clientX - cx) / (rect.width / 2)) * 3;
-    const dy = ((event.clientY - cy) / (rect.height / 2)) * 3;
-    target.style.setProperty('--hover-x', `${dx}px`);
-    target.style.setProperty('--hover-y', `${dy}px`);
-  };
-
-  const handlePathLeave = (event) => {
-    const target = event.currentTarget;
-    target.style.setProperty('--hover-x', '0px');
-    target.style.setProperty('--hover-y', '0px');
-  };
-
-  const ModeIcon = highlightedMode ? modeOptions.find((m) => m.key === highlightedMode)?.icon || MessageSquare : MessageSquare;
+  const chatDisabled = triageLoading || Boolean(triageRoute);
 
   return (
     <div className="view-enter bg-[#090909] text-white min-h-screen antialiased overflow-y-auto">
@@ -104,10 +126,7 @@ export default function Onboarding({
           }}
         >
           <div className="relative inline-flex items-center justify-center w-32 h-32 md:w-40 md:h-40 rounded-full border-[3px] border-[#FF00A8] mb-6 bg-[#090909]">
-            <span
-              aria-hidden="true"
-              className="absolute inset-1 rounded-full border border-[#FF00A8]/40"
-            />
+            <span aria-hidden="true" className="absolute inset-1 rounded-full border border-[#FF00A8]/40" />
             <img
               src="/brand/dotai-logo-mark.png"
               alt="dotai"
@@ -124,11 +143,11 @@ export default function Onboarding({
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-start">
-          {/* Left: guide chat */}
+          {/* Left: free conversational triage with NG */}
           <div className="border border-[#6B6965] bg-[#090909]/90 flex flex-col">
             <div className="border-b border-[#2a2a2a] px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-2 text-[10px] uppercase font-mono tracking-[0.15em] text-[#00F1DE]">
-                <ModeIcon size={16} /> Not a Guru guide
+                <MessageSquare size={16} /> Chat with NG
               </div>
               <button
                 onClick={onOpenHelp}
@@ -140,22 +159,22 @@ export default function Onboarding({
             </div>
 
             <div className="flex-1 p-4 md:p-6 space-y-4 min-h-[420px]">
-              {chatLog.map((entry, index) =>
+              {chatLog.map((entry) =>
                 entry.type === 'guru' ? (
-                  <div key={entry.id} className="flex items-start gap-3">
+                  <div key={entry.id} className="flex items-start gap-3 message-rise">
                     <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center border border-[#6B6965] bg-[#090909]">
                       <MessageSquare size={16} className="text-white" />
                     </div>
-                    <div className="flex-1 border border-[#2a2a2a] bg-[#0f0f0f] p-3 text-sm text-[#EFEDE8]">
+                    <div className="flex-1 border border-[#2a2a2a] bg-[#0f0f0f] p-3 text-sm text-[#EFEDE8] whitespace-pre-wrap leading-relaxed">
                       {entry.text}
                     </div>
                   </div>
                 ) : (
-                  <div key={entry.id} className="flex items-start gap-3 flex-row-reverse">
+                  <div key={entry.id} className="flex items-start gap-3 flex-row-reverse message-rise">
                     <div className="flex-shrink-0 w-7 h-7 flex items-center justify-center border border-[#00F1DE] bg-[#090909]">
                       <span className="text-[#00F1DE] text-[10px] font-mono">YOU</span>
                     </div>
-                    <div className="flex-1 border-r-2 border-[#00F1DE] bg-[#090909] p-3 text-sm text-white text-right">
+                    <div className="flex-1 border-r-2 border-[#00F1DE] bg-[#090909] p-3 text-sm text-white text-right whitespace-pre-wrap leading-relaxed">
                       {entry.text}
                     </div>
                   </div>
@@ -164,32 +183,51 @@ export default function Onboarding({
             </div>
 
             <div className="border-t border-[#2a2a2a] p-4 md:p-6">
-              <p className="text-[10px] uppercase font-mono tracking-[0.15em] text-[#6B6965] mb-3">Pick a path</p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {modeOptions.map((mode) => {
-                  const Icon = mode.icon;
-                  const active = highlightedMode === mode.key;
-                  return (
+              {triageRoute ? (
+                <div className="flex items-start gap-3 text-[#00F1DE]">
+                  <Sparkles size={16} className="mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-[10px] uppercase font-mono tracking-[0.15em]">
+                      Routed to {FLOW_TITLES[triageRoute]}
+                    </p>
+                    <p className="mt-1 text-xs text-[#C8C5BF] font-sans tracking-normal normal-case">
+                      Add a username on the right to begin.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleTriageSend} className="flex flex-col gap-2">
+                  <label className="text-[10px] uppercase font-mono tracking-[0.15em] text-[#6B6965]">
+                    Tell NG what you are working on
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={triageInput}
+                      onChange={(event) => setTriageInput(event.target.value)}
+                      placeholder="A rough idea I have been sitting on…"
+                      className="flex-1 bg-transparent border border-[#6B6965] px-3 py-2 text-sm text-white placeholder-[#6B6965] focus:outline-none focus:border-[#FF00A8] font-mono"
+                      disabled={chatDisabled}
+                      aria-label="Message to NG"
+                    />
                     <button
-                      key={mode.key}
-                      onClick={() => handleModePick(mode)}
-                      disabled={isLoading}
-                      className={`text-left border px-4 py-3 transition-all disabled:opacity-50 ${
-                        active
-? 'border-[#00F1DE] bg-[#003D39]/30 text-white'
-                          : 'border-[#F7F5F0] hover:border-[#00F1DE] hover:shadow-[3px_3px_0_0_#00F1DE] bg-[#090909]'
-                      }`}
+                      type="submit"
+                      disabled={chatDisabled || !triageInput.trim()}
+                      className="relative overflow-hidden bg-[#FF00A8] text-black px-4 py-2 text-sm uppercase font-mono font-semibold tracking-wider clip-corner hover:brightness-110 disabled:opacity-40 transition-all flex items-center justify-center gap-2"
+                      aria-label="Send to NG"
                     >
-                      <Icon size={18} className={active ? 'text-[#00F1DE]' : 'text-[#C8C5BF]'} />
-                      <div className="mt-2 text-sm font-semibold font-mono uppercase tracking-wider">{mode.label}</div>
+                      <Send size={14} />
                     </button>
-                  );
-                })}
-              </div>
+                  </div>
+                  {triageError && (
+                    <p className="text-xs text-[#B42318]">{triageError}</p>
+                  )}
+                </form>
+              )}
             </div>
           </div>
 
-          {/* Right: begin a session */}
+          {/* Right: username + session control */}
           <div className="border border-[#F7F5F0] bg-[#090909]/90 p-6 md:p-8">
             <div className="mt-2 space-y-6">
               {username ? (
@@ -216,40 +254,24 @@ export default function Onboarding({
                     </div>
                   )}
 
-                  <div>
-                    <p className="text-[10px] uppercase font-mono tracking-[0.15em] text-[#6B6965] mb-3">
-                      {lastThreadTitle ? 'Or start a new quest' : 'Start your first quest'}
+                  {triageRoute ? (
+                    <button
+                      onClick={() => onSelect(triageRoute)}
+                      disabled={isLoading}
+                      className="group w-full flex items-center justify-center gap-2 bg-[#FF00A8] text-black px-6 py-3 text-sm uppercase font-mono font-semibold tracking-wider clip-corner hover:brightness-110 disabled:opacity-40 transition-all"
+                    >
+                      Begin {FLOW_TITLES[triageRoute]} <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  ) : (
+                    <p className="text-xs text-[#6B6965]">
+                      NG is figuring out where to take you on the left. Once routed, a Begin button will appear here.
                     </p>
-                    <div className="grid grid-cols-1 gap-3">
-                      {modeOptions.map((mode) => {
-                        const Icon = mode.icon;
-                        const active = highlightedMode === mode.key;
-                        return (
-                          <button
-                            key={mode.key}
-                            onClick={() => onSelect(mode.key)}
-                            disabled={isLoading}
-                            className={`text-left border px-4 py-3 transition-all disabled:opacity-50 flex items-start gap-3 ${
-                              active
-                                ? 'border-[#00F1DE] bg-[#003D39]/40'
-                                : 'border-[#F7F5F0] hover:border-[#00F1DE] hover:shadow-[3px_3px_0_0_#00F1DE] bg-[#090909]'
-                            }`}
-                          >
-                            <Icon size={20} className={active ? 'text-[#00F1DE]' : 'text-[#C8C5BF]'} />
-                            <div>
-                              <div className="text-sm font-semibold font-mono uppercase tracking-wider">{mode.label}</div>
-                              <p className="mt-1 text-xs text-[#C8C5BF]">{mode.followUp}</p>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
+                  )}
                 </>
               ) : (
-                <form onSubmit={handleSubmitUsername}>
+                <form onSubmit={handleRouteSubmit}>
                   <label className="block text-[10px] uppercase font-mono tracking-[0.15em] text-[#6B6965] mb-2">
-                    Begin a session
+                    {triageRoute ? `Username to begin ${FLOW_TITLES[triageRoute]}` : 'Begin a session'}
                   </label>
                   <div className="flex flex-col sm:flex-row gap-3">
                     <input
@@ -262,14 +284,16 @@ export default function Onboarding({
                     />
                     <button
                       type="submit"
-                      disabled={!draftUsername.trim() || isLoading}
+                      disabled={isLoading || !draftUsername.trim() || !triageRoute}
                       className="relative overflow-hidden bg-[#FF00A8] text-black px-6 py-3 text-sm uppercase font-mono font-semibold tracking-wider clip-corner hover:brightness-110 disabled:opacity-40 transition-all flex items-center justify-center gap-2"
                     >
-                      Start <ArrowRight size={16} />
+                      {triageRoute ? 'Begin' : 'Set username'} <ArrowRight size={16} />
                     </button>
                   </div>
                   <p className="mt-2 text-xs text-[#6B6965]">
-                    Your username identifies your session history on this device.
+                    {triageRoute
+                      ? `NG will take you straight into ${FLOW_TITLES[triageRoute]}.`
+                      : 'Chat with NG on the left first. Your username identifies your session history on this device.'}
                   </p>
                 </form>
               )}

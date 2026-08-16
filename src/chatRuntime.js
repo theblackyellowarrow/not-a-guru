@@ -1,6 +1,8 @@
 import {
   FLOW_MARKERS,
   FLOW_STAGES,
+  TRIAGE_INSTRUCTIONS,
+  TRIAGE_MARKERS,
   getChatInstructions,
   getStageScoreInstructions,
   getToolInstructions,
@@ -118,6 +120,21 @@ export function stripMarkers(text = '') {
   return cleaned.replace(/\n{3,}/g, '\n\n').trim();
 }
 
+export function stripTriageMarker(text = '') {
+  let cleaned = text;
+  for (const marker of Object.values(TRIAGE_MARKERS)) {
+    cleaned = cleaned.replace(new RegExp(`^\\s*${escapeRegex(marker)}\\s*$`, 'gim'), '');
+  }
+  return cleaned.replace(/\n{3,}/g, '\n\n').trim();
+}
+
+export function extractTriageRoute(text = '') {
+  for (const [flow, marker] of Object.entries(TRIAGE_MARKERS)) {
+    if (text && text.includes(marker)) return flow;
+  }
+  return null;
+}
+
 export function getFlowStageIndex(flow, messages) {
   if (!flow || !FLOW_STAGES[flow]) {
     return 0;
@@ -194,6 +211,14 @@ export function createChatPayload(thread, historyMessages, userParts) {
     instructions: getChatInstructions(thread.flow, thread.projectContext, turnCount),
     maxOutputTokens,
     contents: [...getRecentContextHistory(historyMessages), { role: 'user', parts: userParts }],
+  };
+}
+
+export function createTriagePayload(historyMessages, userParts) {
+  return {
+    instructions: TRIAGE_INSTRUCTIONS,
+    maxOutputTokens: 180,
+    contents: [...buildContextHistory(historyMessages), { role: 'user', parts: userParts }],
   };
 }
 
