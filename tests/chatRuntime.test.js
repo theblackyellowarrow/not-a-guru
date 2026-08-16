@@ -3,15 +3,15 @@ import assert from 'node:assert/strict';
 
 import {
   createChatPayload,
-  createScorePayload,
   createStageScorePayload,
   createToolPayload,
   createWorkflowPayload,
   extractTextFromResponse,
   getFlowStageIndex,
-  getQuestStageIndex,
   getRecentContextHistory,
   parsePersonasJson,
+  safeJsonParse,
+  stripJsonFences,
   stripMarkers,
 } from '../src/chatRuntime.js';
 
@@ -60,25 +60,6 @@ test('createToolPayload wraps personas in an object schema', () => {
   assert.equal(payload.generationConfig.responseSchema.properties.personas.type, 'ARRAY');
 });
 
-test('createScorePayload requests structured problem-statement scoring', () => {
-  const payload = createScorePayload(
-    {
-      flow: 'start_project',
-      projectContext: 'class_project',
-      messages: [
-        { type: 'guru', text: 'What is the problem area?' },
-        { type: 'user', text: 'housing is unaffordable' },
-      ],
-    },
-    'Housing is unaffordable for young renters in this city.'
-  );
-
-  assert.match(payload.instructions, /scoring a problem statement/);
-  assert.equal(payload.generationConfig.responseSchema.type, 'OBJECT');
-  assert.ok(payload.generationConfig.responseSchema.properties.score);
-  assert.ok(payload.contents[payload.contents.length - 1].parts[0].text.includes('Housing is unaffordable'));
-});
-
 test('createWorkflowPayload requests structured future workflow', () => {
   const payload = createWorkflowPayload({
     flow: 'start_project',
@@ -104,6 +85,19 @@ test('getRecentContextHistory caps history length', () => {
   assert.equal(getRecentContextHistory(history, 5).length, 5);
 });
 
+test('stripJsonFences strips ```json fences and leaves raw JSON untouched', () => {
+  assert.equal(stripJsonFences('```json\n{"a":1}\n```'), '{"a":1}');
+  assert.equal(stripJsonFences('  ```\n{"a":1}  ```  '), '{"a":1}');
+  assert.equal(stripJsonFences('{"a":1}'), '{"a":1}');
+  assert.equal(stripJsonFences(null), '');
+});
+
+test('safeJsonParse parses fenced or raw JSON and surfaces a labelled error on failure', () => {
+  assert.deepEqual(safeJsonParse('```json\n{"score":82}\n```', 'score'), { score: 82 });
+  assert.deepEqual(safeJsonParse('{"score":82}', 'score'), { score: 82 });
+  assert.throws(() => safeJsonParse('not json at all', 'workflow'), /workflow/);
+});
+
 test('parsePersonasJson strips markdown fences around model JSON', () => {
   const personas = parsePersonasJson(
     '```json\n{"personas":[{"name":"Asha","demographic":"29, Pune, nurse","needs":["a"],"frustrations":["b"],"quote":"q"}]}\n```'
@@ -127,30 +121,6 @@ test('parsePersonasJson rejects non-array payloads', () => {
 
 test('parsePersonasJson rejects malformed JSON', () => {
   assert.throws(() => parsePersonasJson('not json at all'));
-});
-
-test('getQuestStageIndex starts at zero without milestones', () => {
-  assert.equal(getQuestStageIndex([]), 0);
-  assert.equal(getQuestStageIndex([{ type: 'guru', text: 'Tell me the rough idea.' }]), 0);
-});
-
-test('getQuestStageIndex advances through problem then solution markers', () => {
-  const messages = [{ type: 'guru', text: 'What is the problem area?' }];
-  assert.equal(getQuestStageIndex(messages), 0);
-
-  messages.push({ type: 'guru', text: 'Good.\n### PROBLEM_STATEMENT_READY' });
-  assert.equal(getQuestStageIndex(messages), 1);
-
-  messages.push({ type: 'guru', text: 'Now the solution.\n### SOLUTION_STATEMENT_READY' });
-  assert.equal(getQuestStageIndex(messages), 2);
-});
-
-test('getQuestStageIndex ignores stage markers and user text', () => {
-  const messages = [
-    { type: 'stage_marker', text: '### SOLUTION_STATEMENT_READY', stageKey: 'quest_stage_2' },
-    { type: 'user', text: 'my solution statement draft' },
-  ];
-  assert.equal(getQuestStageIndex(messages), 0);
 });
 
 test('getFlowStageIndex tracks start_project milestones', () => {
@@ -189,5 +159,10 @@ test('createStageScorePayload requests structured stage scoring', () => {
   assert.match(payload.instructions, /Framing Check/);
   assert.equal(payload.generationConfig.responseSchema.type, 'OBJECT');
   assert.ok(payload.contents[payload.contents.length - 1].parts[0].text.includes('housing'));
+});
+
+test('stripMarkers drops stage control lines but keeps surrounding text', () => {
+  const text = 'Sharp observation.\n### PROBLEM_STATEMENT_READY\n\nNext step.';
+  assert.equal(stripMarkers(text), 'Sharp observation.\n\nNext step.');
 });
 

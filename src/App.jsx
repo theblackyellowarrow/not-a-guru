@@ -9,7 +9,7 @@ import NextQuestCard from './components/NextQuestCard';
 import Onboarding from './components/Onboarding';
 import QuestTracker from './components/QuestTracker';
 import QuickReplies from './components/QuickReplies';
-import Toolbelt from './components/ToolbeltClean';
+import Toolbelt from './components/Toolbelt';
 import CertificateCard from './components/CertificateCard';
 import { callAI } from './aiClient';
 import {
@@ -23,6 +23,7 @@ import {
   getMessageParts,
   getThreadTitlePreview,
   parsePersonasJson,
+  safeJsonParse,
 } from './chatRuntime';
 import { parseUploadedFile } from './fileUtils';
 import { clearRoute, readRoute, setChatRoute } from './router';
@@ -468,7 +469,7 @@ export default function App() {
           throw new Error('The model returned no score.');
         }
 
-        const parsed = JSON.parse(content);
+        const parsed = safeJsonParse(content, 'score');
         const scoreMessage = {
           id: `score_${Date.now()}`,
           type: 'score_card',
@@ -538,7 +539,7 @@ export default function App() {
           throw new Error('The model returned no workflow.');
         }
 
-        const parsed = JSON.parse(content);
+        const parsed = safeJsonParse(content, 'workflow');
         const workflowMessage = {
           id: `workflow_${Date.now()}`,
           type: 'workflow_card',

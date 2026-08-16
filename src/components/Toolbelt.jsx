@@ -1,7 +1,7 @@
 import { ShieldAlert, Users } from 'lucide-react';
 import { MARKERS } from '../personaPrompt.js';
 
-export default function ToolbeltClean({ messages, flow, onToolUse, isLoading }) {
+export default function Toolbelt({ messages, flow, onToolUse, isLoading }) {
   const userMessageCount = messages.filter((message) => message.type === 'user').length;
   const lastMessageType = messages[messages.length - 1]?.type;
   const hasSolutionMarker = messages.some(

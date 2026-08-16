@@ -2,14 +2,12 @@ import {
   FLOW_MARKERS,
   FLOW_STAGES,
   getChatInstructions,
-  getScoreInstructions,
   getStageScoreInstructions,
   getToolInstructions,
   getToolPrompt,
   getWorkflowInstructions,
   MARKERS,
   PERSONAS_SCHEMA,
-  PROBLEM_SCORE_SCHEMA,
   STAGE_SCORE_SCHEMA,
   WORKFLOW_SCHEMA,
 } from './personaPrompt.js';
@@ -120,23 +118,6 @@ export function stripMarkers(text = '') {
   return cleaned.replace(/\n{3,}/g, '\n\n').trim();
 }
 
-export const QUEST_STAGES = FLOW_STAGES.start_project;
-
-export function getQuestStageIndex(messages) {
-  if (!Array.isArray(messages) || messages.length === 0) {
-    return 0;
-  }
-
-  const guruText = messages
-    .filter((message) => message.type === 'guru' && typeof message.text === 'string')
-    .map((message) => message.text)
-    .join('\n');
-
-  if (guruText.includes(MARKERS.SOLUTION_STATEMENT_READY)) return 2;
-  if (guruText.includes(MARKERS.PROBLEM_STATEMENT_READY)) return 1;
-  return 0;
-}
-
 export function getFlowStageIndex(flow, messages) {
   if (!flow || !FLOW_STAGES[flow]) {
     return 0;
@@ -162,20 +143,24 @@ export function getFlowStages(flow) {
   return FLOW_STAGES[flow] || [];
 }
 
-export function getCurrentStageLabel(flow, messages) {
-  const stages = getFlowStages(flow);
-  if (!stages.length) return '';
-  return stages[getFlowStageIndex(flow, messages)];
-}
-
-export function parsePersonasJson(content) {
-  const cleaned = String(content || '')
+export function stripJsonFences(text) {
+  return String(text || '')
     .trim()
     .replace(/^```(?:json)?\s*/i, '')
     .replace(/```\s*$/, '')
     .trim();
+}
 
-  const parsed = JSON.parse(cleaned);
+export function safeJsonParse(text, label = 'response') {
+  try {
+    return JSON.parse(stripJsonFences(text));
+  } catch {
+    throw new Error(`Model ${label} was not valid JSON. Ask the model to retry.`);
+  }
+}
+
+export function parsePersonasJson(content) {
+  const parsed = safeJsonParse(content, 'personas');
 
   if (parsed && Array.isArray(parsed.personas)) {
     return parsed.personas;
@@ -200,28 +185,6 @@ export function createChatPayload(thread, historyMessages, userParts) {
     instructions: getChatInstructions(thread.flow, thread.projectContext, turnCount),
     maxOutputTokens,
     contents: [...getRecentContextHistory(historyMessages), { role: 'user', parts: userParts }],
-  };
-}
-
-export function createScorePayload(thread, problemStatementText) {
-  return {
-    instructions: getScoreInstructions(thread.projectContext),
-    maxOutputTokens: 220,
-    contents: [
-      ...getRecentContextHistory(thread.messages),
-      {
-        role: 'user',
-        parts: [
-          {
-            text: `Score the following problem statement. Be honest and direct.\n\n"""\n${problemStatementText}\n"""`,
-          },
-        ],
-      },
-    ],
-    generationConfig: {
-      responseMimeType: 'application/json',
-      responseSchema: PROBLEM_SCORE_SCHEMA,
-    },
   };
 }
 

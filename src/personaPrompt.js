@@ -145,36 +145,6 @@ Context: ${contextInstruction}
 Flow: ${flowInstruction}`;
 }
 
-export const PROBLEM_SCORE_SCHEMA = {
-  type: 'OBJECT',
-  properties: {
-    score: {
-      type: 'INTEGER',
-      description:
-        'Score the problem statement from 10 to 100. Be honest: early drafts usually land between 40 and 70.',
-    },
-    rationale: {
-      type: 'STRING',
-      description: 'One or two sentences explaining the score.',
-    },
-    strengths: {
-      type: 'ARRAY',
-      items: { type: 'STRING' },
-      description: 'What is already working in the statement.',
-    },
-    weaknesses: {
-      type: 'ARRAY',
-      items: { type: 'STRING' },
-      description: 'What is missing, vague, or unsupported.',
-    },
-    suggestedImprovement: {
-      type: 'STRING',
-      description: 'A concrete rewrite suggestion or the single thing to fix first.',
-    },
-  },
-  required: ['score', 'rationale', 'strengths', 'weaknesses', 'suggestedImprovement'],
-};
-
 export const WORKFLOW_SCHEMA = {
   type: 'OBJECT',
   properties: {
@@ -247,15 +217,6 @@ export const STAGE_SCORE_SCHEMA = {
   },
   required: ['score', 'rationale', 'strengths', 'weaknesses', 'suggestedImprovement'],
 };
-
-export function getScoreInstructions(projectContext) {
-  const contextInstruction = CONTEXT_INSTRUCTIONS[projectContext] || CONTEXT_INSTRUCTIONS.default;
-
-  return `You are Not a Guru scoring a problem statement.
-Score from 10 to 100 based on: clarity, specificity, evidence, scope, actionability, inclusion of affected people, and freedom from solution bias.
-Context: ${contextInstruction}
-Return valid JSON only.`;
-}
 
 export function getStageScoreInstructions(stageLabel, projectContext) {
   const contextInstruction = CONTEXT_INSTRUCTIONS[projectContext] || CONTEXT_INSTRUCTIONS.default;
