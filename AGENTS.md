@@ -31,6 +31,17 @@ Stage markers (`### PROBLEM_STATEMENT_READY`, `### SOLUTION_STATEMENT_READY`) ar
 - Structure: keep components separated and readable.
 - Tone: keep the voice direct, attentive, and context-aware.
 
+## Design system
+
+The authoritative product design guide is `dotaitooldesign.md` in this repo. Key rules for this codebase:
+
+- **Fuchsia (`#FF00A8`) is the only non-semantic accent colour.** Use it for active controls, focus, selection, progress, live annotations and meaningful motion.
+- **Do not use cyan as an interactive/product accent.** The original dotai logo may keep its cyan contour, but inside the product interface cyan is treated as legacy brand material.
+- **Not a Guru vector signature:** `Split` and `Pulse` — splitting marginal lines and pulse marks for claims, doubts or interventions.
+- **Typography:** IBM Plex Sans for UI text, IBM Plex Mono for labels/metadata/code, Source Serif 4 for long reading.
+- **Shape language:** hard-edged or lightly clipped panels (radius 0–4 px), 1 px default rules, 2 px fuchsia active rules, minimal shadows.
+- **Magic UI / GenUAI components** may be copied in, but they must be renamed semantically, tokenised to fuchsia, made accessible and given reduced-motion behaviour.
+
 ## Design references
 
 - **Magic UI** — https://github.com/magicuidesign/magicui / https://magicui.design/docs  
@@ -38,8 +49,3 @@ Stage markers (`### PROBLEM_STATEMENT_READY`, `### SOLUTION_STATEMENT_READY`) ar
 
 - **GenUAI** — https://github.com/xKevIsDev/GenUAI  
   An open-source AI-to-UI generation app (forked from llamacoder) that generates small apps from one prompt. Built with Next.js, Tailwind, Sandpack, and component libraries including Shadcn, Aceternity, MagicUI, and SyntaxUI. Useful as a reference for prompt-driven component generation and sandbox previews.
-
-## Colour notes
-
-- Primary dotai brand colour is synthwave cyan (`#00f5d4`).
-- Fuchsia (`#ff0066`) is used only as a highlight accent, e.g. score cards and workflow cards.
