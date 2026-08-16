@@ -1,4 +1,5 @@
 import { FilePlus, HelpCircle, SearchCheck, Swords, Unlock, Wrench, Zap } from 'lucide-react';
+import GeometricBackdrop from './GeometricBackdrop';
 
 const quests = [
   {
@@ -44,7 +45,8 @@ const steps = [
 
 export default function Onboarding({ onSelect, onOpenHelp, isLoading }) {
   return (
-    <div className="view-enter bg-black text-gray-200 font-sans min-h-screen antialiased overflow-y-auto">
+    <div className="view-enter bg-black/90 text-gray-200 font-sans min-h-screen antialiased overflow-y-auto">
+      <GeometricBackdrop />
       <div className="mx-auto max-w-5xl px-4 py-10 text-center">
         <img
           src="/brand/dotai-logo-mark.png"
@@ -53,10 +55,10 @@ export default function Onboarding({ onSelect, onOpenHelp, isLoading }) {
           loading="eager"
         />
         <h1 className="text-4xl font-bold text-gray-200 mb-2 uppercase font-mono">Not a Guru</h1>
-        <p className="text-cyan-400 text-lg">The design peer who keeps it real. Attention over fluff.</p>
+        <p className="text-fuchsia-400 text-lg">The design peer who keeps it real. Attention over fluff.</p>
         <button
           onClick={onOpenHelp}
-          className="mt-4 inline-flex items-center gap-2 border border-gray-800 px-4 py-2 text-sm font-semibold uppercase font-mono text-gray-300 hover:border-cyan-400 hover:text-white"
+          className="mt-4 inline-flex items-center gap-2 border border-gray-800 px-4 py-2 text-sm font-semibold uppercase font-mono text-gray-300 hover:border-fuchsia-400 hover:text-white"
         >
           <HelpCircle size={16} />
           How to Use
@@ -70,7 +72,7 @@ export default function Onboarding({ onSelect, onOpenHelp, isLoading }) {
               return (
                 <div key={step.title} className="border-2 border-gray-800 bg-gray-900/60 p-5">
                   <div className="flex items-center gap-3">
-                    <span className="text-cyan-400">
+                    <span className="text-fuchsia-400">
                       <Icon size={20} />
                     </span>
                     <span className="text-xs uppercase font-mono tracking-widest text-gray-500">
@@ -96,11 +98,11 @@ export default function Onboarding({ onSelect, onOpenHelp, isLoading }) {
                   key={quest.key}
                   onClick={() => onSelect(quest.key)}
                   disabled={isLoading}
-                  className="bg-gray-900/70 group border-2 border-gray-800 p-6 text-left hover:bg-cyan-900/20 hover:border-cyan-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-wait"
+                  className="bg-gray-900/70 group border-2 border-gray-800 p-6 text-left hover:bg-fuchsia-900/20 hover:border-fuchsia-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-wait"
                 >
                   <div className="flex items-center justify-between">
                     <Icon size={28} className="text-gray-400 group-hover:text-white transition-colors" />
-                    <span className="text-[10px] uppercase font-mono tracking-widest text-gray-600 group-hover:text-cyan-400 transition-colors">
+                    <span className="text-[10px] uppercase font-mono tracking-widest text-gray-600 group-hover:text-fuchsia-400 transition-colors">
                       {quest.tag}
                     </span>
                   </div>
@@ -112,7 +114,7 @@ export default function Onboarding({ onSelect, onOpenHelp, isLoading }) {
           </div>
         </div>
 
-        {isLoading && <div className="mt-8 text-cyan-400">Loading session...</div>}
+        {isLoading && <div className="mt-8 text-fuchsia-400">Loading session...</div>}
 
         <div className="mt-14 border-t-2 border-gray-800 pt-8">
           <p className="text-gray-400 text-sm max-w-2xl mx-auto">
@@ -122,7 +124,7 @@ export default function Onboarding({ onSelect, onOpenHelp, isLoading }) {
               href="https://dotai.org"
               target="_blank"
               rel="noreferrer noopener"
-              className="text-cyan-400 underline hover:text-cyan-300"
+              className="text-fuchsia-400 underline hover:text-fuchsia-300"
             >
               dotai.org
             </a>

@@ -27,7 +27,7 @@ function StageMarker({ text }) {
   return (
     <div className="my-6 flex items-center gap-3">
       <div className="h-px flex-1 bg-gray-800" />
-      <span className="text-xs uppercase font-mono tracking-widest text-cyan-400">{text}</span>
+      <span className="text-xs uppercase font-mono tracking-widest text-fuchsia-400">{text}</span>
       <div className="h-px flex-1 bg-gray-800" />
     </div>
   );
@@ -73,14 +73,14 @@ function ChatMessage({ message, isLoading, isLastMessage }) {
     <div className={`flex items-start gap-4 ${isGuru ? '' : 'flex-row-reverse'}`}>
       <div
         className={`flex-shrink-0 w-10 h-10 flex items-center justify-center border-2 ${
-          isGuru ? 'border-gray-700' : 'border-cyan-400'
+          isGuru ? 'border-gray-700' : 'border-fuchsia-400'
         }`}
       >
-        <Icon size={24} className={isGuru ? 'text-gray-200' : 'text-cyan-400'} />
+        <Icon size={24} className={isGuru ? 'text-gray-200' : 'text-fuchsia-400'} />
       </div>
       <div
         className={`w-full max-w-xl p-4 border-2 ${
-          isGuru ? 'border-gray-800 bg-gray-900' : 'border-cyan-800 bg-cyan-900/20'
+          isGuru ? 'border-gray-800 bg-gray-900' : 'border-fuchsia-800 bg-fuchsia-900/20'
         }`}
       >
         {isGuru ? (
@@ -97,8 +97,8 @@ function ChatMessage({ message, isLoading, isLastMessage }) {
 function ScoreCard({ data, onRepeat }) {
   const { score, rationale, strengths, weaknesses, suggestedImprovement } = data;
   const passed = score >= 80;
-  const scoreColor = passed ? 'text-cyan-400 border-cyan-400' : 'text-amber-400 border-amber-400';
-  const bgColor = passed ? 'bg-cyan-900/10' : 'bg-amber-900/10';
+  const scoreColor = passed ? 'text-fuchsia-400 border-fuchsia-400' : 'text-amber-400 border-amber-400';
+  const bgColor = passed ? 'bg-fuchsia-900/10' : 'bg-amber-900/10';
 
   return (
     <div className={`my-6 border-2 ${scoreColor} ${bgColor} p-5`}>
@@ -106,13 +106,13 @@ function ScoreCard({ data, onRepeat }) {
         <div>
           <div className="text-xs uppercase font-mono tracking-widest text-gray-500 mb-1">Problem statement score</div>
           <div className="flex items-baseline gap-3">
-            <span className={`text-5xl font-bold font-mono ${passed ? 'text-cyan-400' : 'text-amber-400'}`}>
+            <span className={`text-5xl font-bold font-mono ${passed ? 'text-fuchsia-400' : 'text-amber-400'}`}>
               {score}
             </span>
             <span className="text-sm text-gray-400">/ 100</span>
           </div>
         </div>
-        <div className={`border px-3 py-1 text-xs uppercase font-mono ${passed ? 'border-cyan-400 text-cyan-300' : 'border-amber-400 text-amber-300'}`}>
+        <div className={`border px-3 py-1 text-xs uppercase font-mono ${passed ? 'border-fuchsia-400 text-fuchsia-300' : 'border-amber-400 text-amber-300'}`}>
           {passed ? 'Good to go' : 'Needs work'}
         </div>
       </div>
@@ -162,8 +162,8 @@ function WorkflowCard({ data }) {
   const html = DOMPurify.sanitize(marked.parse(workflow || '', { async: false }));
 
   return (
-    <div className="my-6 border-2 border-cyan-400 bg-cyan-900/10 p-5">
-      <div className="flex items-center gap-2 text-cyan-300 uppercase font-mono text-sm tracking-widest mb-4">
+    <div className="my-6 border-2 border-fuchsia-400 bg-fuchsia-900/10 p-5">
+      <div className="flex items-center gap-2 text-fuchsia-300 uppercase font-mono text-sm tracking-widest mb-4">
         <Flag size={16} /> Proposed workflow
       </div>
 
@@ -200,12 +200,12 @@ function PersonaMessage({ personas }) {
   return (
     <div className="my-6">
       <h3 className="text-xl font-semibold text-gray-300 mb-4 flex items-center gap-2 uppercase font-mono">
-        <Sparkles size={20} className="text-cyan-300" /> Draft Personas
+        <Sparkles size={20} className="text-fuchsia-300" /> Draft Personas
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {personas.map((persona) => (
           <div key={persona.name} className="bg-gray-900/50 border-2 border-gray-800 p-4">
-            <h4 className="font-bold text-cyan-300 text-lg uppercase font-mono">{persona.name}</h4>
+            <h4 className="font-bold text-fuchsia-300 text-lg uppercase font-mono">{persona.name}</h4>
             <p className="text-base text-gray-400 mb-2">{persona.demographic}</p>
             <p className="text-base italic text-gray-300 my-3">&quot;{persona.quote}&quot;</p>
             <div className="text-base">

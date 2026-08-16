@@ -1,7 +1,7 @@
 :root {
   color-scheme: dark;
-  --accent: #00f5d4;
-  --accent-soft: rgba(0, 245, 212, 0.35);
+  --accent: #ff0066;
+  --accent-soft: rgba(255, 0, 102, 0.35);
 }
 
 html,
@@ -18,8 +18,8 @@ body,
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
-  background: radial-gradient(1200px 800px at 70% 20%, rgba(0, 245, 212, 0.08), transparent 60%),
-    radial-gradient(900px 700px at 10% 80%, rgba(0, 245, 212, 0.05), transparent 55%),
+  background: radial-gradient(1200px 800px at 70% 20%, rgba(255, 0, 102, 0.08), transparent 60%),
+    radial-gradient(900px 700px at 10% 80%, rgba(139, 92, 246, 0.06), transparent 55%),
     #000;
 }
 
@@ -43,7 +43,7 @@ body::before {
   background-position: 50% 35%;
   background-size: min(1100px, 120vw) auto;
   mix-blend-mode: screen;
-  filter: saturate(1.4) contrast(1.1);
+  filter: hue-rotate(140deg) saturate(1.8) brightness(1.15) contrast(1.1);
 }
 
 .font-mono {
@@ -126,7 +126,7 @@ body::before {
 }
 
 .prose-styles code {
-  color: rgba(0, 245, 212, 0.85);
+  color: rgba(255, 0, 102, 0.85);
   font-family: 'VT323', monospace;
   font-size: 1rem;
 }
@@ -139,14 +139,14 @@ body::before {
 }
 
 .prose-styles blockquote {
-  border-left: 3px solid #00f5d4;
+  border-left: 3px solid #ff0066;
   padding-left: 1rem;
   color: #9ca3af;
   margin-left: 0;
 }
 
 .prose-styles a {
-  color: #00f5d4;
+  color: #ff0066;
   text-decoration: underline;
 }
 

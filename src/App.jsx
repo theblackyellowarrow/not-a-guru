@@ -1,6 +1,7 @@
 import { Book, HelpCircle, Home, PlusCircle, Send, Upload, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import FirstRunTour from './components/FirstRunTour';
+import GeometricBackdrop from './components/GeometricBackdrop';
 import HelpModal from './components/HelpModal';
 import HistoryPanel from './components/HistoryPanel';
 import { ErrorMessage, LoadingIndicator, MessageRenderer } from './components/Messages';
@@ -659,7 +660,8 @@ export default function App() {
     return (
       <>
         <Onboarding onSelect={handleOnboardingSelect} onOpenHelp={() => setIsHelpOpen(true)} isLoading={isLoading} />
-        <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+      <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+      <GeometricBackdrop />
         <FirstRunTour
           isOpen={isTourOpen}
           onClose={() => {
@@ -678,7 +680,7 @@ export default function App() {
   return (
     <div
       ref={embedShellRef}
-      className={`view-enter bg-black text-gray-200 font-sans flex h-screen antialiased overflow-hidden ${isEmbed ? 'embed-shell' : ''}`}
+      className={`view-enter bg-black/90 text-gray-200 font-sans flex h-screen antialiased overflow-hidden ${isEmbed ? 'embed-shell' : ''}`}
     >
       <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
       {!isEmbed && (
@@ -799,7 +801,7 @@ export default function App() {
               </div>
             )}
             {(isScoring || isWorkflowing) && (
-              <div className="mb-2 text-center text-xs uppercase font-mono tracking-widest text-cyan-400 animate-pulse">
+              <div className="mb-2 text-center text-xs uppercase font-mono tracking-widest text-fuchsia-400 animate-pulse">
                 {isScoring ? 'Scoring problem statement...' : 'Building workflow...'}
               </div>
             )}
@@ -808,7 +810,7 @@ export default function App() {
               onPick={handleQuickReply}
               disabled={isLoading || isParsing || isScoring || isWorkflowing || !currentThread}
             />
-            <div className="flex items-center bg-gray-900 p-2 border-2 border-gray-700 focus-within:border-cyan-400">
+            <div className="flex items-center bg-gray-900 p-2 border-2 border-gray-700 focus-within:border-fuchsia-400">
               <input
                 type="file"
                 ref={fileInputRef}
