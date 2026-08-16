@@ -30,3 +30,10 @@ Stage markers (`### PROBLEM_STATEMENT_READY`, `### SOLUTION_STATEMENT_READY`) ar
 - Reliability: improve parsing, loading, and error states.
 - Structure: keep components separated and readable.
 - Tone: keep the voice direct, attentive, and context-aware.
+
+## Design references
+
+- **Magic UI** — https://github.com/magicuidesign/magicui / https://magicui.design/docs  
+  A copy-paste UI library for design engineers: animated React components and effects built with TypeScript, Tailwind CSS, and Framer Motion. Useful for adding polished, motion-rich UI elements while keeping the dark, sharp Not a Guru aesthetic.
+  - Primary dotai brand colour is synthwave cyan (`#00f5d4`).
+  - Fuchsia (`#ff0066`) is used only as a highlight accent, e.g. score cards and workflow cards.
