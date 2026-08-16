@@ -68,10 +68,32 @@ export default function Onboarding({
 
   const ModeIcon = highlightedMode ? modeOptions.find((m) => m.key === highlightedMode)?.icon || MessageSquare : MessageSquare;
 
-  return (
+return (
     <div className="view-enter bg-[#090909] text-white min-h-screen antialiased overflow-y-auto">
       <GeometricBackdrop />
       <div className="relative z-10 mx-auto max-w-6xl px-4 py-8 md:py-12">
+        {/* Hero: logo + name + tagline, independent of the columns below */}
+        <header className="flex flex-col items-center text-center mb-10 md:mb-14">
+          <div className="relative inline-flex items-center justify-center w-32 h-32 md:w-40 md:h-40 rounded-full border-[3px] border-[#FF00A8] mb-6 bg-[#090909]">
+            <span
+              aria-hidden="true"
+              className="absolute inset-1 rounded-full border border-[#FF00A8]/40"
+            />
+            <img
+              src="/brand/dotai-logo-mark.png"
+              alt="dotai"
+              className="relative h-14 w-auto md:h-16 opacity-95"
+              loading="eager"
+            />
+          </div>
+          <h1 className="text-4xl md:text-5xl font-semibold text-white uppercase font-mono tracking-[0.18em]">
+            Not a Guru
+          </h1>
+          <p className="mt-3 text-[#00F1DE] text-base md:text-lg font-medium tracking-wide">
+            Your Design Process Mentor
+          </p>
+        </header>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-start">
           {/* Left: guide chat */}
           <div className="border border-[#6B6965] bg-[#090909]/90 flex flex-col">
@@ -140,18 +162,7 @@ export default function Onboarding({
 
           {/* Right: begin a session */}
           <div className="border border-[#F7F5F0] bg-[#090909]/90 p-6 md:p-8">
-            <img
-              src="/brand/dotai-logo-mark.png"
-              alt="dotai"
-              className="mb-4 h-10 w-auto opacity-95"
-              loading="eager"
-            />
-            <h1 className="text-3xl md:text-4xl font-semibold text-white mb-2 uppercase font-mono tracking-wider">
-              Not a Guru
-            </h1>
-            <p className="text-[#00F1DE] text-base font-medium">The design peer who keeps it real.</p>
-
-            <div className="mt-8 space-y-6">
+            <div className="mt-2 space-y-6">
               {username ? (
                 <>
                   <div>
@@ -189,13 +200,13 @@ export default function Onboarding({
                             key={mode.key}
                             onClick={() => onSelect(mode.key)}
                             disabled={isLoading}
-className={`text-left border px-4 py-3 transition-all disabled:opacity-50 flex items-start gap-3 ${
-                            active
-                              ? 'border-[#00F1DE] bg-[#003D39]/40'
-                              : 'border-[#F7F5F0] hover:border-[#00F1DE] hover:shadow-[3px_3px_0_0_#00F1DE] bg-[#090909]'
-                          }`}
-                        >
-                          <Icon size={20} className={active ? 'text-[#00F1DE]' : 'text-[#C8C5BF]'} />
+                            className={`text-left border px-4 py-3 transition-all disabled:opacity-50 flex items-start gap-3 ${
+                              active
+                                ? 'border-[#00F1DE] bg-[#003D39]/40'
+                                : 'border-[#F7F5F0] hover:border-[#00F1DE] hover:shadow-[3px_3px_0_0_#00F1DE] bg-[#090909]'
+                            }`}
+                          >
+                            <Icon size={20} className={active ? 'text-[#00F1DE]' : 'text-[#C8C5BF]'} />
                             <div>
                               <div className="text-sm font-semibold font-mono uppercase tracking-wider">{mode.label}</div>
                               <p className="mt-1 text-xs text-[#C8C5BF]">{mode.followUp}</p>
