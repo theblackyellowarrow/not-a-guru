@@ -4,15 +4,15 @@ import { useMemo, useState } from 'react';
 const STEPS = [
   {
     title: 'Pick a Mode',
-    body: 'Start with the landing screen. Choose Start a New Vibe for framing, Process Check for docs, Final Roast for final critique, or Just Venting for quick support.',
+    body: 'Choose Build a Problem Statement to frame an idea, Design Process Critique to review your process, or Final Roast for a finished piece.',
   },
   {
-    title: 'Use Uploads Strategically',
-    body: 'For Process Check and Final Roast, upload only the documents that actually support your claims. Thin evidence produces thin critique.',
+    title: 'Upload as You Go',
+    body: 'In any chat you can upload PDFs, DOCX files, or images when they support the critique. Process Critique and Final Roast expect evidence.',
   },
   {
     title: 'Keep It Moving',
-    body: 'If you get stuck, use the Help button. Replies are designed to end with one sharp next question so you always have a concrete next step.',
+    body: 'Replies end with one sharp next question. Use quick chips if you’re stuck, and watch for the problem-statement score in the framing quest.',
   },
 ];
 

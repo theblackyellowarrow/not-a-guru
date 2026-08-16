@@ -19,29 +19,27 @@ export default function HelpModal({ isOpen, onClose }) {
         <div className="px-6 py-5 space-y-5 text-sm leading-relaxed">
           <div>
             <p className="text-gray-300">
-              Pick a mode on the landing screen. Each mode gives a different type of critique.
+              Pick a mode on the landing screen. Each mode gives a different kind of critique.
             </p>
           </div>
           <div className="grid gap-3">
             <div className="border border-gray-800 bg-gray-900/60 px-4 py-3">
-              <div className="font-semibold uppercase font-mono text-gray-200">Start a New Vibe</div>
-              <div className="text-gray-400">Talk through an idea and shape it into a clear problem + solution.</div>
+              <div className="font-semibold uppercase font-mono text-gray-200">Build a Problem Statement</div>
+              <div className="text-gray-400">
+                Talk through a raw idea until it becomes a sharp, scored problem statement, then a solution statement and a future workflow.
+              </div>
             </div>
             <div className="border border-gray-800 bg-gray-900/60 px-4 py-3">
-              <div className="font-semibold uppercase font-mono text-gray-200">Process Check</div>
+              <div className="font-semibold uppercase font-mono text-gray-200">Design Process Critique</div>
               <div className="text-gray-400">
-                Upload research/process docs. The critique ties weak outputs back to missing research.
+                Chat through your process and upload docs or images. The critique traces weak outputs back to shaky research or assumptions.
               </div>
             </div>
             <div className="border border-gray-800 bg-gray-900/60 px-4 py-3">
               <div className="font-semibold uppercase font-mono text-gray-200">Final Roast</div>
               <div className="text-gray-400">
-                Upload final assets plus framing docs. You’ll get a direct critique of the final output.
+                Upload final assets and framing. You’ll get a direct critique of the finished work.
               </div>
-            </div>
-            <div className="border border-gray-800 bg-gray-900/60 px-4 py-3">
-              <div className="font-semibold uppercase font-mono text-gray-200">Just Venting / FAQ</div>
-              <div className="text-gray-400">Short support + quick directional questions.</div>
             </div>
           </div>
           <div className="text-gray-400">

@@ -1,8 +1,23 @@
 const QUICK_REPLIES = {
-  start_project: ['Here is the rough idea', 'Challenge my assumptions', 'Why should anyone care?'],
-  process_review: ['What is the weakest link?', 'What evidence is missing?', 'Be harsher'],
-  final_review: ['Roast the weakest point', 'What breaks in the real world?', 'Be harsher'],
-  venting_mode: ['One more vent', 'Back to the work'],
+  start_project: [
+    'Here is the rough idea',
+    'Challenge my assumptions',
+    'Why should anyone care?',
+    'Help me write the problem statement',
+    'Help me write the solution statement',
+  ],
+  process_review: [
+    'What is the weakest link in my process?',
+    'What evidence should I upload?',
+    'What assumptions am I hiding?',
+    'Be harsher',
+  ],
+  final_review: [
+    'Roast the weakest point',
+    'What breaks in the real world?',
+    'What contradictions do you see?',
+    'Be harsher',
+  ],
 };
 
 export default function QuickReplies({ flow, onPick, disabled }) {

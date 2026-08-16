@@ -1,6 +1,5 @@
 import { Book, HelpCircle, Home, PlusCircle, Send, Upload, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import FileStagingScreen from './components/FileStagingScreen';
 import FirstRunTour from './components/FirstRunTour';
 import HelpModal from './components/HelpModal';
 import HistoryPanel from './components/HistoryPanel';
@@ -13,7 +12,9 @@ import Toolbelt from './components/ToolbeltClean';
 import { callAI } from './aiClient';
 import {
   createChatPayload,
+  createScorePayload,
   createToolPayload,
+  createWorkflowPayload,
   extractTextFromResponse,
   getMessageParts,
   getQuestStageIndex,
@@ -21,21 +22,23 @@ import {
   parsePersonasJson,
 } from './chatRuntime';
 import { parseUploadedFile } from './fileUtils';
-import { getRequiredFiles, getReviewPrompt } from './reviewConfig';
 
 const STORAGE_KEY = 'guru_threads';
 const TOUR_KEY = 'guru_seen_tour';
 
 const INITIAL_MESSAGES = {
   start_project:
-    "Aight, a new idea. Every great project starts with a spark. Let's get into it. What's the general problem area you're thinking about? No need for a perfect pitch, just the raw concept.",
-  venting_mode:
-    "Spill it. Bad crit? Annoying mentor? Or just want to know how this works? I'm listening.",
+    "Aight, a new idea. Every great project starts with a spark. What's the general problem area you're thinking about? No need for a perfect pitch, just the raw concept.",
+  process_review:
+    'Right, process critique. Before I tear into the output, walk me through what you actually did — research, decisions, dead ends. Upload docs whenever they help.',
+  final_review:
+    'Final roast time. Show me the finished piece and the framing that got you here — problem statement, solution, any images or docs. I will be direct.',
 };
 
 const TITLES = {
-  start_project: 'Vibe Check a New Idea',
-  venting_mode: 'Just Venting',
+  start_project: 'Build a Problem Statement',
+  process_review: 'Design Process Critique',
+  final_review: 'Final Roast',
 };
 
 export default function App() {
@@ -47,6 +50,8 @@ export default function App() {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isEmbed, setIsEmbed] = useState(false);
   const [isTourOpen, setIsTourOpen] = useState(false);
+  const [isScoring, setIsScoring] = useState(false);
+  const [isWorkflowing, setIsWorkflowing] = useState(false);
   const embedShellRef = useRef(null);
   const [input, setInput] = useState('');
   const [uploadedFile, setUploadedFile] = useState(null);
@@ -69,6 +74,11 @@ export default function App() {
     [currentThread]
   );
 
+  const hasWorkflowCard = useMemo(
+    () => currentThread?.messages?.some((message) => message.type === 'workflow_card') ?? false,
+    [currentThread]
+  );
+
   const nextQuest = useMemo(() => {
     if (!currentThread) return null;
 
@@ -76,12 +86,12 @@ export default function App() {
       (message) => message.type === 'guru' && message.text !== 'Thinking...'
     );
 
-    if (currentThread.flow === 'start_project' && questStage === 2) {
+    if (currentThread.flow === 'start_project' && hasWorkflowCard) {
       return {
-        title: 'Next quest unlocked',
-        body: 'Problem and solution are on the table. Show the working with a Process Check, or go straight to the Final Roast.',
+        title: 'Quest clear',
+        body: 'Problem, solution, and workflow are on the table. Now stress-test the process or roast the final output.',
         actions: [
-          { label: 'Process Check', flow: 'process_review' },
+          { label: 'Process Critique', flow: 'process_review' },
           { label: 'Final Roast', flow: 'final_review' },
         ],
       };
@@ -99,12 +109,12 @@ export default function App() {
       return {
         title: 'Run it back',
         body: 'Roast done. Take the notes, fix the work, start a new quest when ready.',
-        actions: [{ label: 'Start a New Vibe', flow: 'start_project' }],
+        actions: [{ label: 'Build a Problem Statement', flow: 'start_project' }],
       };
     }
 
     return null;
-  }, [currentThread, questStage]);
+  }, [currentThread, hasWorkflowCard]);
 
   useEffect(() => {
     try {
@@ -192,8 +202,6 @@ export default function App() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(threads));
     } catch (saveError) {
       console.error('Failed to save threads to localStorage', saveError);
-      // Likely QuotaExceededError from base64 attachments: prune to the five
-      // most recent threads (threads are stored newest-first) and retry once.
       try {
         const pruned = threads.slice(0, 5);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(pruned));
@@ -299,7 +307,6 @@ export default function App() {
   }, [currentThread, isLoading]);
 
   // Quest markers: append a stage-clear divider when the user advances a stage.
-  // Idempotent via stageKey so persisted threads never double-mark.
   useEffect(() => {
     if (questStage === null || questStage === 0 || !currentThread) return;
 
@@ -329,6 +336,129 @@ export default function App() {
     );
   }, [questStage, currentThread]);
 
+  // Structured scoring pass: runs once after the problem-statement stage marker is in place.
+  useEffect(() => {
+    if (!currentThread || currentThread.flow !== 'start_project') return;
+    if (questStage !== 1) return;
+    if (isLoading || isScoring) return;
+
+    const problemStageMarked = currentThread.messages.some(
+      (message) => message.type === 'stage_marker' && message.stageKey === 'quest_stage_1'
+    );
+    if (!problemStageMarked) return;
+
+    const alreadyScored = currentThread.messages.some((message) => message.type === 'score_card');
+    if (alreadyScored) return;
+
+    const problemStatementMessage = [...currentThread.messages]
+      .reverse()
+      .find((message) => message.type === 'user' && typeof message.text === 'string' && message.text.trim());
+
+    if (!problemStatementMessage) return;
+
+    const runScore = async () => {
+      const activeThreadId = currentThread.id;
+      setIsScoring(true);
+      setError(null);
+
+      try {
+        const payload = createScorePayload(currentThread, problemStatementMessage.text);
+        const response = await callAI(payload);
+        const result = await response.json();
+        const content = extractTextFromResponse(result);
+
+        if (!content) {
+          throw new Error('The model returned no score.');
+        }
+
+        const parsed = JSON.parse(content);
+        const scoreMessage = {
+          id: `score_${Date.now()}`,
+          type: 'score_card',
+          score: parsed.score,
+          rationale: parsed.rationale,
+          strengths: parsed.strengths,
+          weaknesses: parsed.weaknesses,
+          suggestedImprovement: parsed.suggestedImprovement,
+          timestamp: new Date().toISOString(),
+        };
+
+        setThreads((prevThreads) =>
+          prevThreads.map((thread) =>
+            thread.id === activeThreadId
+              ? { ...thread, messages: [...thread.messages, scoreMessage] }
+              : thread
+          )
+        );
+      } catch (scoreError) {
+        console.error('Error scoring problem statement:', scoreError);
+        setError(`Scoring failed: ${scoreError.message}`);
+      } finally {
+        setIsScoring(false);
+      }
+    };
+
+    runScore();
+  }, [currentThread, questStage, isLoading, isScoring]);
+
+  // Workflow proposal: runs once after the solution-stage marker is in place.
+  useEffect(() => {
+    if (!currentThread || currentThread.flow !== 'start_project') return;
+    if (questStage !== 2) return;
+    if (isLoading || isScoring || isWorkflowing) return;
+
+    const solutionStageMarked = currentThread.messages.some(
+      (message) => message.type === 'stage_marker' && message.stageKey === 'quest_stage_2'
+    );
+    if (!solutionStageMarked) return;
+
+    const alreadyProposed = currentThread.messages.some((message) => message.type === 'workflow_card');
+    if (alreadyProposed) return;
+
+    const runWorkflow = async () => {
+      const activeThreadId = currentThread.id;
+      setIsWorkflowing(true);
+      setError(null);
+
+      try {
+        const payload = createWorkflowPayload(currentThread);
+        const response = await callAI(payload);
+        const result = await response.json();
+        const content = extractTextFromResponse(result);
+
+        if (!content) {
+          throw new Error('The model returned no workflow.');
+        }
+
+        const parsed = JSON.parse(content);
+        const workflowMessage = {
+          id: `workflow_${Date.now()}`,
+          type: 'workflow_card',
+          workflow: parsed.workflow,
+          nextMilestone: parsed.nextMilestone,
+          risks: parsed.risks,
+          openQuestions: parsed.openQuestions,
+          timestamp: new Date().toISOString(),
+        };
+
+        setThreads((prevThreads) =>
+          prevThreads.map((thread) =>
+            thread.id === activeThreadId
+              ? { ...thread, messages: [...thread.messages, workflowMessage] }
+              : thread
+          )
+        );
+      } catch (workflowError) {
+        console.error('Error creating workflow:', workflowError);
+        setError(`Workflow proposal failed: ${workflowError.message}`);
+      } finally {
+        setIsWorkflowing(false);
+      }
+    };
+
+    runWorkflow();
+  }, [currentThread, questStage, isLoading, isScoring, isWorkflowing]);
+
   function resetToOnboarding() {
     setAppState('onboarding');
     setCurrentThreadId(null);
@@ -336,11 +466,12 @@ export default function App() {
     setInput('');
     setUploadedFile(null);
     setError(null);
+    setIsScoring(false);
+    setIsWorkflowing(false);
   }
 
   function handleOnboardingSelect(selectedFlow) {
     setIsLoading(true);
-    // Default context keeps flow moving; users can refine context later in the conversation.
     handleContextSelect('default', selectedFlow);
   }
 
@@ -348,30 +479,24 @@ export default function App() {
     setIsLoading(true);
     setSelectedProjectContext(projectContext);
 
-    if (explicitFlow === 'start_project' || explicitFlow === 'venting_mode') {
-      const newThread = {
-        id: Date.now(),
-        title: TITLES[explicitFlow],
-        flow: explicitFlow,
-        projectContext,
-        messages: [
-          {
-            id: 'initial_guru',
-            type: 'guru',
-            text: INITIAL_MESSAGES[explicitFlow],
-            timestamp: new Date().toISOString(),
-          },
-        ],
-      };
-      setThreads((prev) => [newThread, ...prev]);
-      setCurrentThreadId(newThread.id);
-      setAppState('chat');
-      setIsLoading(false);
-      return;
-    }
+    const newThread = {
+      id: Date.now(),
+      title: TITLES[explicitFlow],
+      flow: explicitFlow,
+      projectContext,
+      messages: [
+        {
+          id: `initial_guru_${Date.now()}`,
+          type: 'guru',
+          text: INITIAL_MESSAGES[explicitFlow],
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    };
 
-    setAppState(`${explicitFlow}_upload`);
-
+    setThreads((prev) => [newThread, ...prev]);
+    setCurrentThreadId(newThread.id);
+    setAppState('chat');
     setIsLoading(false);
   }
 
@@ -416,13 +541,43 @@ export default function App() {
   }, [currentThreadId, input, uploadedFile]);
 
   function handleQuickReply(text) {
-    if (isLoading || isParsing || !currentThread) return;
+    if (isLoading || isParsing || isScoring || isWorkflowing || !currentThread) return;
     handleSendMessage(text);
   }
 
   function handleNextQuest(flow) {
-    if (isLoading) return;
+    if (isLoading || isScoring || isWorkflowing) return;
     handleContextSelect('default', flow);
+  }
+
+  function handleRepeatProblemBuilder() {
+    if (!currentThread || currentThread.flow !== 'start_project') return;
+
+    handledMessageIdsRef.current.clear();
+    setInput('');
+    setUploadedFile(null);
+    setError(null);
+    setIsScoring(false);
+    setIsWorkflowing(false);
+
+    setThreads((prevThreads) =>
+      prevThreads.map((thread) =>
+        thread.id === currentThreadId
+          ? {
+              ...thread,
+              title: TITLES.start_project,
+              messages: [
+                {
+                  id: `initial_guru_${Date.now()}`,
+                  type: 'guru',
+                  text: INITIAL_MESSAGES.start_project,
+                  timestamp: new Date().toISOString(),
+                },
+              ],
+            }
+          : thread
+      )
+    );
   }
 
   async function handleFileUpload(event) {
@@ -494,57 +649,6 @@ export default function App() {
     }
   }
 
-  async function handleReviewSubmit(stagedFiles, flow) {
-    setIsLoading(true);
-    setError(null);
-
-    const definitions = getRequiredFiles(flow);
-
-    try {
-      const parsedAttachments = await Promise.all(
-        Object.entries(stagedFiles).map(async ([key, file]) => {
-          const config = definitions.find((item) => item.key === key);
-          const parsedFile = await parseUploadedFile(file);
-
-          return {
-            ...parsedFile,
-            key,
-            label: config?.label || key,
-          };
-        })
-      );
-
-      const attachmentLookup = Object.fromEntries(
-        parsedAttachments.map((attachment) => [attachment.key, attachment])
-      );
-
-      const newThread = {
-        id: Date.now(),
-        title: `Review: ${new Date().toLocaleString()}`,
-        flow,
-        projectContext: selectedProjectContext,
-        messages: [
-          {
-            id: 'initial_user',
-            type: 'user',
-            text: getReviewPrompt(flow, attachmentLookup),
-            attachments: parsedAttachments,
-            timestamp: new Date().toISOString(),
-          },
-        ],
-      };
-
-      setThreads((prev) => [newThread, ...prev]);
-      setCurrentThreadId(newThread.id);
-      setAppState('chat');
-    } catch (reviewError) {
-      console.error('Failed to prepare review submission:', reviewError);
-      setError(reviewError.message);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
   function selectThread(threadId) {
     setCurrentThreadId(threadId);
     setIsHistoryPanelOpen(false);
@@ -568,32 +672,6 @@ export default function App() {
           }}
         />
       </>
-    );
-  }
-
-  if (appState === 'process_review_upload') {
-    return (
-      <FileStagingScreen
-        title="Process Review"
-        description="To get a solid process review, upload the two required docs plus at least three more. Show the working."
-        requiredFiles={getRequiredFiles('process_review')}
-        minOptional={3}
-        onSubmit={(files) => handleReviewSubmit(files, 'process_review')}
-        onBack={resetToOnboarding}
-      />
-    );
-  }
-
-  if (appState === 'final_review_upload') {
-    return (
-      <FileStagingScreen
-        title="Roast My Final Design"
-        description="For a proper final critique, upload all of the following."
-        requiredFiles={getRequiredFiles('final_review')}
-        minOptional={0}
-        onSubmit={(files) => handleReviewSubmit(files, 'final_review')}
-        onBack={resetToOnboarding}
-      />
     );
   }
 
@@ -681,22 +759,24 @@ export default function App() {
                 message={message}
                 isLoading={isLoading}
                 isLastMessage={index === currentThread.messages.length - 1}
+                onRepeat={handleRepeatProblemBuilder}
               />
             ))}
-            {isLoading && (!currentThread || currentThread.messages.length === 0) && <LoadingIndicator />}
+            {(isLoading || isScoring || isWorkflowing) &&
+              (!currentThread || currentThread.messages.length === 0) && <LoadingIndicator />}
             <Toolbelt
               messages={currentThread?.messages || []}
               flow={currentThread?.flow}
               onToolUse={handleToolUse}
-              isLoading={isLoading}
+              isLoading={isLoading || isScoring || isWorkflowing}
             />
-            {nextQuest && !isLoading && (
+            {nextQuest && !isLoading && !isScoring && !isWorkflowing && (
               <NextQuestCard
                 title={nextQuest.title}
                 body={nextQuest.body}
                 actions={nextQuest.actions}
                 onSelect={handleNextQuest}
-                isLoading={isLoading}
+                isLoading={isLoading || isScoring || isWorkflowing}
               />
             )}
             <div ref={chatEndRef} />
@@ -718,10 +798,15 @@ export default function App() {
                 </button>
               </div>
             )}
+            {(isScoring || isWorkflowing) && (
+              <div className="mb-2 text-center text-xs uppercase font-mono tracking-widest text-cyan-400 animate-pulse">
+                {isScoring ? 'Scoring problem statement...' : 'Building workflow...'}
+              </div>
+            )}
             <QuickReplies
               flow={currentThread?.flow}
               onPick={handleQuickReply}
-              disabled={isLoading || isParsing || !currentThread}
+              disabled={isLoading || isParsing || isScoring || isWorkflowing || !currentThread}
             />
             <div className="flex items-center bg-gray-900 p-2 border-2 border-gray-700 focus-within:border-cyan-400">
               <input
@@ -733,7 +818,7 @@ export default function App() {
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                disabled={isParsing || isLoading}
+                disabled={isParsing || isLoading || isScoring || isWorkflowing}
                 className="p-2 text-gray-400 hover:text-white disabled:opacity-50"
               >
                 <Upload size={20} />
@@ -753,7 +838,7 @@ export default function App() {
               />
               <button
                 onClick={handleSendMessage}
-                disabled={isLoading || isParsing}
+                disabled={isLoading || isParsing || isScoring || isWorkflowing}
                 className="p-2 text-gray-400 hover:text-white disabled:opacity-50"
               >
                 <Send size={20} />

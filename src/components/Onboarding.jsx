@@ -1,33 +1,26 @@
-import { FilePlus, HelpCircle, MessageSquareQuote, SearchCheck, Swords, Unlock, Wrench, Zap } from 'lucide-react';
+import { FilePlus, HelpCircle, SearchCheck, Swords, Unlock, Wrench, Zap } from 'lucide-react';
 
 const quests = [
   {
     key: 'start_project',
     icon: FilePlus,
     tag: 'Quest: Framing',
-    title: 'Start a New Vibe',
-    description: 'Raw idea to a defensible problem and solution. Three stages.',
+    title: 'Build a Problem Statement',
+    description: 'Raw idea → scored problem statement → solution statement → future workflow.',
   },
   {
     key: 'process_review',
     icon: Wrench,
-    tag: 'Quest: Evidence',
-    title: 'Process Check',
-    description: 'Upload the working. Every claim traced back to research.',
+    tag: 'Quest: Process',
+    title: 'Design Process Critique',
+    description: 'Chat through your process and upload evidence. Trace weak outputs back to shaky research.',
   },
   {
     key: 'final_review',
     icon: SearchCheck,
     tag: 'Quest: The Finish',
     title: 'Final Roast',
-    description: 'Final output on the table. No mercy, only specifics.',
-  },
-  {
-    key: 'venting_mode',
-    icon: MessageSquareQuote,
-    tag: 'No quest',
-    title: 'Just Venting / FAQ',
-    description: 'Sound off about a bad crit, or ask how this thing works.',
+    description: 'Show the finished work. A direct critique of output, framing, and intent.',
   },
 ];
 
@@ -35,17 +28,17 @@ const steps = [
   {
     icon: Swords,
     title: 'Pick a quest',
-    body: 'Four modes, each a different kind of critique. None of them polite filler.',
+    body: 'Three modes: frame a problem, critique your process, or roast the final piece.',
   },
   {
     icon: Zap,
     title: 'One question at a time',
-    body: 'No essays. Short answers, sharp follow-ups. Tap a quick chip if typing feels like homework.',
+    body: 'Short answers, sharp follow-ups. Upload PDFs and images whenever they help.',
   },
   {
     icon: Unlock,
     title: 'Clear stages, unlock tools',
-    body: 'Advance the tracker. Draft personas and the bias check unlock as you go.',
+    body: 'Advance the tracker. Score your problem statement and unlock the bias check as you go.',
   },
 ];
 
@@ -94,7 +87,7 @@ export default function Onboarding({ onSelect, onOpenHelp, isLoading }) {
 
         <div className="mt-12">
           <h2 className="text-sm uppercase font-mono tracking-widest text-gray-500">Choose your quest</h2>
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-6">
             {quests.map((quest) => {
               const Icon = quest.icon;
 

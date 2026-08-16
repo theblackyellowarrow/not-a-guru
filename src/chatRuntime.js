@@ -1,4 +1,14 @@
-import { getChatInstructions, getToolInstructions, getToolPrompt } from './personaPrompt.js';
+import {
+  getChatInstructions,
+  getScoreInstructions,
+  getToolInstructions,
+  getToolPrompt,
+  getWorkflowInstructions,
+  MARKERS,
+  PERSONAS_SCHEMA,
+  PROBLEM_SCORE_SCHEMA,
+  WORKFLOW_SCHEMA,
+} from './personaPrompt.js';
 
 export function getThreadTitlePreview(messageText, attachments = []) {
   if (messageText) {
@@ -93,6 +103,18 @@ export function extractTextFromResponse(result) {
     .trim();
 }
 
+export function stripMarkers(text = '') {
+  return text
+    .replace(new RegExp(`^\\s*${escapeRegex(MARKERS.PROBLEM_STATEMENT_READY)}\\s*$`, 'gim'), '')
+    .replace(new RegExp(`^\\s*${escapeRegex(MARKERS.SOLUTION_STATEMENT_READY)}\\s*$`, 'gim'), '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+function escapeRegex(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 export const QUEST_STAGES = ['Raw Idea', 'Problem Statement', 'Solution'];
 
 export function getQuestStageIndex(messages) {
@@ -102,17 +124,15 @@ export function getQuestStageIndex(messages) {
 
   const guruText = messages
     .filter((message) => message.type === 'guru' && typeof message.text === 'string')
-    .map((message) => message.text.toLowerCase())
+    .map((message) => message.text)
     .join('\n');
 
-  if (guruText.includes('solution statement')) return 2;
-  if (guruText.includes('problem statement')) return 1;
+  if (guruText.includes(MARKERS.SOLUTION_STATEMENT_READY)) return 2;
+  if (guruText.includes(MARKERS.PROBLEM_STATEMENT_READY)) return 1;
   return 0;
 }
 
 export function parsePersonasJson(content) {
-  // Models sometimes wrap JSON in markdown fences despite schema instructions —
-  // strip them before parsing.
   const cleaned = String(content || '')
     .trim()
     .replace(/^```(?:json)?\s*/i, '')
@@ -121,18 +141,68 @@ export function parsePersonasJson(content) {
 
   const parsed = JSON.parse(cleaned);
 
-  if (!Array.isArray(parsed)) {
-    throw new Error('Personas payload was not a list.');
+  if (parsed && Array.isArray(parsed.personas)) {
+    return parsed.personas;
   }
 
-  return parsed;
+  if (Array.isArray(parsed)) {
+    return parsed;
+  }
+
+  throw new Error('Personas payload was not a list.');
 }
 
 export function createChatPayload(thread, historyMessages, userParts) {
+  const maxOutputTokens = thread.flow === 'start_project' ? 240 : 220;
+
   return {
     instructions: getChatInstructions(thread.flow, thread.projectContext),
-    maxOutputTokens: thread.flow === 'venting_mode' ? 120 : 180,
+    maxOutputTokens,
     contents: [...getRecentContextHistory(historyMessages), { role: 'user', parts: userParts }],
+  };
+}
+
+export function createScorePayload(thread, problemStatementText) {
+  return {
+    instructions: getScoreInstructions(thread.projectContext),
+    maxOutputTokens: 220,
+    contents: [
+      ...getRecentContextHistory(thread.messages),
+      {
+        role: 'user',
+        parts: [
+          {
+            text: `Score the following problem statement. Be honest and direct.\n\n"""\n${problemStatementText}\n"""`,
+          },
+        ],
+      },
+    ],
+    generationConfig: {
+      responseMimeType: 'application/json',
+      responseSchema: PROBLEM_SCORE_SCHEMA,
+    },
+  };
+}
+
+export function createWorkflowPayload(thread) {
+  return {
+    instructions: getWorkflowInstructions(thread.projectContext),
+    maxOutputTokens: 240,
+    contents: [
+      ...getRecentContextHistory(thread.messages),
+      {
+        role: 'user',
+        parts: [
+          {
+            text: 'Based on the agreed problem and solution statements, propose a concrete future workflow.',
+          },
+        ],
+      },
+    ],
+    generationConfig: {
+      responseMimeType: 'application/json',
+      responseSchema: WORKFLOW_SCHEMA,
+    },
   };
 }
 
@@ -157,20 +227,7 @@ export function createToolPayload(toolType, thread) {
       ? {
           generationConfig: {
             responseMimeType: 'application/json',
-            responseSchema: {
-              type: 'ARRAY',
-              items: {
-                type: 'OBJECT',
-                properties: {
-                  name: { type: 'STRING' },
-                  demographic: { type: 'STRING' },
-                  needs: { type: 'ARRAY', items: { type: 'STRING' } },
-                  frustrations: { type: 'ARRAY', items: { type: 'STRING' } },
-                  quote: { type: 'STRING' },
-                },
-                required: ['name', 'demographic', 'needs', 'frustrations', 'quote'],
-              },
-            },
+            responseSchema: PERSONAS_SCHEMA,
           },
         }
       : {}),

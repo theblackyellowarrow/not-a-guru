@@ -1,8 +1,9 @@
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
-import { BrainCircuit, FileText, ShieldAlert, Sparkles, User, X } from 'lucide-react';
+import { ArrowRight, BrainCircuit, FileText, Flag, RefreshCcw, ShieldAlert, Sparkles, User, X } from 'lucide-react';
+import { stripMarkers } from '../chatRuntime';
 
-export function MessageRenderer({ message, isLoading, isLastMessage }) {
+export function MessageRenderer({ message, isLoading, isLastMessage, onRepeat }) {
   switch (message.type) {
     case 'user':
     case 'guru':
@@ -13,6 +14,10 @@ export function MessageRenderer({ message, isLoading, isLastMessage }) {
       return <CritiqueMessage text={message.text} />;
     case 'stage_marker':
       return <StageMarker text={message.text} />;
+    case 'score_card':
+      return <ScoreCard data={message} onRepeat={onRepeat} />;
+    case 'workflow_card':
+      return <WorkflowCard data={message} />;
     default:
       return null;
   }
@@ -29,9 +34,8 @@ function StageMarker({ text }) {
 }
 
 function MarkdownRenderer({ text, isStreaming }) {
-  // Sanitize model output before injecting HTML: threads persist in localStorage,
-  // so unsanitized markup would become stored XSS on every reopen.
-  const html = DOMPurify.sanitize(marked.parse(text || '', { async: false }));
+  const cleanText = stripMarkers(text || '');
+  const html = DOMPurify.sanitize(marked.parse(cleanText || '', { async: false }));
 
   return (
     <div
@@ -85,6 +89,108 @@ function ChatMessage({ message, isLoading, isLastMessage }) {
           <p className="text-gray-200 whitespace-pre-wrap text-base">{message.text}</p>
         )}
         <AttachmentList attachments={attachments} />
+      </div>
+    </div>
+  );
+}
+
+function ScoreCard({ data, onRepeat }) {
+  const { score, rationale, strengths, weaknesses, suggestedImprovement } = data;
+  const passed = score >= 80;
+  const scoreColor = passed ? 'text-cyan-400 border-cyan-400' : 'text-amber-400 border-amber-400';
+  const bgColor = passed ? 'bg-cyan-900/10' : 'bg-amber-900/10';
+
+  return (
+    <div className={`my-6 border-2 ${scoreColor} ${bgColor} p-5`}>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <div className="text-xs uppercase font-mono tracking-widest text-gray-500 mb-1">Problem statement score</div>
+          <div className="flex items-baseline gap-3">
+            <span className={`text-5xl font-bold font-mono ${passed ? 'text-cyan-400' : 'text-amber-400'}`}>
+              {score}
+            </span>
+            <span className="text-sm text-gray-400">/ 100</span>
+          </div>
+        </div>
+        <div className={`border px-3 py-1 text-xs uppercase font-mono ${passed ? 'border-cyan-400 text-cyan-300' : 'border-amber-400 text-amber-300'}`}>
+          {passed ? 'Good to go' : 'Needs work'}
+        </div>
+      </div>
+
+      <p className="mt-4 text-gray-300 text-sm leading-relaxed">{rationale}</p>
+
+      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <div>
+          <h4 className="uppercase font-mono text-xs tracking-widest text-gray-500 mb-2">Strengths</h4>
+          <ul className="list-disc list-inside text-gray-400 space-y-1">
+            {strengths.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <h4 className="uppercase font-mono text-xs tracking-widest text-gray-500 mb-2">Weaknesses</h4>
+          <ul className="list-disc list-inside text-gray-400 space-y-1">
+            {weaknesses.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div className="mt-4 border-t border-gray-700/50 pt-4">
+        <h4 className="uppercase font-mono text-xs tracking-widest text-gray-500 mb-1">Suggested improvement</h4>
+        <p className="text-gray-300 text-sm">{suggestedImprovement}</p>
+      </div>
+
+      {!passed && onRepeat && (
+        <div className="mt-5 flex items-center gap-3">
+          <button
+            onClick={onRepeat}
+            className="flex items-center gap-2 border-2 border-amber-600 bg-amber-900/30 px-4 py-2 text-sm uppercase font-mono text-amber-200 transition-colors hover:bg-amber-900/50 hover:border-amber-400"
+          >
+            <RefreshCcw size={14} /> Repeat for a better statement
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function WorkflowCard({ data }) {
+  const { workflow, nextMilestone, risks, openQuestions } = data;
+  const html = DOMPurify.sanitize(marked.parse(workflow || '', { async: false }));
+
+  return (
+    <div className="my-6 border-2 border-cyan-400 bg-cyan-900/10 p-5">
+      <div className="flex items-center gap-2 text-cyan-300 uppercase font-mono text-sm tracking-widest mb-4">
+        <Flag size={16} /> Proposed workflow
+      </div>
+
+      <div className="prose-styles text-gray-300 text-sm" dangerouslySetInnerHTML={{ __html: html }} />
+
+      <div className="mt-5 border-t border-gray-700/50 pt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <div>
+          <h4 className="uppercase font-mono text-xs tracking-widest text-gray-500 mb-2">Next milestone</h4>
+          <p className="text-gray-300">{nextMilestone}</p>
+        </div>
+        <div>
+          <h4 className="uppercase font-mono text-xs tracking-widest text-gray-500 mb-2">Risks</h4>
+          <ul className="list-disc list-inside text-gray-400 space-y-1">
+            {risks.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div className="mt-4 text-sm">
+        <h4 className="uppercase font-mono text-xs tracking-widest text-gray-500 mb-2">Open questions</h4>
+        <ul className="list-disc list-inside text-gray-400 space-y-1">
+          {openQuestions.map((item, index) => (
+            <li key={index}>{item}</li>
+          ))}
+        </ul>
       </div>
     </div>
   );
