@@ -6,7 +6,7 @@ export default function QuestTracker({ stage }) {
   const questClear = stage >= STAGES.length - 1;
 
   return (
-    <div className="select-none">
+    <div className="select-none border border-[#6B6965] bg-[#0f0f0f] p-3">
       <div className="flex items-center justify-center">
         {STAGES.map((label, index) => {
           const complete = index < stage || questClear;
@@ -15,26 +15,26 @@ export default function QuestTracker({ stage }) {
           return (
             <div key={label} className="flex items-center">
               <div
-                className={`flex items-center gap-2 border-2 px-3 py-1 text-xs uppercase font-mono tracking-wider ${
+                className={`flex items-center gap-2 border-2 px-3 py-1 text-[10px] uppercase font-mono tracking-[0.1em] ${
                   complete
-                    ? 'border-cyan-400 bg-cyan-900/20 text-cyan-200'
+                    ? 'border-[#FF00A8] bg-[#FF00A8]/10 text-[#FF00A8]'
                     : active
-                      ? 'border-gray-500 text-gray-200'
-                      : 'border-gray-800 text-gray-600'
+                      ? 'border-[#C8C5BF] text-white'
+                      : 'border-[#2a2a2a] text-[#6B6965]'
                 }`}
               >
                 {complete && <Check size={12} />}
                 {label}
               </div>
               {index < STAGES.length - 1 && (
-                <div className={`h-0.5 w-6 ${index < stage ? 'bg-cyan-400' : 'bg-gray-800'}`} />
+                <div className={`h-0.5 w-6 ${index < stage ? 'bg-[#FF00A8]' : 'bg-[#2a2a2a]'}`} />
               )}
             </div>
           );
         })}
       </div>
       {questClear && (
-        <div className="mt-2 flex items-center justify-center gap-2 text-xs uppercase font-mono tracking-widest text-cyan-400">
+        <div className="mt-2 flex items-center justify-center gap-2 text-[10px] uppercase font-mono tracking-[0.15em] text-[#FF00A8]">
           <Flag size={12} /> Quest clear
         </div>
       )}

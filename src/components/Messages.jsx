@@ -3,6 +3,15 @@ import { marked } from 'marked';
 import { ArrowRight, BrainCircuit, FileText, Flag, RefreshCcw, ShieldAlert, Sparkles, User, X } from 'lucide-react';
 import { stripMarkers } from '../chatRuntime';
 
+function formatTimestamp(iso) {
+  if (!iso) return '';
+  try {
+    return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return '';
+  }
+}
+
 export function MessageRenderer({ message, isLoading, isLastMessage, onRepeat }) {
   switch (message.type) {
     case 'user':
@@ -26,9 +35,9 @@ export function MessageRenderer({ message, isLoading, isLastMessage, onRepeat })
 function StageMarker({ text }) {
   return (
     <div className="my-6 flex items-center gap-3">
-      <div className="h-px flex-1 bg-gray-800" />
-      <span className="text-xs uppercase font-mono tracking-widest text-cyan-400">{text}</span>
-      <div className="h-px flex-1 bg-gray-800" />
+      <div className="h-px flex-1 bg-[#6B6965]" />
+      <span className="text-xs uppercase font-mono tracking-[0.15em] text-[#FF00A8]">{text}</span>
+      <div className="h-px flex-1 bg-[#6B6965]" />
     </div>
   );
 }
@@ -49,10 +58,10 @@ function AttachmentList({ attachments }) {
   if (!attachments?.length) return null;
 
   return (
-    <div className="mt-3 border-t-2 border-gray-700/50 pt-2 text-xs text-gray-400 space-y-2">
+    <div className="mt-3 border-t border-[#2a2a2a] pt-2 text-xs text-[#C8C5BF] space-y-1 font-mono">
       {attachments.map((attachment) => (
         <div key={`${attachment.name}-${attachment.label || 'attachment'}`} className="flex items-center gap-2">
-          <FileText size={14} />
+          <FileText size={14} className="text-[#FF00A8]" />
           <span className="truncate">
             {attachment.label ? `${attachment.label}: ` : ''}
             {attachment.name}
@@ -69,26 +78,46 @@ function ChatMessage({ message, isLoading, isLastMessage }) {
   const isStreaming = isGuru && isLoading && isLastMessage;
   const attachments = message.attachments || (message.file ? [message.file] : []);
 
-  return (
-    <div className={`flex items-start gap-4 ${isGuru ? '' : 'flex-row-reverse'}`}>
-      <div
-        className={`flex-shrink-0 w-10 h-10 flex items-center justify-center border-2 ${
-          isGuru ? 'border-gray-700' : 'border-gray-600'
-        }`}
-      >
-        <Icon size={24} className={isGuru ? 'text-gray-200' : 'text-gray-300'} />
+  if (isGuru) {
+    return (
+      <div className="flex items-start gap-3 my-6">
+        <div className="flex-shrink-0 w-9 h-9 flex items-center justify-center border border-[#6B6965] bg-[#090909]">
+          <Icon size={20} className="text-white" />
+        </div>
+        <div className="flex-1 min-w-0 border border-[#2a2a2a] bg-[#0f0f0f] p-4">
+          {isStreaming && message.text === 'Thinking...' ? (
+            <div className="flex items-center gap-2 text-[#6B6965] text-sm font-mono uppercase tracking-wider">
+              <span className="inline-block w-2 h-2 bg-[#FF00A8] animate-pulse" />
+              Thinking…
+            </div>
+          ) : (
+            <MarkdownRenderer text={message.text} isStreaming={isStreaming} />
+          )}
+          <AttachmentList attachments={attachments} />
+          <div className="mt-3 text-[10px] font-mono text-[#6B6965] tracking-wider">
+            {formatTimestamp(message.timestamp)}
+          </div>
+        </div>
       </div>
-      <div
-        className={`w-full max-w-xl p-4 border-2 ${
-          isGuru ? 'border-gray-800 bg-gray-900' : 'border-gray-700 bg-gray-900/40'
-        }`}
-      >
-        {isGuru ? (
-          <MarkdownRenderer text={message.text} isStreaming={isStreaming} />
-        ) : (
-          <p className="text-gray-200 whitespace-pre-wrap text-base">{message.text}</p>
-        )}
-        <AttachmentList attachments={attachments} />
+    );
+  }
+
+  return (
+    <div className="relative my-4 border-l-2 border-[#FF00A8] bg-[#090909] pl-4 py-3 pr-3">
+      <div className="flex items-start gap-3">
+        <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center border border-[#6B6965]">
+          <Icon size={14} className="text-[#FF00A8]" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-white whitespace-pre-wrap text-base leading-relaxed">{message.text}</p>
+          <AttachmentList attachments={attachments} />
+        </div>
+      </div>
+      <div className="mt-2 flex items-center gap-3 text-[10px] font-mono text-[#6B6965] tracking-wider">
+        <span>{formatTimestamp(message.timestamp)}</span>
+        <button className="hover:text-[#FF00A8] transition-colors underline-offset-2 hover:underline hidden">
+          Edit
+        </button>
       </div>
     </div>
   );
@@ -97,40 +126,41 @@ function ChatMessage({ message, isLoading, isLastMessage }) {
 function ScoreCard({ data, onRepeat }) {
   const { score, rationale, strengths, weaknesses, suggestedImprovement } = data;
   const passed = score >= 80;
-  const scoreColor = passed ? 'text-fuchsia-400 border-fuchsia-400' : 'text-amber-400 border-amber-400';
-  const bgColor = passed ? 'bg-fuchsia-900/10' : 'bg-amber-900/10';
+  const scoreColor = passed ? 'text-[#FF00A8] border-[#FF00A8]' : 'text-[#A45A00] border-[#A45A00]';
 
   return (
-    <div className={`my-6 border-2 ${scoreColor} ${bgColor} p-5`}>
+    <div className={`my-6 border-2 ${scoreColor} bg-[#4A002D]/30 p-5`}>
       <div className="flex items-start justify-between gap-4">
         <div>
-          <div className="text-xs uppercase font-mono tracking-widest text-gray-500 mb-1">Problem statement score</div>
+          <div className="text-[10px] uppercase font-mono tracking-[0.15em] text-[#6B6965] mb-1">
+            Problem statement score
+          </div>
           <div className="flex items-baseline gap-3">
-            <span className={`text-5xl font-bold font-mono ${passed ? 'text-fuchsia-400' : 'text-amber-400'}`}>
+            <span className={`text-5xl font-bold font-mono ${passed ? 'text-[#FF00A8]' : 'text-[#A45A00]'}`}>
               {score}
             </span>
-            <span className="text-sm text-gray-400">/ 100</span>
+            <span className="text-sm text-[#C8C5BF] font-mono">/ 100</span>
           </div>
         </div>
-        <div className={`border px-3 py-1 text-xs uppercase font-mono ${passed ? 'border-fuchsia-400 text-fuchsia-300' : 'border-amber-400 text-amber-300'}`}>
+        <div className={`border px-3 py-1 text-[10px] uppercase font-mono tracking-wider ${passed ? 'border-[#FF00A8] text-[#FF00A8]' : 'border-[#A45A00] text-[#A45A00]'}`}>
           {passed ? 'Good to go' : 'Needs work'}
         </div>
       </div>
 
-      <p className="mt-4 text-gray-300 text-sm leading-relaxed">{rationale}</p>
+      <p className="mt-4 text-[#EFEDE8] text-sm leading-relaxed">{rationale}</p>
 
       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
         <div>
-          <h4 className="uppercase font-mono text-xs tracking-widest text-gray-500 mb-2">Strengths</h4>
-          <ul className="list-disc list-inside text-gray-400 space-y-1">
+          <h4 className="uppercase font-mono text-[10px] tracking-[0.15em] text-[#6B6965] mb-2">Strengths</h4>
+          <ul className="list-disc list-inside text-[#C8C5BF] space-y-1">
             {strengths.map((item, index) => (
               <li key={index}>{item}</li>
             ))}
           </ul>
         </div>
         <div>
-          <h4 className="uppercase font-mono text-xs tracking-widest text-gray-500 mb-2">Weaknesses</h4>
-          <ul className="list-disc list-inside text-gray-400 space-y-1">
+          <h4 className="uppercase font-mono text-[10px] tracking-[0.15em] text-[#6B6965] mb-2">Weaknesses</h4>
+          <ul className="list-disc list-inside text-[#C8C5BF] space-y-1">
             {weaknesses.map((item, index) => (
               <li key={index}>{item}</li>
             ))}
@@ -138,18 +168,18 @@ function ScoreCard({ data, onRepeat }) {
         </div>
       </div>
 
-      <div className="mt-4 border-t border-gray-700/50 pt-4">
-        <h4 className="uppercase font-mono text-xs tracking-widest text-gray-500 mb-1">Suggested improvement</h4>
-        <p className="text-gray-300 text-sm">{suggestedImprovement}</p>
+      <div className="mt-4 border-t border-[#2a2a2a] pt-4">
+        <h4 className="uppercase font-mono text-[10px] tracking-[0.15em] text-[#6B6965] mb-1">Suggested improvement</h4>
+        <p className="text-[#EFEDE8] text-sm">{suggestedImprovement}</p>
       </div>
 
       {!passed && onRepeat && (
         <div className="mt-5 flex items-center gap-3">
           <button
             onClick={onRepeat}
-            className="flex items-center gap-2 border-2 border-amber-600 bg-amber-900/30 px-4 py-2 text-sm uppercase font-mono text-amber-200 transition-colors hover:bg-amber-900/50 hover:border-amber-400"
+            className="group flex items-center gap-2 border border-[#A45A00] bg-[#A45A00]/10 px-4 py-2 text-sm uppercase font-mono text-[#EFEDE8] transition-all hover:border-[#FF00A8] hover:text-[#FF00A8]"
           >
-            <RefreshCcw size={14} /> Repeat for a better statement
+            <RefreshCcw size={14} className="group-hover:-rotate-180 transition-transform duration-500" /> Repeat for a better statement
           </button>
         </div>
       )}
@@ -162,21 +192,21 @@ function WorkflowCard({ data }) {
   const html = DOMPurify.sanitize(marked.parse(workflow || '', { async: false }));
 
   return (
-    <div className="my-6 border-2 border-fuchsia-400 bg-fuchsia-900/10 p-5">
-      <div className="flex items-center gap-2 text-fuchsia-300 uppercase font-mono text-sm tracking-widest mb-4">
+    <div className="my-6 border-2 border-[#FF00A8] bg-[#4A002D]/20 p-5">
+      <div className="flex items-center gap-2 text-[#FF00A8] uppercase font-mono text-[10px] tracking-[0.15em] mb-4">
         <Flag size={16} /> Proposed workflow
       </div>
 
-      <div className="prose-styles text-gray-300 text-sm" dangerouslySetInnerHTML={{ __html: html }} />
+      <div className="prose-styles text-[#EFEDE8] text-sm" dangerouslySetInnerHTML={{ __html: html }} />
 
-      <div className="mt-5 border-t border-gray-700/50 pt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+      <div className="mt-5 border-t border-[#2a2a2a] pt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
         <div>
-          <h4 className="uppercase font-mono text-xs tracking-widest text-gray-500 mb-2">Next milestone</h4>
-          <p className="text-gray-300">{nextMilestone}</p>
+          <h4 className="uppercase font-mono text-[10px] tracking-[0.15em] text-[#6B6965] mb-2">Next milestone</h4>
+          <p className="text-[#EFEDE8]">{nextMilestone}</p>
         </div>
         <div>
-          <h4 className="uppercase font-mono text-xs tracking-widest text-gray-500 mb-2">Risks</h4>
-          <ul className="list-disc list-inside text-gray-400 space-y-1">
+          <h4 className="uppercase font-mono text-[10px] tracking-[0.15em] text-[#6B6965] mb-2">Risks</h4>
+          <ul className="list-disc list-inside text-[#C8C5BF] space-y-1">
             {risks.map((item, index) => (
               <li key={index}>{item}</li>
             ))}
@@ -185,8 +215,8 @@ function WorkflowCard({ data }) {
       </div>
 
       <div className="mt-4 text-sm">
-        <h4 className="uppercase font-mono text-xs tracking-widest text-gray-500 mb-2">Open questions</h4>
-        <ul className="list-disc list-inside text-gray-400 space-y-1">
+        <h4 className="uppercase font-mono text-[10px] tracking-[0.15em] text-[#6B6965] mb-2">Open questions</h4>
+        <ul className="list-disc list-inside text-[#C8C5BF] space-y-1">
           {openQuestions.map((item, index) => (
             <li key={index}>{item}</li>
           ))}
@@ -198,25 +228,25 @@ function WorkflowCard({ data }) {
 
 function PersonaMessage({ personas }) {
   return (
-    <div className="my-6">
-      <h3 className="text-xl font-semibold text-gray-300 mb-4 flex items-center gap-2 uppercase font-mono">
-        <Sparkles size={20} className="text-gray-400" /> Draft Personas
+    <div className="my-6 border border-[#2a2a2a] bg-[#0f0f0f] p-4">
+      <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2 uppercase font-mono tracking-wider">
+        <Sparkles size={18} className="text-[#FF00A8]" /> Draft Personas
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {personas.map((persona) => (
-          <div key={persona.name} className="bg-gray-900/50 border-2 border-gray-800 p-4">
-            <h4 className="font-bold text-white text-lg uppercase font-mono">{persona.name}</h4>
-            <p className="text-base text-gray-400 mb-2">{persona.demographic}</p>
-            <p className="text-base italic text-gray-300 my-3">&quot;{persona.quote}&quot;</p>
+          <div key={persona.name} className="border border-[#2a2a2a] bg-[#090909] p-4 hover:border-[#FF00A8] transition-colors">
+            <h4 className="font-bold text-white text-lg uppercase font-mono tracking-wider">{persona.name}</h4>
+            <p className="text-base text-[#C8C5BF] mb-2 font-mono text-sm">{persona.demographic}</p>
+            <p className="text-base italic text-[#EFEDE8] my-3 font-serif-reading">&quot;{persona.quote}&quot;</p>
             <div className="text-base">
-              <strong className="text-gray-300 block mt-2 uppercase font-mono">Needs:</strong>
-              <ul className="list-disc list-inside text-gray-400">
+              <strong className="text-white block mt-2 uppercase font-mono text-xs tracking-wider">Needs:</strong>
+              <ul className="list-disc list-inside text-[#C8C5BF]">
                 {persona.needs.map((need) => (
                   <li key={need}>{need}</li>
                 ))}
               </ul>
-              <strong className="text-gray-300 block mt-2 uppercase font-mono">Frustrations:</strong>
-              <ul className="list-disc list-inside text-gray-400">
+              <strong className="text-white block mt-2 uppercase font-mono text-xs tracking-wider">Frustrations:</strong>
+              <ul className="list-disc list-inside text-[#C8C5BF]">
                 {persona.frustrations.map((frustration) => (
                   <li key={frustration}>{frustration}</li>
                 ))}
@@ -231,26 +261,25 @@ function PersonaMessage({ personas }) {
 
 function CritiqueMessage({ text }) {
   return (
-    <div className="my-6 p-4 bg-amber-900/20 border-2 border-amber-700/50">
-      <h3 className="text-lg font-semibold text-amber-300 mb-2 flex items-center gap-2 uppercase font-mono">
-        <ShieldAlert size={20} /> Bias Check
+    <div className="my-6 border-l-2 border-[#A45A00] bg-[#0f0f0f] p-4">
+      <h3 className="text-sm font-semibold text-[#A45A00] mb-2 flex items-center gap-2 uppercase font-mono tracking-wider">
+        <ShieldAlert size={18} /> Bias Check
       </h3>
-      <div className="text-amber-200 whitespace-pre-wrap text-base">{text}</div>
+      <div className="text-[#EFEDE8] whitespace-pre-wrap text-base">{text}</div>
     </div>
   );
 }
 
 export function LoadingIndicator() {
   return (
-    <div className="flex items-start gap-4">
-      <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center border-2 border-gray-700">
-        <BrainCircuit size={24} className="text-gray-200 animate-pulse" />
+    <div className="flex items-start gap-3 my-6">
+      <div className="flex-shrink-0 w-9 h-9 flex items-center justify-center border border-[#6B6965]">
+        <BrainCircuit size={20} className="text-white animate-pulse" />
       </div>
-      <div className="w-full max-w-xl p-4 border-2 border-gray-800 bg-gray-900">
-        <div className="flex items-center space-x-2">
-          <div className="w-3 h-3 bg-gray-600 animate-pulse" style={{ animationDelay: '0s' }} />
-          <div className="w-3 h-3 bg-gray-600 animate-pulse" style={{ animationDelay: '0.2s' }} />
-          <div className="w-3 h-3 bg-gray-600 animate-pulse" style={{ animationDelay: '0.4s' }} />
+      <div className="flex-1 border border-[#2a2a2a] bg-[#0f0f0f] p-4">
+        <div className="flex items-center gap-2 text-[#6B6965] text-sm font-mono uppercase tracking-wider">
+          <span className="inline-block w-2 h-2 bg-[#FF00A8] animate-pulse" />
+          Thinking…
         </div>
       </div>
     </div>
@@ -259,9 +288,9 @@ export function LoadingIndicator() {
 
 export function ErrorMessage({ message, onClose }) {
   return (
-    <div className="mb-2 p-3 bg-red-900/50 border-2 border-red-700 flex items-center justify-between text-sm text-red-200">
+    <div className="mb-2 p-3 border border-[#B42318] bg-[#B42318]/10 flex items-center justify-between text-sm text-[#EFEDE8]">
       <span>{message}</span>
-      <button onClick={onClose} className="p-1 text-red-300 hover:text-white">
+      <button onClick={onClose} className="p-1 text-[#C8C5BF] hover:text-white">
         <X size={16} />
       </button>
     </div>

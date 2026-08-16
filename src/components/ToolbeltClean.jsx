@@ -17,12 +17,12 @@ export default function ToolbeltClean({ messages, flow, onToolUse, isLoading }) 
   }
 
   return (
-    <div className="flex justify-center gap-4 my-4 flex-wrap">
+    <div className="flex justify-center gap-3 my-4 flex-wrap">
       {showPersonaTool && (
         <button
           disabled={isLoading}
           onClick={() => onToolUse('personas')}
-          className="flex items-center gap-2 text-sm bg-cyan-900/20 text-cyan-200 px-4 py-2 border-2 border-cyan-700 hover:bg-cyan-900/30 transition-colors disabled:opacity-50 uppercase font-mono"
+          className="flex items-center gap-2 text-sm border border-[#FF00A8] text-[#FF00A8] px-4 py-2 hover:bg-[#FF00A8] hover:text-black transition-colors disabled:opacity-50 uppercase font-mono tracking-wider clip-corner"
         >
           <Users size={16} /> Draft Personas
         </button>
@@ -31,7 +31,7 @@ export default function ToolbeltClean({ messages, flow, onToolUse, isLoading }) 
         <button
           disabled={isLoading}
           onClick={() => onToolUse('blindspots')}
-          className="flex items-center gap-2 text-sm bg-amber-900/50 text-amber-300 px-4 py-2 border-2 border-amber-700 hover:bg-amber-900 transition-colors disabled:opacity-50 uppercase font-mono"
+          className="flex items-center gap-2 text-sm border border-[#A45A00] text-[#A45A00] px-4 py-2 hover:bg-[#A45A00]/20 transition-colors disabled:opacity-50 uppercase font-mono tracking-wider"
         >
           <ShieldAlert size={16} /> Check for Bias
         </button>

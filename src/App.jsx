@@ -660,8 +660,8 @@ export default function App() {
     return (
       <>
         <Onboarding onSelect={handleOnboardingSelect} onOpenHelp={() => setIsHelpOpen(true)} isLoading={isLoading} />
-      <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
-      <GeometricBackdrop />
+        <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+        <GeometricBackdrop />
         <FirstRunTour
           isOpen={isTourOpen}
           onClose={() => {
@@ -680,8 +680,9 @@ export default function App() {
   return (
     <div
       ref={embedShellRef}
-      className={`view-enter bg-black/90 text-gray-200 font-sans flex h-screen antialiased overflow-hidden ${isEmbed ? 'embed-shell' : ''}`}
+      className={`view-enter bg-[#090909] text-white flex h-screen antialiased overflow-hidden ${isEmbed ? 'embed-shell' : ''}`}
     >
+      <GeometricBackdrop />
       <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
       {!isEmbed && (
         <HistoryPanel
@@ -694,41 +695,48 @@ export default function App() {
         />
       )}
 
-      <div className="flex-1 flex flex-col transition-all duration-300">
-        <header className="border-b-2 border-gray-800 p-4 flex items-center justify-between text-center shrink-0">
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Product bar */}
+        <header className="border-b border-[#6B6965] bg-[#090909] px-4 py-3 flex items-center justify-between shrink-0 z-10">
           {isEmbed ? (
             <button
               onClick={resetToOnboarding}
-              className="p-2 text-gray-400 hover:text-white"
+              className="p-2 text-[#C8C5BF] hover:text-white transition-colors"
               aria-label="New chat"
               title="New chat"
             >
               <PlusCircle size={20} />
             </button>
           ) : (
-            <button onClick={() => setIsHistoryPanelOpen(true)} className="p-2 text-gray-400 hover:text-white lg:hidden">
+            <button
+              onClick={() => setIsHistoryPanelOpen(true)}
+              className="p-2 text-[#C8C5BF] hover:text-white transition-colors lg:hidden"
+              aria-label="Open history"
+            >
               <Book size={20} />
             </button>
           )}
-          <div className="mx-auto flex items-center gap-3">
-            <img src="/brand/dotai-logo-mark.png" alt="DotAI" className="h-6 w-auto opacity-90" />
-            <h1 className="text-2xl font-bold tracking-wider text-gray-300 uppercase font-mono">
+
+          <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3">
+            <img src="/brand/dotai-logo-mark.png" alt="dotai" className="h-6 w-auto opacity-90" />
+            <h1 className="text-lg sm:text-xl font-semibold tracking-widest text-white uppercase font-mono">
               {currentThread?.title || 'Not a Guru'}
             </h1>
           </div>
+
           {isEmbed ? (
             <button
               onClick={() => setIsHelpOpen(true)}
-              className="p-2 text-gray-400 hover:text-white"
+              className="p-2 text-[#C8C5BF] hover:text-white transition-colors"
               aria-label="Open help"
             >
               <HelpCircle size={20} />
             </button>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <button
                 onClick={resetToOnboarding}
-                className="p-2 text-gray-400 hover:text-white"
+                className="p-2 text-[#C8C5BF] hover:text-white transition-colors"
                 aria-label="Back to home"
                 title="Back to home"
               >
@@ -736,14 +744,14 @@ export default function App() {
               </button>
               <button
                 onClick={() => setIsHelpOpen(true)}
-                className="p-2 text-gray-400 hover:text-white"
+                className="p-2 text-[#C8C5BF] hover:text-white transition-colors"
                 aria-label="Open help"
               >
                 <HelpCircle size={20} />
               </button>
               <button
                 onClick={() => setIsHistoryPanelOpen((prev) => !prev)}
-                className="p-2 text-gray-400 hover:text-white hidden lg:block"
+                className="p-2 text-[#C8C5BF] hover:text-white transition-colors hidden lg:block"
                 aria-label="Toggle history"
               >
                 <Book size={20} />
@@ -752,7 +760,8 @@ export default function App() {
           )}
         </header>
 
-        <main className={`flex-1 overflow-y-auto ${isEmbed ? 'p-4' : 'p-4 md:p-6 lg:p-8'}`}>
+        {/* Main workspace */}
+        <main className={`flex-1 overflow-y-auto ${isEmbed ? 'p-3' : 'p-4 md:p-6'}`}>
           <div className="max-w-3xl mx-auto space-y-6">
             {questStage !== null && <QuestTracker stage={questStage} />}
             {currentThread?.messages.map((message, index) => (
@@ -785,15 +794,16 @@ export default function App() {
           </div>
         </main>
 
-        <footer className="border-t-2 border-gray-800 p-4 bg-black/80 backdrop-blur-sm shrink-0">
+        {/* Composer */}
+        <footer className="border-t border-[#6B6965] bg-[#090909] px-4 py-3 shrink-0 z-10">
           <div className="max-w-3xl mx-auto">
             {error && <ErrorMessage message={error} onClose={() => setError(null)} />}
             {uploadedFile && (
-              <div className="mb-3 flex items-center justify-between gap-3 border border-gray-800 bg-gray-950 px-3 py-2 text-sm text-gray-300">
-                <span className="truncate">Attached: {uploadedFile.name}</span>
+              <div className="mb-2 flex items-center justify-between gap-3 border border-[#6B6965] bg-[#090909] px-3 py-2 text-sm text-[#EFEDE8]">
+                <span className="truncate font-mono text-xs">{uploadedFile.name}</span>
                 <button
                   onClick={clearUploadedFile}
-                  className="text-gray-500 transition-colors hover:text-white"
+                  className="text-[#6B6965] hover:text-white transition-colors"
                   aria-label="Remove attachment"
                 >
                   <X size={16} />
@@ -801,8 +811,8 @@ export default function App() {
               </div>
             )}
             {(isScoring || isWorkflowing) && (
-              <div className="mb-2 text-center text-xs uppercase font-mono tracking-widest text-cyan-400 animate-pulse">
-                {isScoring ? 'Scoring problem statement...' : 'Building workflow...'}
+              <div className="mb-2 text-center text-xs uppercase font-mono tracking-widest text-[#FF00A8] animate-pulse">
+                {isScoring ? 'Scoring problem statement…' : 'Building workflow…'}
               </div>
             )}
             <QuickReplies
@@ -810,43 +820,53 @@ export default function App() {
               onPick={handleQuickReply}
               disabled={isLoading || isParsing || isScoring || isWorkflowing || !currentThread}
             />
-            <div className="flex items-center bg-gray-900 p-2 border-2 border-gray-700 focus-within:border-cyan-400">
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileUpload}
-                className="hidden"
-                accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.pdf,.docx"
-              />
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isParsing || isLoading || isScoring || isWorkflowing}
-                className="p-2 text-gray-400 hover:text-white disabled:opacity-50"
-              >
-                <Upload size={20} />
-              </button>
-              <input
-                type="text"
-                value={input}
-                onChange={(event) => setInput(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' && !event.shiftKey) {
-                    event.preventDefault();
-                    handleSendMessage();
-                  }
-                }}
-                placeholder={isParsing ? 'Reading your file...' : "So, what's the move?"}
-                className="flex-1 bg-transparent px-4 text-base text-gray-200 placeholder-gray-500 focus:outline-none"
-              />
-              <button
-                onClick={handleSendMessage}
-                disabled={isLoading || isParsing || isScoring || isWorkflowing}
-                className="p-2 text-gray-400 hover:text-white disabled:opacity-50"
-              >
-                <Send size={20} />
-              </button>
+
+            {/* Signature chatbox */}
+            <div className="relative flex flex-col border border-[#F7F5F0] focus-within:border-[#FF00A8] focus-within:border-b-2 bg-[#090909] transition-colors">
+              <div className="flex items-center gap-2 px-3 py-2 border-b border-[#2a2a2a]">
+                <span className="text-xs uppercase font-mono tracking-wider text-[#6B6965]">Composer</span>
+                <div className="h-px flex-1 bg-[#2a2a2a]" />
+              </div>
+              <div className="flex items-center px-2 py-2">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.pdf,.docx"
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isParsing || isLoading || isScoring || isWorkflowing}
+                  className="p-2 text-[#6B6965] hover:text-white disabled:opacity-40 transition-colors"
+                  aria-label="Attach file"
+                >
+                  <Upload size={18} />
+                </button>
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(event) => setInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                      event.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  placeholder={isParsing ? 'Reading your file…' : 'What are you trying to understand?'}
+                  className="flex-1 bg-transparent px-3 py-2 text-base text-white placeholder-[#6B6965] focus:outline-none font-[var(--font-ui)]"
+                />
+                <button
+                  onClick={handleSendMessage}
+                  disabled={isLoading || isParsing || isScoring || isWorkflowing}
+                  className="relative overflow-hidden bg-[#FF00A8] text-black px-4 py-2 text-sm uppercase font-mono font-semibold tracking-wider clip-corner hover:brightness-110 disabled:opacity-40 transition-all"
+                >
+                  <Send size={16} className="relative z-10" />
+                </button>
+              </div>
             </div>
-            <div className="mt-3 text-center text-xs text-gray-600 font-mono tracking-widest">
+
+            <div className="mt-2 text-center text-[10px] uppercase text-[#6B6965] font-mono tracking-[0.2em]">
               powered by dotai
             </div>
           </div>
