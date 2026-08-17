@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { ArrowRight, BookOpen, HelpCircle, MessageSquare, Send, Sparkles } from 'lucide-react';
 import GeometricBackdrop from './GeometricBackdrop';
+import VectorPanel from './VectorPanel';
 import { useHoverParallax, usePointerOffset } from '../hooks/useParallax.js';
 import { callAI } from '../aiClient';
 import {
@@ -142,10 +143,10 @@ export default function Onboarding({
           </p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-stretch">
           {/* Left: free conversational triage with NG */}
-          <div className="border border-[#6B6965] bg-[#090909]/90 flex flex-col">
-            <div className="border-b border-[#2a2a2a] px-4 py-3 flex items-center justify-between">
+          <VectorPanel variant="cyan" className="flex flex-col">
+            <div className="flex items-center justify-between pb-3">
               <div className="flex items-center gap-2 text-[10px] uppercase font-mono tracking-[0.15em] text-[#00F1DE]">
                 <MessageSquare size={16} /> Chat with NG
               </div>
@@ -158,7 +159,7 @@ export default function Onboarding({
               </button>
             </div>
 
-            <div className="flex-1 p-4 md:p-6 space-y-4 min-h-[420px]">
+            <div className="flex-1 space-y-4 min-h-[420px]">
               {chatLog.map((entry) =>
                 entry.type === 'guru' ? (
                   <div key={entry.id} className="flex items-start gap-3 message-rise">
@@ -182,7 +183,7 @@ export default function Onboarding({
               )}
             </div>
 
-            <div className="border-t border-[#2a2a2a] p-4 md:p-6">
+            <div className="pt-4 mt-4 border-t border-[#2a2a2a]">
               {triageRoute ? (
                 <div className="flex items-start gap-3 text-[#00F1DE]">
                   <Sparkles size={16} className="mt-0.5 shrink-0" />
@@ -225,11 +226,11 @@ export default function Onboarding({
                 </form>
               )}
             </div>
-          </div>
+          </VectorPanel>
 
           {/* Right: username + session control */}
-          <div className="border border-[#F7F5F0] bg-[#090909]/90 p-6 md:p-8">
-            <div className="mt-2 space-y-6">
+          <VectorPanel variant="bone" className="flex flex-col">
+            <div className="space-y-6">
               {username ? (
                 <>
                   <div>
@@ -302,14 +303,14 @@ export default function Onboarding({
               )}
             </div>
 
-            <div className="mt-10 border-t border-[#2a2a2a] pt-6">
+            <div className="mt-auto pt-6">
               <p className="text-xs text-[#6B6965] leading-relaxed">
                 Not a Guru is built by <span className="text-white">dotai</span>. It asks better questions,
                 scores every stage, and signs off with a dotai Design Ninja certificate addressed to your ninja name.
               </p>
               <p className="mt-4 text-[10px] text-[#6B6965] font-mono tracking-[0.2em]">powered by dotai</p>
             </div>
-          </div>
+          </VectorPanel>
         </div>
       </div>
     </div>
