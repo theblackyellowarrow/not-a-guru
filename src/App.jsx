@@ -4,9 +4,11 @@ import FirstRunTour from './components/FirstRunTour';
 import GeometricBackdrop from './components/GeometricBackdrop';
 import HelpModal from './components/HelpModal';
 import HistoryPanel from './components/HistoryPanel';
+import LandingHero from './components/LandingHero';
 import { ErrorMessage, LoadingIndicator, MessageRenderer, ToolActivity } from './components/Messages';
 import NextQuestCard from './components/NextQuestCard';
 import Onboarding from './components/Onboarding';
+import OrbitMark from './components/OrbitMark';
 import QuestTracker from './components/QuestTracker';
 import QuickReplies from './components/QuickReplies';
 import Toolbelt from './components/Toolbelt';
@@ -34,6 +36,7 @@ const THREAD_MAP_KEY = 'guru_user_threads';
 const USERNAME_KEY = 'guru_username';
 const LAST_THREAD_KEY = (user) => `guru_last_thread_${user}`;
 const TOUR_KEY = 'guru_seen_tour';
+const HERO_KEY = 'guru_seen_hero';
 
 const INITIAL_MESSAGES = {
   start_project:
@@ -156,6 +159,14 @@ export default function App() {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isEmbed, setIsEmbed] = useState(false);
   const [isTourOpen, setIsTourOpen] = useState(false);
+  const [heroDismissed, setHeroDismissed] = useState(() => {
+    try {
+      return localStorage.getItem(HERO_KEY) === '1';
+    } catch {
+      return false;
+    }
+  });
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isScoring, setIsScoring] = useState(false);
   const [isWorkflowing, setIsWorkflowing] = useState(false);
   const embedShellRef = useRef(null);
@@ -253,6 +264,21 @@ export default function App() {
     } catch {
       // ignore
     }
+
+    try {
+      if (typeof window !== 'undefined' && window.matchMedia) {
+        const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+        setPrefersReducedMotion(mq.matches);
+        const handler = (event) => setPrefersReducedMotion(event.matches);
+        if (typeof mq.addEventListener === 'function') {
+          mq.addEventListener('change', handler);
+          return () => mq.removeEventListener('change', handler);
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return undefined;
 
     const storedUsername = loadUsername();
     const userThreads = storedUsername ? loadUserThreads(storedUsername) : [];
@@ -905,6 +931,24 @@ export default function App() {
     }
   }, [saveStatus, tickNow]);
 
+  if (!heroDismissed) {
+    return (
+      <>
+        <LandingHero
+          reducedMotion={prefersReducedMotion}
+          onEnter={() => {
+            try {
+              localStorage.setItem(HERO_KEY, '1');
+            } catch {
+              // ignore
+            }
+            setHeroDismissed(true);
+          }}
+        />
+      </>
+    );
+  }
+
   if (appState === 'onboarding') {
     return (
       <>
@@ -977,6 +1021,7 @@ export default function App() {
 
           <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
             <div className="flex items-center gap-3">
+              <OrbitMark size={26} />
               <img src="/brand/dotai-logo-mark.png" alt="dotai" className="h-6 w-auto opacity-90" />
               <h1 className="text-lg sm:text-xl font-semibold tracking-widest text-white uppercase font-mono">
                 {currentThread?.title || 'Not a Guru'}
