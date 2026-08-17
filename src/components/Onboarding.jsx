@@ -143,7 +143,7 @@ export default function Onboarding({
           </p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-stretch">
           {/* Left: free conversational triage with NG */}
           <VectorPanel variant="cyan" className="flex flex-col">
             <div className="flex items-center justify-between pb-3">
@@ -159,14 +159,14 @@ export default function Onboarding({
               </button>
             </div>
 
-            <div className="flex-1 space-y-4 min-h-[420px]">
+            <div className="flex-1 space-y-3">
               {chatLog.map((entry) =>
                 entry.type === 'guru' ? (
                   <div key={entry.id} className="flex items-start gap-3 message-rise">
                     <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center border border-[#6B6965] bg-[#090909]">
                       <MessageSquare size={16} className="text-white" />
                     </div>
-                    <div className="flex-1 border border-[#2a2a2a] bg-[#0f0f0f] p-3 text-sm text-[#EFEDE8] whitespace-pre-wrap leading-relaxed">
+                    <div className="flex-1 border border-[#2a2a2a] bg-[#0f0f0f] p-3 text-sm text-white whitespace-pre-wrap leading-relaxed">
                       {entry.text}
                     </div>
                   </div>
@@ -183,7 +183,7 @@ export default function Onboarding({
               )}
             </div>
 
-            <div className="pt-4 mt-4 border-t border-[#2a2a2a]">
+            <div className="pt-3 mt-3 border-t border-[#2a2a2a]">
               {triageRoute ? (
                 <div className="flex items-start gap-3 text-[#00F1DE]">
                   <Sparkles size={16} className="mt-0.5 shrink-0" />
@@ -191,14 +191,14 @@ export default function Onboarding({
                     <p className="text-[10px] uppercase font-mono tracking-[0.15em]">
                       Routed to {FLOW_TITLES[triageRoute]}
                     </p>
-                    <p className="mt-1 text-xs text-[#C8C5BF] font-sans tracking-normal normal-case">
+                    <p className="mt-1 text-xs text-[#D8D4CC] font-sans tracking-normal normal-case">
                       Add a username on the right to begin.
                     </p>
                   </div>
                 </div>
               ) : (
                 <form onSubmit={handleTriageSend} className="flex flex-col gap-2">
-                  <label className="text-[10px] uppercase font-mono tracking-[0.15em] text-[#6B6965]">
+                  <label className="text-[10px] uppercase font-mono tracking-[0.15em] text-[#9A968D]">
                     Tell NG what you are working on
                   </label>
                   <div className="flex gap-2">
@@ -207,7 +207,7 @@ export default function Onboarding({
                       value={triageInput}
                       onChange={(event) => setTriageInput(event.target.value)}
                       placeholder="A rough idea I have been sitting on…"
-                      className="flex-1 bg-transparent border border-[#6B6965] px-3 py-2 text-sm text-white placeholder-[#6B6965] focus:outline-none focus:border-[#FF00A8] font-mono"
+                      className="flex-1 bg-transparent border border-[#6B6965] px-3 py-2 text-sm text-white placeholder-[#9A968D] focus:outline-none focus:border-[#FF00A8] font-mono"
                       disabled={chatDisabled}
                       aria-label="Message to NG"
                     />
@@ -234,7 +234,7 @@ export default function Onboarding({
               {username ? (
                 <>
                   <div>
-                    <p className="text-sm text-[#C8C5BF]">
+                    <p className="text-sm text-[#D8D4CC]">
                       Signed in as <span className="text-white font-semibold">{username}</span>.
                     </p>
                   </div>
@@ -244,7 +244,7 @@ export default function Onboarding({
                       <div className="flex items-center gap-2 text-[10px] uppercase font-mono tracking-[0.15em] text-[#00F1DE] mb-2">
                         <BookOpen size={14} /> Continue where you left off
                       </div>
-                      <p className="text-sm text-[#EFEDE8] truncate">{lastThreadTitle}</p>
+                      <p className="text-sm text-white truncate">{lastThreadTitle}</p>
                       <button
                         onClick={onContinueSession}
                         disabled={isLoading}
@@ -264,7 +264,7 @@ export default function Onboarding({
                       Begin {FLOW_TITLES[triageRoute]} <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                     </button>
                   ) : (
-                    <p className="text-xs text-[#6B6965]">
+                    <p className="text-xs text-[#9A968D]">
                       NG is figuring out where to take you on the left. Once routed, a Begin button will appear here.
                     </p>
                   )}
@@ -272,9 +272,9 @@ export default function Onboarding({
               ) : (
                 <form onSubmit={handleRouteSubmit}>
                   <h2 className="text-2xl md:text-3xl font-semibold text-white leading-tight mb-4">
-                    Start your design process from scratch — become a dotai Design Ninja
+                    Start your design process from scratch — become a <span className="text-[#00F1DE]">dotai</span> Design Ninja
                   </h2>
-                  <label className="block text-[10px] uppercase font-mono tracking-[0.15em] text-[#6B6965] mb-2">
+                  <label className="block text-[10px] uppercase font-mono tracking-[0.15em] text-[#9A968D] mb-2">
                     Pick your ninja name
                   </label>
                   <div className="flex flex-col sm:flex-row gap-3">
@@ -283,7 +283,7 @@ export default function Onboarding({
                       value={draftUsername}
                       onChange={(event) => setDraftUsername(event.target.value)}
                       placeholder="Enter your username"
-                      className="flex-1 bg-transparent border border-[#6B6965] px-4 py-3 text-white placeholder-[#6B6965] focus:outline-none focus:border-[#FF00A8] font-mono"
+                      className="flex-1 bg-transparent border border-[#6B6965] px-4 py-3 text-white placeholder-[#9A968D] focus:outline-none focus:border-[#FF00A8] font-mono"
                       disabled={isLoading}
                     />
                     <button
@@ -294,7 +294,7 @@ export default function Onboarding({
                       {triageRoute ? 'Begin' : 'Set username'} <ArrowRight size={16} />
                     </button>
                   </div>
-                  <p className="mt-2 text-xs text-[#6B6965]">
+                  <p className="mt-2 text-xs text-[#9A968D]">
                     {triageRoute
                       ? `NG will take you straight into ${FLOW_TITLES[triageRoute]}.`
                       : 'Chat with NG on the left first. Your username identifies your session history on this device.'}
@@ -304,11 +304,11 @@ export default function Onboarding({
             </div>
 
             <div className="mt-auto pt-6">
-              <p className="text-xs text-[#6B6965] leading-relaxed">
-                Not a Guru is built by <span className="text-white">dotai</span>. It asks better questions,
-                scores every stage, and signs off with a dotai Design Ninja certificate addressed to your ninja name.
+              <p className="text-xs text-[#9A968D] leading-relaxed">
+                Not a Guru is built by <span className="text-[#00F1DE]">dotai</span>. It asks better questions,
+                scores every stage, and signs off with a <span className="text-[#00F1DE]">dotai</span> Design Ninja certificate addressed to your ninja name.
               </p>
-              <p className="mt-4 text-[10px] text-[#6B6965] font-mono tracking-[0.2em]">powered by dotai</p>
+              <p className="mt-4 text-[10px] text-[#9A968D] font-mono tracking-[0.2em]">powered by <span className="text-[#00F1DE]">dotai</span></p>
             </div>
           </VectorPanel>
         </div>
