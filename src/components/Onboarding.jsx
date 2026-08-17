@@ -105,9 +105,11 @@ export default function Onboarding({
 
   function handleRouteSubmit(event) {
     event.preventDefault();
-    if (!triageRoute || !draftUsername.trim()) return;
+    if (!draftUsername.trim()) return;
     onSetUsername(draftUsername.trim());
-    onSelect(triageRoute);
+    if (triageRoute) {
+      onSelect(triageRoute);
+    }
   }
 
   const chatDisabled = triageLoading || Boolean(triageRoute);
@@ -288,10 +290,10 @@ export default function Onboarding({
                     />
                     <button
                       type="submit"
-                      disabled={isLoading || !draftUsername.trim() || !triageRoute}
+                      disabled={isLoading || !draftUsername.trim()}
                       className="relative overflow-hidden bg-[#FF00A8] text-black px-6 py-3 text-sm uppercase font-mono font-semibold tracking-wider clip-corner hover:brightness-110 disabled:opacity-40 transition-all flex items-center justify-center gap-2"
                     >
-                      {triageRoute ? 'Begin' : 'Set username'} <ArrowRight size={16} />
+                      {triageRoute ? 'Begin' : 'Set ninja name'} <ArrowRight size={16} />
                     </button>
                   </div>
                   <p className="mt-2 text-xs text-[#9A968D]">
