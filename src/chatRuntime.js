@@ -26,6 +26,18 @@ export function getThreadTitlePreview(messageText, attachments = []) {
   return 'New Thread';
 }
 
+export function generateId(prefix = 'id') {
+  const time = Date.now().toString(36);
+  const rand = Math.floor(Math.random() * 0xffffff).toString(36).padStart(4, '0');
+  return `${prefix}_${time}_${rand}`;
+}
+
+let threadCounter = 0;
+export function generateThreadId() {
+  threadCounter += 1;
+  return Date.now() * 1000 + (threadCounter % 1000);
+}
+
 export function buildAttachmentParts(attachment) {
   const attachmentLabel = attachment.label ? `${attachment.label} (${attachment.name})` : attachment.name;
 
@@ -96,15 +108,43 @@ export function extractTextFromResponse(result) {
     return '';
   }
 
-  if (!Array.isArray(result.output)) {
-    return '';
+  if (typeof result.text === 'string') {
+    return result.text.trim();
   }
 
-  return result.output
-    .flatMap((item) => item.content || [])
-    .map((contentItem) => contentItem.text || contentItem.value || '')
-    .join('')
-    .trim();
+  if (Array.isArray(result.output)) {
+    return result.output
+      .flatMap((item) => item.content || [])
+      .map((contentItem) => contentItem.text || contentItem.value || '')
+      .join('')
+      .trim();
+  }
+
+  if (Array.isArray(result.choices)) {
+    return result.choices
+      .flatMap((choice) => choice.message?.content || choice.text || [])
+      .map((part) => (typeof part === 'string' ? part : part.text || ''))
+      .join('')
+      .trim();
+  }
+
+  return '';
+}
+
+export async function parseAIResponse(response, { label = 'response' } = {}) {
+  try {
+    const result = await response.json();
+    const text = extractTextFromResponse(result);
+    if (!text) {
+      throw new Error(`The model ${label} was empty.`);
+    }
+    return text;
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new Error(`The model ${label} could not be parsed as JSON.`);
+    }
+    throw error;
+  }
 }
 
 function escapeRegex(string) {

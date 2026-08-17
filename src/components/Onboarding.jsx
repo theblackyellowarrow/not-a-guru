@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowRight, BookOpen, HelpCircle, MessageSquare, Send, Sparkles } from 'lucide-react';
 import GeometricBackdrop from './GeometricBackdrop';
 import VectorPanel from './VectorPanel';
@@ -6,8 +6,9 @@ import { useHoverParallax, usePointerOffset } from '../hooks/useParallax.js';
 import { callAI } from '../aiClient';
 import {
   createTriagePayload,
-  extractTextFromResponse,
   extractTriageRoute,
+  generateId,
+  parseAIResponse,
   stripTriageMarker,
 } from '../chatRuntime';
 
@@ -30,8 +31,11 @@ export default function Onboarding({
   isLoading,
 }) {
   const [draftUsername, setDraftUsername] = useState(username || '');
+  useEffect(() => {
+    setDraftUsername(username || '');
+  }, [username]);
   const [chatLog, setChatLog] = useState([
-    { id: 'intro', type: 'guru', text: TRIAGE_GREETING, timestamp: new Date().toISOString() },
+    { id: 'triage_intro', type: 'guru', text: TRIAGE_GREETING, timestamp: new Date().toISOString() },
   ]);
   const [triageInput, setTriageInput] = useState('');
   const [triageLoading, setTriageLoading] = useState(false);
@@ -49,13 +53,13 @@ export default function Onboarding({
     if (!userText || triageLoading || triageInFlightRef.current || triageRoute) return;
 
     const userMessage = {
-      id: `triage_user_${Date.now()}`,
+      id: generateId('triage_user'),
       type: 'user',
       text: userText,
       timestamp: new Date().toISOString(),
     };
 
-    const placeholderId = `triage_guru_${Date.now()}`;
+    const placeholderId = generateId('triage_guru');
     const placeholderMessage = {
       id: placeholderId,
       type: 'guru',
@@ -74,12 +78,7 @@ export default function Onboarding({
       const history = [...chatLog, userMessage];
       const payload = createTriagePayload(history, [{ text: userText }]);
       const response = await callAI(payload);
-      const result = await response.json();
-      const finalText = extractTextFromResponse(result);
-
-      if (!finalText) {
-        throw new Error('The model returned no readable text.');
-      }
+      const finalText = await parseAIResponse(response, { label: 'triage reply' });
 
       const route = extractTriageRoute(finalText);
       const cleanedText = stripTriageMarker(finalText);

@@ -30,8 +30,13 @@ export default function CertificateCard({ thread, username }) {
   if (!thread || !thread.flow) return null;
 
   const flows = listAllFlows();
+  const mergedThreads = (() => {
+    const others = userThreads.filter((t) => t.id !== thread.id);
+    return [thread, ...others];
+  })();
+
   const allStagesScoredAcrossFlows = flows.every((flow) =>
-    userThreads.some((t) => {
+    mergedThreads.some((t) => {
       if (t.flow !== flow) return false;
       return t.messages.some(
         (m) => m.type === 'score_card' && typeof m.stageIndex === 'number'
@@ -41,7 +46,7 @@ export default function CertificateCard({ thread, username }) {
 
   if (!allStagesScoredAcrossFlows) return null;
 
-  const scores = collectStageScoresFromThreads(userThreads, { username });
+  const scores = collectStageScoresFromThreads(mergedThreads, { username });
   if (scores.length === 0) return null;
 
   const average = scores.reduce((sum, s) => sum + s.score, 0) / scores.length;
@@ -56,16 +61,16 @@ export default function CertificateCard({ thread, username }) {
       <div className="flex items-center gap-2 text-[#00F1DE] uppercase font-mono text-[10px] tracking-[0.15em]">
         <FileBadge size={16} /> Design Ninja certificate ready
       </div>
-      <p className="mt-2 text-sm text-[#EFEDE8]">
-        All scored stages across every flow are complete. Download your dotai Design Ninja certificate,
-        addressed to <span className="text-white font-semibold">{username || 'you'}</span>.
+      <p className="mt-2 text-sm text-white">
+        All scored stages across every flow are complete. Download your <span className="text-[#00F1DE]">dotai</span> Design Ninja certificate,
+        addressed to <span className="font-semibold">{username || 'you'}</span>.
       </p>
       <div className="mt-3 flex items-center gap-3">
         <div className="inline-flex items-center gap-2 border border-[#FF00A8] px-3 py-1">
           <Award size={14} className="text-[#FF00A8]" />
           <span className="font-mono uppercase text-[11px] tracking-[0.18em] text-[#FF00A8]">{rank}</span>
         </div>
-        <span className="text-xs font-mono text-[#C8C5BF]">
+        <span className="text-xs font-mono text-[#D8D4CC]">
           Average {average.toFixed(1)} / 100 across {scores.length} stage(s)
         </span>
       </div>

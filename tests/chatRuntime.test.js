@@ -9,8 +9,11 @@ import {
   createToolPayload,
   createWorkflowPayload,
   extractTextFromResponse,
+  generateId,
+  generateThreadId,
   getFlowStageIndex,
   getRecentContextHistory,
+  parseAIResponse,
   parsePersonasJson,
   rankForAverage,
   safeJsonParse,
@@ -236,5 +239,56 @@ test('collectStageScoresFromThreads flattens scores across all flows', () => {
   assert.equal(startRows[0].stage, 'Raw Idea');
   assert.equal(processRows.length, 1);
   assert.ok(rows.every((row) => row.username === 'Asha'));
+});
+
+test('generateId returns unique values across rapid calls', () => {
+  const ids = new Set();
+  for (let i = 0; i < 1000; i += 1) {
+    ids.add(generateId('msg'));
+  }
+  assert.equal(ids.size, 1000);
+  assert.ok([...ids][0].startsWith('msg_'));
+});
+
+test('generateThreadId returns unique numeric IDs', () => {
+  const ids = new Set();
+  for (let i = 0; i < 100; i += 1) {
+    ids.add(generateThreadId());
+  }
+  assert.equal(ids.size, 100);
+  assert.ok([...ids].every((id) => Number.isFinite(id)));
+});
+
+test('extractTextFromResponse reads from the OpenAI output shape', () => {
+  assert.equal(
+    extractTextFromResponse({ output: [{ content: [{ text: 'hello' }, { text: ' there' }] }] }),
+    'hello there'
+  );
+});
+
+test('extractTextFromResponse returns an empty string for junk payloads', () => {
+  assert.equal(extractTextFromResponse(null), '');
+  assert.equal(extractTextFromResponse({}), '');
+  assert.equal(extractTextFromResponse({ output: 'nope' }), '');
+});
+
+test('parseAIResponse throws a helpful error when the body is not JSON', async () => {
+  const fakeResponse = {
+    json: async () => {
+      throw new SyntaxError('Unexpected token');
+    },
+  };
+  await assert.rejects(
+    () => parseAIResponse(fakeResponse, { label: 'score' }),
+    /score could not be parsed as JSON/
+  );
+});
+
+test('parseAIResponse throws when the model body is empty', async () => {
+  const fakeResponse = { json: async () => ({ output: [] }) };
+  await assert.rejects(
+    () => parseAIResponse(fakeResponse, { label: 'reply' }),
+    /reply was empty/
+  );
 });
 

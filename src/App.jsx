@@ -17,11 +17,13 @@ import {
   createStageScorePayload,
   createToolPayload,
   createWorkflowPayload,
-  extractTextFromResponse,
+  generateId,
+  generateThreadId,
   getFlowStageIndex,
   getFlowStages,
   getMessageParts,
   getThreadTitlePreview,
+  parseAIResponse,
   parsePersonasJson,
   safeJsonParse,
 } from './chatRuntime';
@@ -383,7 +385,7 @@ export default function App() {
       setIsLoading(true);
       setError(null);
 
-      const guruMessageId = Date.now();
+      const guruMessageId = generateId('guru');
       const placeholderMessage = {
         id: guruMessageId,
         type: 'guru',
@@ -419,12 +421,7 @@ export default function App() {
           )
         );
         const response = await callAI(payload);
-        const result = await response.json();
-        const finalText = extractTextFromResponse(result);
-
-        if (!finalText) {
-          throw new Error('The model returned no readable text.');
-        }
+        const finalText = await parseAIResponse(response, { label: 'reply' });
 
         setThreads((prevThreads) =>
           prevThreads.map((thread) => {
@@ -475,7 +472,7 @@ export default function App() {
 
     const stages = getFlowStages(currentThread.flow);
     const markerMessage = {
-      id: `marker_${Date.now()}`,
+          id: generateId('marker'),
       type: 'stage_marker',
       stageIndex: currentStage,
       stageKey: `stage_${currentStage}`,
@@ -532,16 +529,10 @@ export default function App() {
       try {
         const payload = createStageScorePayload(currentThread, stageLabel, scoreText || threadSummaryText(currentThread.messages));
         const response = await callAI(payload);
-        const result = await response.json();
-        const content = extractTextFromResponse(result);
-
-        if (!content) {
-          throw new Error('The model returned no score.');
-        }
-
+        const content = await parseAIResponse(response, { label: 'score' });
         const parsed = safeJsonParse(content, 'score');
         const scoreMessage = {
-          id: `score_${Date.now()}`,
+          id: generateId('score'),
           type: 'score_card',
           stageIndex: currentStage,
           stageLabel,
@@ -602,16 +593,10 @@ export default function App() {
       try {
         const payload = createWorkflowPayload(currentThread);
         const response = await callAI(payload);
-        const result = await response.json();
-        const content = extractTextFromResponse(result);
-
-        if (!content) {
-          throw new Error('The model returned no workflow.');
-        }
-
+        const content = await parseAIResponse(response, { label: 'workflow' });
         const parsed = safeJsonParse(content, 'workflow');
         const workflowMessage = {
-          id: `workflow_${Date.now()}`,
+          id: generateId('workflow'),
           type: 'workflow_card',
           workflow: parsed.workflow,
           nextMilestone: parsed.nextMilestone,
@@ -701,14 +686,14 @@ export default function App() {
     setSelectedProjectContext(projectContext);
 
     const newThread = {
-      id: Date.now(),
+      id: generateThreadId(),
       username,
       title: TITLES[explicitFlow],
       flow: explicitFlow,
       projectContext,
       messages: [
         {
-          id: `initial_guru_${Date.now()}`,
+          id: generateId('initial_guru'),
           type: 'guru',
           text: buildPersonalisedGreeting(explicitFlow, username),
           timestamp: new Date().toISOString(),
@@ -734,7 +719,7 @@ export default function App() {
     setError(null);
 
     const userMessage = {
-      id: Date.now(),
+      id: generateId('user'),
       type: 'user',
       text: messageText,
       attachments,
@@ -814,7 +799,7 @@ export default function App() {
               title: TITLES.start_project,
               messages: [
                 {
-                  id: `initial_guru_${Date.now()}`,
+                  id: generateId('initial_guru'),
                   type: 'guru',
                   text: buildPersonalisedGreeting('start_project', thread.username || username),
                   timestamp: new Date().toISOString(),
@@ -860,12 +845,7 @@ export default function App() {
     try {
       const payload = createToolPayload(toolType, currentThread);
       const response = await callAI(payload);
-      const result = await response.json();
-      const content = extractTextFromResponse(result);
-
-      if (!content) {
-        throw new Error('Received an empty or invalid response from OpenAI.');
-      }
+      const content = await parseAIResponse(response, { label: 'tool' });
 
       let newToolMessage;
       if (toolType === 'personas') {
@@ -875,9 +855,9 @@ export default function App() {
         } catch {
           throw new Error('The personas response was not valid JSON. Try the tool again.');
         }
-        newToolMessage = { id: Date.now(), type: 'tool_personas', personas, timestamp: new Date().toISOString() };
+        newToolMessage = { id: generateId('tool_personas'), type: 'tool_personas', personas, timestamp: new Date().toISOString() };
       } else {
-        newToolMessage = { id: Date.now(), type: 'tool_critique', text: content, timestamp: new Date().toISOString() };
+        newToolMessage = { id: generateId('tool_critique'), type: 'tool_critique', text: content, timestamp: new Date().toISOString() };
       }
 
       setThreads((prevThreads) =>
