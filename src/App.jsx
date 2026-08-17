@@ -4,6 +4,7 @@ import HelpModal from './components/HelpModal';
 import GeometricBackdrop from './components/GeometricBackdrop';
 import LandingHero from './components/LandingHero';
 import Onboarding from './components/Onboarding';
+import FlowSelector from './components/FlowSelector';
 import ChatWorkspace from './components/ChatWorkspace';
 import { parseUploadedFile } from './fileUtils';
 import { TOUR_KEY } from './storage';
@@ -149,6 +150,24 @@ export default function App() {
             }
           }}
         />
+      </>
+    );
+  }
+
+  if (appState === 'flowSelector') {
+    return (
+      <>
+        <FlowSelector
+          username={username}
+          onSelectFlow={(flow) => {
+            const newThread = runner.startThread('default', flow);
+            setCurrentThreadId(newThread.id);
+            setAppState('chat');
+          }}
+          onOpenHelp={() => setIsHelpOpen(true)}
+        />
+        <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+        <GeometricBackdrop />
       </>
     );
   }

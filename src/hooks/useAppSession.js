@@ -229,7 +229,8 @@ export default function useAppSession() {
       setCurrentThreadId(match ? match.id : userThreads[0].id);
       setAppState('chat');
     } else {
-      setAppState('onboarding');
+      // New user: show flow selector instead of onboarding
+      setAppState('flowSelector');
     }
   }, []);
 
