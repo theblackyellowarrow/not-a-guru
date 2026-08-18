@@ -1,7 +1,18 @@
-import { X } from 'lucide-react';
+import { X, Trash2 } from 'lucide-react';
+import { clearAllAppData } from '../storage';
 
-export default function HelpModal({ isOpen, onClose }) {
+export default function HelpModal({ isOpen, onClose, onClearData }) {
   if (!isOpen) return null;
+
+  const handleClear = () => {
+    if (typeof window !== 'undefined' && window.confirm('Clear all data? This will remove your username, threads, and progress. Cannot be undone.')) {
+      const ok = clearAllAppData();
+      if (ok && typeof onClearData === 'function') {
+        onClearData();
+      }
+      onClose();
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
@@ -38,7 +49,7 @@ export default function HelpModal({ isOpen, onClose }) {
             <div className="border border-[#6B6965] bg-[#0f0f0f] px-4 py-3 hover:border-[#00F1DE] transition-colors">
               <div className="font-semibold uppercase font-mono tracking-wider text-white">Final Roast</div>
               <div className="text-[#C8C5BF] mt-1">
-                Upload final assets and framing. You’ll get a direct critique of the finished work.
+                Upload final assets and framing. You'll get a direct critique of the finished work.
               </div>
             </div>
           </div>
@@ -46,7 +57,13 @@ export default function HelpModal({ isOpen, onClose }) {
             Tip: Keep uploads lean (PDF/DOCX/images). For faster replies, keep messages focused.
           </div>
         </div>
-        <div className="border-t border-[#6B6965] px-6 py-4 text-right">
+        <div className="border-t border-[#6B6965] px-6 py-4 flex items-center justify-between">
+          <button
+            onClick={handleClear}
+            className="flex items-center gap-2 text-[#B42318] hover:text-[#FF00A8] transition-colors text-xs uppercase font-mono tracking-wider"
+          >
+            <Trash2 size={14} /> Clear All Data
+          </button>
           <button
             onClick={onClose}
             className="bg-[#FF00A8] text-black px-4 py-2 text-sm font-semibold uppercase font-mono tracking-wider hover:brightness-110 transition-all clip-corner"

@@ -4,6 +4,10 @@ export const LAST_THREAD_KEY = (user) => `guru_last_thread_${user}`;
 export const TOUR_KEY = 'guru_seen_tour';
 export const HERO_KEY = 'guru_seen_hero';
 
+// Version key for hard reset on breaking changes
+export const APP_VERSION_KEY = 'guru_app_version';
+export const CURRENT_APP_VERSION = '2.0.0'; // Bump to force clear
+
 export const INITIAL_MESSAGES = {
   start_project:
     "Aight, a new idea. Every great project starts with a spark. What's the general problem area you're thinking about? No need for a perfect pitch, just the raw concept.",
@@ -98,5 +102,37 @@ export function getLastActiveThreadId(username) {
     return localStorage.getItem(LAST_THREAD_KEY(username));
   } catch {
     return null;
+  }
+}
+
+// Hard reset: clear all app data
+export function clearAllAppData() {
+  try {
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('guru_')) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach((key) => localStorage.removeItem(key));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Check version and clear if mismatch (forces fresh start on deploys)
+export function checkVersionAndClear() {
+  try {
+    const storedVersion = localStorage.getItem(APP_VERSION_KEY);
+    if (storedVersion !== CURRENT_APP_VERSION) {
+      clearAllAppData();
+      localStorage.setItem(APP_VERSION_KEY, CURRENT_APP_VERSION);
+      return true; // Was cleared
+    }
+    return false; // No change needed
+  } catch {
+    return false;
   }
 }

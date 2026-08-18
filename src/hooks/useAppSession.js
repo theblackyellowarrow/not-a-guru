@@ -3,6 +3,7 @@ import {
   HERO_KEY,
   TOUR_KEY,
   buildPersonalisedGreeting,
+  checkVersionAndClear,
   getLastActiveThreadId,
   loadUserThreads,
   loadUsername,
@@ -36,6 +37,12 @@ export default function useAppSession() {
 
   // Initial load + reduced-motion subscription.
   useEffect(() => {
+    // Hard reset on version mismatch
+    const wasCleared = checkVersionAndClear();
+    if (wasCleared) {
+      console.log('[Not a Guru] Storage cleared for new version');
+    }
+
     let cleanupMotion;
     try {
       if (typeof window !== 'undefined' && window.matchMedia) {

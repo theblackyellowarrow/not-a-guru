@@ -137,7 +137,11 @@ export default function App() {
           onOpenHelp={() => setIsHelpOpen(true)}
           isLoading={runner.isBusy}
         />
-        <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+        <HelpModal
+          isOpen={isHelpOpen}
+          onClose={() => setIsHelpOpen(false)}
+          onClearData={resetToOnboarding}
+        />
         <GeometricBackdrop />
         <FirstRunTour
           isOpen={isTourOpen}
@@ -166,7 +170,11 @@ export default function App() {
           }}
           onOpenHelp={() => setIsHelpOpen(true)}
         />
-        <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+        <HelpModal
+          isOpen={isHelpOpen}
+          onClose={() => setIsHelpOpen(false)}
+          onClearData={resetToOnboarding}
+        />
         <GeometricBackdrop />
       </>
     );
